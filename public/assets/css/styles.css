@@ -1,0 +1,279 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f1f1f1;
+    padding-top: 50px;
+    /* Để tránh bị che bởi navbar cố định */
+}
+
+.top-navbar {
+    background-color: #4CAF50;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    /* Để navbar luôn ở đỉnh trang */
+    z-index: 1000;
+    /* Đảm bảo navbar hiển thị trên các phần tử khác */
+    padding: 0 20px;
+    /* Thêm padding để không bị dính vào cạnh màn hình */
+}
+
+.top-navbar a,
+.top-navbar .logo {
+    float: left;
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 20px;
+    text-decoration: none;
+    font-size: 17px;
+}
+
+.top-navbar .logo {
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.top-navbar a:hover {
+    background-color: #ddd;
+    color: black;
+}
+
+/* Thêm style cho profile menu */
+.profile-menu {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    position: relative; /* Đảm bảo dropdown-menu định vị đúng */
+}
+
+
+.profile-name {
+    margin-right: 10px;
+    /* Khoảng cách giữa tên và menu */
+    font-weight: bold;
+    color: white;
+}
+
+.dropdown {
+    position: relative;
+    /* Để dropdown-menu được định vị chính xác */
+}
+
+.dropdown-toggle {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    /* Để có thể căn chỉnh các phần tử bên trong */
+    align-items: center;
+    justify-content: center;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background-color: white;
+    border: 1px solid #ddd;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+    z-index: 9999; /* Đặt giá trị z-index rất cao */
+    width: 200px;
+}
+
+
+
+.dropdown-menu a {
+    display: block;
+    padding: 10px;
+    color: #333;
+    text-decoration: none;
+}
+
+.dropdown-menu a:hover {
+    background-color: #f1f1f1;
+}
+
+/* Hiển thị menu dropdown khi hover hoặc focus */
+.dropdown-toggle:focus+.dropdown-menu,
+.dropdown-menu:hover {
+    display: block;
+}
+
+
+.sidebar {
+    height: 100%;
+    width: 220px;
+    position: fixed;
+    top: 50px;
+    left: 0;
+    background-color: #282A35;
+    padding-top: 20px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    transition: width 0.3s ease;
+    /* Thêm transition cho width */
+}
+
+.sidebar.collapsed {
+    width: 60px;
+    /* Kích thước khi sidebar bị collapse */
+}
+
+.sidebar a,
+.dropdown-btn {
+    padding: 10px 15px;
+    text-decoration: none;
+    font-size: 18px;
+    color: white;
+    display: block;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    outline: none;
+    transition: padding 0.3s ease;
+    /* Thêm transition cho padding */
+}
+
+.sidebar.collapsed a,
+.sidebar.collapsed .dropdown-btn {
+    padding: 10px;
+    /* Kích thước padding khi sidebar bị collapse */
+}
+
+.dropdown-container {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+    /* Thêm transition cho max-height */
+}
+
+.dropdown-container.active {
+    max-height: 500px;
+    /* Điều chỉnh chiều cao tối đa của dropdown */
+}
+
+.dropdown-container a {
+    padding: 8px 15px;
+    font-size: 16px;
+    color: #ddd;
+}
+
+.dropdown-container a:hover {
+    background-color: #575757;
+}
+
+.main-content {
+    margin-left: 240px;
+    /* Điều chỉnh theo cấu trúc sidebar của bạn */
+    padding: 20px;
+    margin-top: 10px;
+    /* Để tránh bị che bởi navbar cố định */
+    transition: margin-left 0.3s ease;
+    /* Thêm transition cho margin-left */
+}
+
+.header {
+    background-color: #4CAF50;
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+}
+
+.card {
+    background-color: white;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+}
+
+.footer {
+    background-color: #4CAF50;
+    color: white;
+    text-align: center;
+    padding: 5px 0;
+    position: fixed;
+    width: 100%;
+    bottom: 0;
+    left: 0;
+}
+
+.dropdown-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dropdown-btn.active .fa-caret-down {
+    transform: rotate(180deg);
+}
+
+/* Ẩn toggle trên PC/Laptop */
+.sidebar-toggle {
+    display: none;
+}
+
+/* Hiển thị sidebar mặc định */
+.sidebar {
+    width: 220px;
+    transition: width 0.3s ease;
+}
+
+.main-content {
+    margin-left: 220px;
+    transition: margin-left 0.3s ease;
+}
+
+/* Hiển thị toggle chỉ trên điện thoại */
+@media (max-width: 768px) {
+    .sidebar-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: fixed;
+        top: 10px;
+        left: 10px;
+        z-index: 1100;
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px;
+        cursor: pointer;
+        border-radius: 3px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
+    .sidebar-toggle img {
+        display: block;
+        max-width: 80%;
+    }
+
+    .sidebar.collapsed {
+        width: 0;
+    }
+
+    .sidebar.collapsed+.main-content {
+        margin-left: 0;
+    }
+}
+
+/* liên quan tới phần trả lời, điền vào chỗ trống */
+.sentence {
+    font-size: 18px;
+}
+
+.blank {
+    border-bottom: 1px solid #000;
+    display: inline-block;
+    width: 100px;
+    text-align: center;
+}
