@@ -15,18 +15,22 @@
                 <button class="btn btn-outline-secondary btn-info text-white" type="button" id="btnSearch">
                     <i class="fa fa-search fw-bold"></i> Search
                 </button>
+                <button class="btn btn-outline-warning btn-success text-white" type="button" id="btnExport">
+                    <i class="fa fa-file-excel-o" aria-hidden="true"></i> Export
+                </button>
             </div>
         </div>
     </div>
 
     <!-- statistic Table -->
-    <table class="table table-bordered table-striped table-hover mt-3">
+    <table class="table table-bordered table-striped table-hover mt-3" id="table">
         <thead>
             <tr>
                 <th rowspan="2" class="align-middle">STT</th>
                 <th rowspan="2" class="align-middle">Mã thành viên</th>
                 <th rowspan="2" class="align-middle">Tài khoản</th>
                 <th rowspan="2" class="align-middle">Họ tên</th>
+                <th rowspan="2" class="align-middle">Số lần làm bài</th>
                 <th colspan="3" class="text-center">Chỗ trống</th>
                 <th colspan="3" class="text-center">Câu hỏi</th>
                 <th rowspan="2"></th>
@@ -71,6 +75,7 @@
         $modal = $('#modal'),
         $content = $('#modalContent'),
         $table = $('#tblData'),
+        $export = $('#btnExport'),
         pageSize = 10;
 
     let page = 1;
@@ -111,10 +116,11 @@
                         result.forEach(l => {
                             $table.append(`
                             <tr>
-                                <td>${++idx}</td>
+                                <td>${++idx<10?'0'+idx:idx}</td>
                                 <td class = "fw-bold text-warning">${l.user_code}</td>
                                 <td class = "text-info">${l.username}</td>
                                 <td>${l.fullname}</td>
+                                <td>${l.attempts_count}</td>
                                 <td>${l.total_blanks}</td>
                                 <td>${l.correct_blanks}</td>
                                 <td>${l.correct_blanks_percent}</td>
@@ -279,4 +285,16 @@
                 return '<p>' + '&nbsp;'.repeat(match.length - 3); // Thay thế khoảng trắng đầu dòng sau <p>
             });
     }
+
+
+    $export.click(function(){
+        var table = document.getElementById("table");
+        
+        // Tạo workbook từ bảng HTML
+        var wb = XLSX.utils.table_to_book(table, { sheet: $( "#slLessions option:selected" ).text() });
+        
+        // Xuất file Excel
+        XLSX.writeFile(wb, `${$( "#slSubjects option:selected" ).text()}.xlsx`);
+    })
+        
 </script>
