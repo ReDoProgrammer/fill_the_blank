@@ -49,17 +49,16 @@ class StatisticController extends AdminController
 
     function get_review_statistic()
     {
-        var_dump($_GET);
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
             $keyword = $_GET['keyword'];
             $page = (int)$_GET['page'];
             $pageSize = (int)$_GET['pageSize'];
-            $lessionId = $_GET['lession'];
+            $lession = (int)$_GET['lession'];
 
 
             header('Content-Type: application/json');
-            $result = $this->lessionModel->getReviewStatistic($lessionId, $keyword, $page, $pageSize);
+            $result = $this->lessionModel->getReviewStatistic($lession, $keyword, $page, $pageSize);
             echo json_encode(['code' => 200, 'msg' => 'Lấy số liệu thống kê phần ôn tập thành công!', 'result' => $result]);
         } else {
             echo json_encode([

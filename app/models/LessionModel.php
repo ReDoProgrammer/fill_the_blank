@@ -177,10 +177,13 @@ class LessionModel extends Model
     }
 
     public function getReviewStatistic($lessionId, $keyword = '', $page = 1, $pageSize = 10)
-    {
+    { 
         return [
-            ':from_date' => 1234,
-            ':to_date' => 456
+            'lesssionId'=>$lessionId,
+            'keyword'=>$keyword,
+            'page'=>$page,
+            'pageSize'=>$pageSize
         ];
+       
     }
 }

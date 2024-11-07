@@ -55,27 +55,30 @@
 
     })
 
-    function LoadData(lessionId) {
-        $.ajax({
-            url: `<?php echo BASE_URL; ?>/admin/statistic/get_review_statistic`,
-            method: 'get',
-            dataType: 'json',
-            data: {
-                'lessionId': lessionId,
-                keyword: $keyword.val().trim(),
-                page,
-                pageSize
-            },
-            success: function(response) {
-                console.log(response);
-
-            },
-            error: function(err) {
-                console.log(err);
-
-            }
-        })
+    function LoadStatistic(lessionId) {
+        if (lessionId !== undefined) { // kiểm tra biến lessionId đã có giá trị chưa
+            $.ajax({
+                url: `<?php echo BASE_URL; ?>/admin/statistic/get_review_statistic`,
+                method: 'get',
+                dataType: 'json',
+                data: {
+                    lession: lessionId, // truyền đúng biến
+                    keyword: $keyword.val().trim(),
+                    page,
+                    pageSize
+                },
+                success: function(response) {
+                    console.log(response);
+                },
+                error: function(err) {
+                    console.log(err);
+                }
+            });
+        } else {
+            console.log("Lession ID is not defined.");
+        }
     }
+
 
     // Tải danh sách môn học
     function LoadSubjects() {
@@ -100,8 +103,7 @@
 
     // Xử lý khi chọn môn học
     $slSubjects.change(function() {
-        Loadlessions(parseInt($slSubjects.val()));
-        LoadData(); // Tải câu hỏi cho môn học đã chọn
+        Loadlessions(parseInt($slSubjects.val()));       
     });
 
     // Tải danh sách bài học dựa trên môn học đã chọn
