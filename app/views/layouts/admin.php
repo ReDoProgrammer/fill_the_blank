@@ -21,8 +21,8 @@
 <body>
 
     <div class="top-navbar">
-        <a href="#" class="logo"><img src="<?php echo BASE_URL; ?>/public/assets/images/logo.png" style="height:30px; width:auto;"
-                alt="Logo"></a>
+        <a href="#" class="logo"><img src="<?php echo BASE_URL; ?>/public/assets/images/logo.png"
+                style="height:30px; width:auto;" alt="Logo"></a>
 
         <a href="#home">Home</a>
         <a href="#news">News</a>
@@ -36,11 +36,14 @@
         <a href="<?php echo BASE_URL; ?>/admin/user"><i class="fa fa-users" aria-hidden="true"></i> Tài khoản</a>
         <a href="<?php echo BASE_URL; ?>/admin/subject"><i class="fa fa-book" aria-hidden="true"></i> Bộ môn</a>
         <a href="<?php echo BASE_URL; ?>/admin/lession"><i class="fa fa-book" aria-hidden="true"></i> Bài học</a>
-        <a href="<?php echo BASE_URL; ?>/admin/question"><i class="fa fa-question" aria-hidden="true"></i> Câu hỏi ôn tập</a>
-        <a href="<?php echo BASE_URL; ?>/admin/quiz"><i class="fa fa-question" aria-hidden="true"></i> Câu hỏi trắc nghiệm</a>
+        <a href="<?php echo BASE_URL; ?>/admin/question"><i class="fa fa-question" aria-hidden="true"></i> Câu hỏi ôn
+            tập</a>
+        <a href="<?php echo BASE_URL; ?>/admin/quiz"><i class="fa fa-question" aria-hidden="true"></i> Câu hỏi trắc
+            nghiệm</a>
         <a href="<?php echo BASE_URL; ?>/admin/config"><i class="fa fa-gear"></i> Cấu hình bài thi</a>
-        <a href="<?php echo BASE_URL; ?>/admin/exam"><i class="fa fa-list" aria-hidden="true"></i> Bài thi trắc nghiệm</a>
-        <hr/>
+        <a href="<?php echo BASE_URL; ?>/admin/exam"><i class="fa fa-list" aria-hidden="true"></i> Bài thi trắc
+            nghiệm</a>
+        <hr style="margin: 5px !important;" />
         <button class="dropdown-btn"><i class="fa fa-bar-chart" aria-hidden="true"></i> Thống kê
             <i class="fa fa-caret-down"></i>
         </button>
@@ -49,8 +52,9 @@
             <a href="<?php echo BASE_URL; ?>/admin/statistic/subject_statistic">Thống kê môn học</a>
             <a href="<?php echo BASE_URL; ?>/admin/statistic/lession_statistic">Thống kê bài học</a>
             <a href="<?php echo BASE_URL; ?>/admin/statistic/question_statistic">Thống kê câu hỏi</a>
+            <a href="<?php echo BASE_URL; ?>/admin/statistic/review_statistic">Thống kê ôn tập</a>
             <a href="<?php echo BASE_URL; ?>/admin/statistic/quiz_statistic">Thống kê trắc nghiệm</a>
-          
+
         </div>
 
     </div>
@@ -72,13 +76,13 @@
         var mainContent = document.querySelector('.main-content');
         var dropdowns = document.getElementsByClassName("dropdown-btn");
 
-        sidebarToggle.addEventListener('click', function () {
+        sidebarToggle.addEventListener('click', function() {
             sidebar.classList.toggle('collapsed');
             if (sidebar.classList.contains('collapsed')) {
                 // Sidebar được thu gọn
                 sidebar.style.width = '0';
                 // Ẩn các dropdown khi sidebar thu gọn
-                Array.from(dropdowns).forEach(function (dropdown) {
+                Array.from(dropdowns).forEach(function(dropdown) {
                     var dropdownContent = dropdown.nextElementSibling;
                     dropdownContent.style.maxHeight = null;
                 });
@@ -95,7 +99,7 @@
         var dropdowns = document.getElementsByClassName("dropdown-btn");
 
         for (var i = 0; i < dropdowns.length; i++) {
-            dropdowns[i].addEventListener("click", function () {
+            dropdowns[i].addEventListener("click", function() {
                 this.classList.toggle("active");
                 var dropdownContent = this.nextElementSibling;
                 if (dropdownContent.style.maxHeight) {

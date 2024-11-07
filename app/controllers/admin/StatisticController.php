@@ -18,6 +18,8 @@ class StatisticController extends AdminController
         $this->historyModel = new HistoryModel();
     }
 
+
+
     public function user_statistic()
     {
 
@@ -36,12 +38,36 @@ class StatisticController extends AdminController
         $this->view('admin/statistic/lession', [], 'Thống kê theo bài học', 'admin');
     }
 
+    public function review_statistic()
+    {
+        $this->view('admin/statistic/review', [], 'Thống kê phần ôn tập', 'admin');
+    }
     public function quiz_statistic()
     {
         $this->view('admin/statistic/quiz', [], 'Thống kê thi trắc nghiệm', 'admin');
     }
 
+    function get_review_statistic()
+    {
+        var_dump($_GET);
+        if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
+            $keyword = $_GET['keyword'];
+            $page = (int)$_GET['page'];
+            $pageSize = (int)$_GET['pageSize'];
+            $lessionId = $_GET['lession'];
+
+
+            header('Content-Type: application/json');
+            $result = $this->lessionModel->getReviewStatistic($lessionId, $keyword, $page, $pageSize);
+            echo json_encode(['code' => 200, 'msg' => 'Lấy số liệu thống kê phần ôn tập thành công!', 'result' => $result]);
+        } else {
+            echo json_encode([
+                'code' => 405,
+                'msg' => 'Phương thức không được phép'
+            ]);
+        }
+    }
     function get_users_statistic()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
@@ -159,7 +185,7 @@ class StatisticController extends AdminController
     {
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
 
-            $exam_id = (int) $_GET['exam_id'];          
+            $exam_id = (int) $_GET['exam_id'];
             $keyword = $_GET['keyword'];
 
             header('Content-Type: application/json');
@@ -201,6 +227,4 @@ class StatisticController extends AdminController
             echo json_encode(['message' => 'Phương thức không được phép.']);
         }
     }
-
-
 }

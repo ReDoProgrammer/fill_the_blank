@@ -13,7 +13,7 @@
     </h5>
 
 
-    <div class="card-body bg-white text-dark">
+    <div class="card-body bg-white text-dark" style="padding:0 !important;">
         <div class="text-center mt-3">
             <button class="btn btn-warning border-danger pl-2" id="btnStart">Bắt đầu</button>
         </div>
@@ -36,7 +36,7 @@
     var answers = [];
     var timeount = false;
     var spent_time = 0;
-    $(document).ready(function () {
+    $(document).ready(function() {
         $questions.empty();
         $timer.hide();
         examId = getUrlParameter('id');
@@ -45,32 +45,41 @@
                 url: '<?php echo BASE_URL; ?>/exam/check_available',
                 type: 'get',
                 dataType: 'json',
-                data: { exam_id: examId },
-                success: function (response) {
-                    const { code, msg, header } = response;
+                data: {
+                    exam_id: examId
+                },
+                success: function(response) {
+                    const {
+                        code,
+                        msg,
+                        header
+                    } = response;
                     if (code != 200) {
                         window.location.replace(`<?php echo BASE_URL; ?>`);
                     } else {
                         LoadQuestions(examId);
                     }
                 },
-                error: function (err) {
+                error: function(err) {
                     console.log(err);
                 }
             })
         }
     });
 
-    $start.click(function () {
+    $start.click(function() {
         spent_time = 0;
-        const { questions, duration } = examObj;
+        const {
+            questions,
+            duration
+        } = examObj;
 
         let idx = 1;
         questions.forEach(q => {
             let options = JSON.parse(q.options);
             $questions.append(`
             <div class="question-container" id="${q.id}">
-                <h5 class="mb-3">Câu hỏi <span class="question_index">${idx++}</span>: <span>${formatDisplay(q.question)}</span> - (<span class = "fw-bold text-danger"> ${q.mark}</span> điểm )</h5>
+                <h6 class="mb-2">Câu hỏi <span class="question_index">${idx++}</span>: <span>${formatDisplay(q.question)}</span> - (<span class = "fw-bold text-danger"> ${q.mark}</span> điểm )</h6>
                 <div class="options">
                     <div class="form-check">
                         <input class="form-check-input option" type="radio" name="question_${q.id}_Options" id="${q.id}_option1" value="1">
@@ -100,13 +109,14 @@
             </div>
         `);
             // Gán sự kiện sau khi phần tử được thêm vào DOM
-            $('.option').change(function () {
+            $('.option').change(function() {
 
-                var questionContainerId = parseInt($(this).closest('.question-container').attr('id'));
+                var questionContainerId = parseInt($(this).closest('.question-container').attr(
+                    'id'));
                 var choice = parseInt($(this).val());
 
                 // Kiểm tra xem ID câu hỏi đã tồn tại trong mảng answers chưa
-                var answerIndex = answers.findIndex(function (answer) {
+                var answerIndex = answers.findIndex(function(answer) {
                     return answer.id === questionContainerId;
                 });
 
@@ -124,7 +134,7 @@
                     });
                 }
                 // Kiểm tra nếu thẻ h5 có class 'text-danger' và xóa class này
-                $(this).closest('.question-container').find('h5').removeClass('text-danger');
+                $(this).closest('.question-container').find('h6').removeClass('text-danger');
             });
         });
         $questions.append(`
@@ -137,7 +147,9 @@
                         `);
 
         // Hàm xử lý khi nút "Nộp bài" được nhấn
-        $('#btnFinish').click(function () {
+        $('#btnFinish').click(function() {
+
+            //nếu chưa hết giờ và chưa trả lời hết các câu hỏi
             if (!timeount && answers.length < noq) {
                 Swal.fire({
                     icon: "error",
@@ -145,22 +157,37 @@
                     html: "<strong>Bạn cần trả lời hết các câu hỏi.</strong><br/><b><u>Lưu ý:</u> Câu hỏi chưa trả lời sẽ có <span class = 'text-danger'>màu đỏ</span></b>"
                 });
 
+
+                //lấy danh sách các câu hỏi chưa tick câu trả lời
                 const missingQuestions = examObj.questions.filter(q =>
-                    !answers.some(a => a.id === q.id)
+                    !answers.some(a => a.id === parseInt(q.id))
                 );
-                const missingIds = missingQuestions.map(q => q.id);
-                // Duyệt qua từng phần tử có class "question-container"
-                $('.question-container').each(function () {
-                    // Lấy id của phần tử hiện tại
-                    const questionId = parseInt($(this).attr('id'));
 
-                    // Kiểm tra xem id này có nằm trong mảng missingIds không
-                    if (missingIds.includes(questionId)) {
-                        // Nếu có, thêm class 'danger' cho thẻ h5 trong phần tử hiện tại
-                        $(this).find('h5').addClass('text-danger');
-                    }
-                });
+                // lấy id của các câu hỏi chưa được tick đáp án ( mảng số nguyên, sử dụng hàm parseInt để convert từ chuỗi sang số nguyên)
+                const missingIds = missingQuestions.map(q => parseInt(q.id));
 
+
+
+
+                if (missingIds.length > 0) {
+
+                    // Duyệt qua từng phần tử có class "question-container"
+                    $('.question-container').each(function() {
+                        // Lấy id của phần tử hiện tại
+
+                        const questionId = parseInt($(this).attr('id'));
+
+
+                        // Kiểm tra xem id này có nằm trong mảng missingIds không
+                        if (missingIds.includes(questionId)) {
+                            // Nếu có, thêm class 'danger' cho thẻ h5 trong phần tử hiện tại
+                            $(this).find('h6').addClass('text-danger');
+                        }
+                    });
+                }
+
+
+                // dừng chương trình ngang đây để người dùng tiếp tục trả lời các câu hỏi chưa tick hoặc thay đổi đáp án
                 return;
             }
 
@@ -169,9 +196,9 @@
              * Thì sẽ tự động chọn đáp án cho câu hỏi ( mặc định là -1 <=> luôn luôn sai)
              */
             if (timeount && answers.length < noq) {
-                questions.forEach(function (question) {
+                questions.forEach(function(question) {
                     // Kiểm tra xem id của câu hỏi có tồn tại trong answers hay chưa
-                    var isAnswered = answers.some(function (answer) {
+                    var isAnswered = answers.some(function(answer) {
                         return answer.id === question.id;
                     });
 
@@ -185,6 +212,7 @@
                 });
             }
 
+
             $.ajax({
                 url: '<?php echo BASE_URL; ?>/exam/save',
                 type: 'post',
@@ -194,7 +222,7 @@
                     result: answers,
                     spent_time
                 },
-                success: function (response) {
+                success: function(response) {
                     console.log(response);
 
                     // Dừng countdownInterval
@@ -203,19 +231,25 @@
                     $timer.hide();
 
                     let correctNumbers = 0;
-                    let marks = 0, totalMarks = 0;
+                    let marks = 0,
+                        totalMarks = 0;
 
                     // Đánh dấu đáp án đúng và sai
                     examObj.questions.forEach(question => {
                         let options = JSON.parse(question.options);
-                        let userAnswer = answers.find(answer => answer.id === question.id);
+                        let userAnswer = answers.find(answer => answer.id === parseInt(
+                            question
+                            .id));
                         let correctOption = options.correct_option;
-                        totalMarks += question.mark;
+                        totalMarks += parseFloat(question.mark);
+                        console.log(question.mark, userAnswer, correctOption);
+
 
                         if (userAnswer && correctOption === userAnswer.choice) {
                             correctNumbers++;
-                            marks += question.mark;
+                            marks += parseFloat(question.mark);
                         }
+
 
                         // Set màu cho đáp án đúng
                         $(`#${question.id}_option${correctOption}`).parent().css({
@@ -226,27 +260,27 @@
                     });
 
                     Swal.fire({
-                        title: timeount?`Thời gian làm bài đã hết.${response.msg}`:response.msg,
-                        text: timeount?`Thời gian làm bài đã hết.${response.msg}`:response.msg,
+                        title: timeount ? `Thời gian làm bài đã hết.${response.msg}` : response.msg,
+                        text: timeount ? `Thời gian làm bài đã hết.${response.msg}` : response.msg,
                         icon: "success",
                         html: `
-                    <table class="table table-bordered">
-                        <tbody>
-                            <tr class = "fw-bold">
-                                <td>Số câu trả lời đúng:</td>
-                                <td><span class = "text-success">${correctNumbers}</span>/${examObj.questions.length}</td>
-                            </tr>
-                            <tr class = "fw-bold">
-                                <td>Số điểm đạt được:</td>
-                                <td><span class = "text-success">${marks}</span>/${totalMarks}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                `,
+                        <table class="table table-bordered">
+                            <tbody>
+                                <tr class = "fw-bold">
+                                    <td>Số câu trả lời đúng:</td>
+                                    <td><span class = "text-success">${correctNumbers}</span>/${examObj.questions.length}</td>
+                                </tr>
+                                <tr class = "fw-bold">
+                                    <td>Số điểm đạt được:</td>
+                                    <td><span class = "text-success">${marks}</span>/${totalMarks}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    `,
                         confirmButtonColor: "#3085d6"
                     });
                 },
-                error: function (err) {
+                error: function(err) {
 
                     console.log(err);
 
@@ -268,14 +302,19 @@
             url: '<?php echo BASE_URL; ?>/exam/detail',
             type: 'get',
             dataType: 'json',
-            data: { id },
-            success: function (response) {
-                const { code, exam } = response;
+            data: {
+                id
+            },
+            success: function(response) {
+                const {
+                    code,
+                    exam
+                } = response;
                 examObj = exam;
                 noq = exam.number_of_questions;
                 $('#examTitle').text(exam.title);
             },
-            error: function (err) {
+            error: function(err) {
                 console.log(err);
             }
         });
@@ -293,8 +332,12 @@
             const seconds = totalSeconds % 60;
             spent_time++;
             // Cập nhật phần remaining
-            $remaining.text(`${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`);
-            $fixedRemaining.text(`${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`);
+            $remaining.text(
+                `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+            );
+            $fixedRemaining.text(
+                `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+            );
 
             // Kiểm tra nếu countdown đã hết
             if (totalSeconds <= 0) {
@@ -332,29 +375,21 @@
         return !isNaN(value) && !isNaN(parseFloat(value));
     }
 
-    const formatDisplay = function (inputHTML) {
+    const formatDisplay = function(inputHTML) {
         var formattedQuestionText = $('<div>').text(inputHTML).html();
         return formattedQuestionText
             .replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;') // Thay thế tab bằng không gian trắng
-            .replace(/<p>\s+/g, function (match) {
+            .replace(/<p>\s+/g, function(match) {
                 return '<p>' + '&nbsp;'.repeat(match.length - 3); // Thay thế khoảng trắng đầu dòng sau <p>
             });
     }
-
 </script>
 
 <style>
-    #questions {
-        max-height: 420px;
-        /* Đặt chiều cao tối đa của phần tử */
-        overflow-y: auto;
-        /* Hiển thị thanh cuộn dọc khi nội dung vượt quá chiều cao tối đa */
-    }
-
     .question-container {
         border: 1px solid #ddd;
-        padding: 15px;
-        margin-bottom: 20px;
+        padding: 5px;
+        margin-bottom: 5px;
         border-radius: 5px;
         background-color: #f9f9f9;
     }
@@ -365,15 +400,15 @@
     }
 
     .options .form-check {
-        margin-bottom: 10px;
+        margin-bottom: 3px;
         display: flex;
         align-items: center;
     }
 
     .form-check-input {
         margin-right: 10px;
-        width: 1.25em;
-        height: 1.25em;
+        width: 1em;
+        height: 1em;
         border: 2px solid #888;
         /* Viền màu xám cho radio button */
         border-radius: 50%;
@@ -389,9 +424,9 @@
     }
 
     .form-check-input:checked {
-        background-color: #007bff;
+        background-color: #4CAF50;
         /* Màu nền khi radio button được chọn */
-        border-color: #007bff;
+        border-color: #4CAF50;
         /* Đảm bảo viền cùng màu xanh khi chọn */
     }
 
@@ -400,8 +435,8 @@
         position: absolute;
         top: 50%;
         left: 50%;
-        width: 0.75em;
-        height: 0.75em;
+        width: 0.5em;
+        height: 0.5em;
         border-radius: 50%;
         background-color: #fff;
         /* Màu của dấu tích bên trong radio button */

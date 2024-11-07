@@ -100,14 +100,19 @@
 
 
 <script>
-    const $slSubjects = $('#slSubjects'), $slExams = $('#slExams'),
-        $txtKeyword = $('#txtKeyword'), pageSize = 10, $tblStatistic = $('#tblStatistic'),
-        $modal = $('#modal'), $modalContent = $('#modalContent'), $pagination = $('.pagination');
+    const $slSubjects = $('#slSubjects'),
+        $slExams = $('#slExams'),
+        $txtKeyword = $('#txtKeyword'),
+        pageSize = 10,
+        $tblStatistic = $('#tblStatistic'),
+        $modal = $('#modal'),
+        $modalContent = $('#modalContent'),
+        $pagination = $('.pagination');
     let page = 1;
     var pageNumber = 1; // Biến toàn cục để theo dõi tổng số trang
-    $(document).ready(function () {
+    $(document).ready(function() {
         LoadSubjectsHaveExams();
-        $pagination.on('click', '.page-link', function (e) {
+        $pagination.on('click', '.page-link', function(e) {
             e.preventDefault(); // Ngăn chặn hành động mặc định của thẻ <a>
             currentPage = $(this).text(); // Lấy giá trị data-page
 
@@ -124,18 +129,27 @@
                         LoadData();
                     }
                 }
-                console.log({ page });
+                console.log({
+                    page
+                });
 
             }
         });
     })
 
-    $slExams.on('change', function () {
+    $('#btnSearch').click(function() {
+        $('#tblTop').empty();
+        $tblStatistic.empty();
+        GetTop();
+        LoadData();
+    })
+
+    $slExams.on('change', function() {
         LoadData();
         GetTop();
     })
 
-    $('#btnExport').click(function () {
+    $('#btnExport').click(function() {
         // if ($('#tblStatistic tr').length)
         $.ajax({
             url: '<?php echo BASE_URL; ?>/admin/statistic/export_quiz_statistic',
@@ -145,11 +159,11 @@
                 exam_id: $slExams.val(),
                 keyword: $txtKeyword.val().trim()
             },
-            success: function (response) {
+            success: function(response) {
                 console.log(response);
                 exportToExcel(response.history);
             },
-            error: function (err) {
+            error: function(err) {
                 console.log(err);
 
             }
@@ -157,27 +171,31 @@
 
     })
 
-    $slSubjects.on('change', function () {
+    $slSubjects.on('change', function() {
         $slExams.empty();
         $.ajax({
             url: '<?php echo BASE_URL; ?>/admin/exam/list_by_subject',
             type: 'get',
             dataType: 'json',
-            data: { subject_id: $(this).val() },
-            success: function (exams) {
+            data: {
+                subject_id: $(this).val()
+            },
+            success: function(exams) {
                 exams.forEach(e => {
-                    $slExams.append(`<option value="${e.id}">${e.title} - ( ${e.number_of_questions} câu hỏi, ${e.duration} phút)</option>`)
+                    $slExams.append(
+                        `<option value="${e.id}">${e.title} - ( ${e.number_of_questions} câu hỏi, ${e.duration} phút)</option>`
+                    )
                 })
                 $slExams.trigger('change');
             },
-            error: function (err) {
+            error: function(err) {
                 console.log(err);
 
             }
         })
     })
 
-    const GetTop = function () {
+    const GetTop = function() {
         $('#tblTop').empty();
         $.ajax({
             url: '<?php echo BASE_URL; ?>/admin/statistic/top',
@@ -186,8 +204,11 @@
             data: {
                 exam_id: $slExams.val()
             },
-            success: function (response) {
-                const { code, history } = response;
+            success: function(response) {
+                const {
+                    code,
+                    history
+                } = response;
                 if (code === 200) {
                     let idx = 0;
                     history.forEach(h => {
@@ -210,13 +231,13 @@
 
 
             },
-            error: function (err) {
+            error: function(err) {
                 console.log(err);
 
             }
         })
     }
-    const LoadData = function () {
+    const LoadData = function() {
         $tblStatistic.empty();
         $pagination.empty();
         $.ajax({
@@ -229,9 +250,16 @@
                 exam_id: $slExams.val(),
                 keyword: $txtKeyword.val().trim()
             },
-            success: function (response) {
-                const { currentPage, totalPages, history, hasNext, hasPrev } = response;
+            success: function(response) {
+                const {
+                    currentPage,
+                    totalPages,
+                    history,
+                    hasNext,
+                    hasPrev
+                } = response;
                 let idx = (page - 1) * pageSize;
+
                 history.forEach(h => {
                     $tblStatistic.append(`
                         <tr>
@@ -248,32 +276,46 @@
                     `)
                 })
 
-                $pagination.append(`<li class="page-item ${page === 1 ? 'disabled' : ''}"><a class="page-link" href="#">Previous</a></li>`);
+                $pagination.append(
+                    `<li class="page-item ${page === 1 ? 'disabled' : ''}"><a class="page-link" href="#">Previous</a></li>`
+                );
                 for (i = 1; i <= totalPages; i++) {
-                    $pagination.append(` <li class="page-item ${i == page ? 'active' : ''}"><a class="page-link " href="#">${i}</a></li>`)
+                    $pagination.append(
+                        ` <li class="page-item ${i == page ? 'active' : ''}"><a class="page-link " href="#">${i}</a></li>`
+                    )
                 }
-                $pagination.append(`<li class="page-item  ${page === totalPages ? 'disabled' : ''}"><a class="page-link" href="#">Next</a></li>`);
+                $pagination.append(
+                    `<li class="page-item  ${page === totalPages ? 'disabled' : ''}"><a class="page-link" href="#">Next</a></li>`
+                );
 
 
             },
-            error: function (err) {
+            error: function(err) {
                 console.log(err);
 
             }
         })
     }
 
-    const ViewResult = function (id, username, fullname) {
+    const ViewResult = function(id, username, fullname) {
         $modalContent.empty();
         $.ajax({
             url: '<?php echo BASE_URL; ?>/admin/ statistic/quiz_detail',
             type: 'get',
             dataType: 'json',
-            data: { id },
-            success: function (response) {
-                const { code, msg, data } = response;
+            data: {
+                id
+            },
+            success: function(response) {
+                const {
+                    code,
+                    msg,
+                    data
+                } = response;
                 $modal.modal('show');
-                $('#modalTitle').html(`Bài thi <span class ="fw-bold text-warning">${$slExams.text()}</span> của <span class ="text-info">${fullname}</span> (<span class = "text-secondary">${username}</span>)`)
+                $('#modalTitle').html(
+                    `Bài thi <span class ="fw-bold text-warning">${$slExams.text()}</span> của <span class ="text-info">${fullname}</span> (<span class = "text-secondary">${username}</span>)`
+                )
                 let idx = 1;
                 data.forEach(q => {
                     let options = q.options;
@@ -299,7 +341,7 @@
                         `);
                 })
             },
-            error: function (err) {
+            error: function(err) {
                 console.log(err);
 
             }
@@ -308,27 +350,29 @@
 
 
 
-    const LoadSubjectsHaveExams = function () {
+    const LoadSubjectsHaveExams = function() {
         $slSubjects.empty();
         $.ajax({
             url: '<?php echo BASE_URL; ?>/admin/subject/getSubjectsWithQuizzes',
             type: 'get',
             dataType: 'json',
-            success: function (response) {
-                const { subjects } = response;
+            success: function(response) {
+                const {
+                    subjects
+                } = response;
                 subjects.forEach(s => {
                     $slSubjects.append(`<option value="${s.subject_id}">${s.subject_name}</option>`)
                 })
                 $slSubjects.trigger('change');
             },
-            error: function (err) {
+            error: function(err) {
                 console.log(err);
 
             }
         })
     }
 
-    const convertSecondsToHMS = function (seconds) {
+    const convertSecondsToHMS = function(seconds) {
         // Tính toán giờ, phút và giây
         var hours = Math.floor(seconds / 3600);
         var minutes = Math.floor((seconds % 3600) / 60);
@@ -356,13 +400,24 @@
         };
 
         // Lấy thông tin tổng quan từ phần tử đầu tiên (giả sử tất cả đều giống nhau)
-        const overview = [
-            { "Bài thi": data[0].exam_title },
-            { "Thời gian": `${data[0].duration} phút` },
-            { "Ngày bắt đầu": data[0].begin_date },
-            { "Ngày kết thúc": data[0].end_date },
-            { "Số câu hỏi": data[0].number_of_questions },
-            { "Điểm": data[0].marks },
+        const overview = [{
+                "Bài thi": data[0].exam_title
+            },
+            {
+                "Thời gian": `${data[0].duration} phút`
+            },
+            {
+                "Ngày bắt đầu": data[0].begin_date
+            },
+            {
+                "Ngày kết thúc": data[0].end_date
+            },
+            {
+                "Số câu hỏi": data[0].number_of_questions
+            },
+            {
+                "Điểm": data[0].marks
+            },
         ];
 
         // Chuyển đổi dữ liệu chi tiết thành mảng và thêm cột "STT"
@@ -399,9 +454,13 @@
                 font: {
                     bold: true,
                     sz: 14, // Kích thước chữ lớn hơn
-                    color: { rgb: "FF0000" } // Thay đổi màu sắc nếu cần
+                    color: {
+                        rgb: "FF0000"
+                    } // Thay đổi màu sắc nếu cần
                 },
-                alignment: { horizontal: "center" }, // Căn giữa nếu cần
+                alignment: {
+                    horizontal: "center"
+                }, // Căn giữa nếu cần
             };
         }
 
@@ -415,7 +474,6 @@
         // Xuất file Excel
         XLSX.writeFile(workbook, `${data[0].exam_title}.xlsx`);
     }
-
 </script>
 
 <style>

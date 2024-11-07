@@ -60,60 +60,60 @@
 
 
 <script>
-    var page = 1,
-        pageSize = 10,
-        keyword = '';
+var page = 1,
+    pageSize = 10,
+    keyword = '';
 
-    const $search = $('#btnSearch'),
-        $keyword = $('#txtKeyword'),
-        $table = $('#tblData');
-    $modal = $('#modal'), $content = $('#modalContent'), $pagination = $('.pagination');
-    $(document).ready(function() {
+const $search = $('#btnSearch'),
+    $keyword = $('#txtKeyword'),
+    $table = $('#tblData');
+$modal = $('#modal'), $content = $('#modalContent'), $pagination = $('.pagination');
+$(document).ready(function() {
+    LoadOwnHistory();
+
+    $pagination.on('click', '.page-link', function(event) {
+        event.preventDefault();
+
+        var text = $(this).text();
+        if (isNumeric(text)) {
+            page = parseInt(text);
+        } else {
+            page = text === 'Next' ? page + 1 : page - 1;
+        }
         LoadOwnHistory();
+    });
+})
 
-        $pagination.on('click', '.page-link', function(event) {
-            event.preventDefault();
+$search.click(function() {
+    page = 1;
+    keyword = $keyword.val().trim();
+    LoadOwnHistory();
+})
 
-            var text = $(this).text();
-            if (isNumeric(text)) {
-                page = parseInt(text);
-            } else {
-                page = text === 'Next' ? page + 1 : page - 1;
-            }
-            LoadOwnHistory();
-        });
-    })
+function LoadOwnHistory() {
+    $.ajax({
+        url: '<?php echo BASE_URL; ?>/history/show',
+        type: 'GET',
+        dataType: 'json',
+        data: {
+            page,
+            pageSize,
+            keyword
+        },
+        success: function(response) {
+            const {
+                currentPage,
+                hasNext,
+                hasPrev,
+                history,
+                totalPages
+            } = response;
+            let idx = (page - 1) * pageSize;
+            $table.empty();
+            $pagination.empty();
 
-    $search.click(function() {
-        page = 1;
-        keyword = $keyword.val().trim();
-        LoadOwnHistory();
-    })
-
-    function LoadOwnHistory() {
-        $.ajax({
-            url: '<?php echo BASE_URL; ?>/history/show',
-            type: 'GET',
-            dataType: 'json',
-            data: {
-                page,
-                pageSize,
-                keyword
-            },
-            success: function(response) {
-                const {
-                    currentPage,
-                    hasNext,
-                    hasPrev,
-                    history,
-                    totalPages
-                } = response;
-                let idx = (page - 1) * pageSize;
-                $table.empty();
-                $pagination.empty();
-
-                history.forEach(h => {
-                    $table.append(`
+            history.forEach(h => {
+                $table.append(`
                         <tr>
                             <td>${++idx}</td>
                             <td>${h.exam_date}</td>
@@ -129,95 +129,119 @@
                             </td>
                         </tr>
                     `)
-                })
-                $pagination.append(`<li class="page-item ${page === 1 ? 'disabled' : ''}"><a class="page-link" href="#">Previous</a></li>`);
-                for (i = 1; i <= totalPages; i++) {
-                    $pagination.append(` <li class="page-item ${i == page ? 'active' : ''}"><a class="page-link " href="#">${i}</a></li>`)
-                }
-                $pagination.append(`<li class="page-item  ${page === totalPages ? 'disabled' : ''}"><a class="page-link" href="#">Next</a></li>`);
-
-            },
-            error: function(err) {
-                console.log(err);
+            })
+            $pagination.append(
+                `<li class="page-item ${page === 1 ? 'disabled' : ''}"><a class="page-link" href="#">Previous</a></li>`
+            );
+            for (i = 1; i <= totalPages; i++) {
+                $pagination.append(
+                    ` <li class="page-item ${i == page ? 'active' : ''}"><a class="page-link " href="#">${i}</a></li>`
+                )
             }
-        })
-    }
+            $pagination.append(
+                `<li class="page-item  ${page === totalPages ? 'disabled' : ''}"><a class="page-link" href="#">Next</a></li>`
+            );
 
-    function fetchDetail(id) {
-        $.ajax({
-            url: '<?php echo BASE_URL; ?>/history/detail',
-            type: 'get',
-            dataType: 'json',
-            data: {
-                id
-            },
-            success: function(response) {
-                console.log(response);
-                const {
-                    code,
-                    msg,
-                    data
-                } = response;
-                renderExamDetails(data);
-            },
-            error: function(err) {
-                console.log(err);
+        },
+        error: function(err) {
+            console.log(err);
+        }
+    })
+}
+
+function fetchDetail(id) {
+    $.ajax({
+        url: '<?php echo BASE_URL; ?>/history/detail',
+        type: 'get',
+        dataType: 'json',
+        data: {
+            id
+        },
+        success: function(response) {
+            console.log(response);
+            const {
+                code,
+                msg,
+                data
+            } = response;
+            renderExamDetails(data);
+        },
+        error: function(err) {
+            console.log(err);
+        }
+    })
+}
+
+function renderExamDetails(data) {
+    let idx = 1;
+    $content.empty();
+    data.forEach(function(item) {
+        var questionText = item.question_text;
+        var answers = item.answers;
+
+        // Sort answers by position to ensure correct replacement order
+        answers.sort(function(a, b) {
+            return a.position - b.position;
+        });
+
+        answers.forEach(function(answer) {
+            var userAnswer = answer.user_answer;
+            var correctAnswer = answer.correct_answer;
+
+            // Tạo input cho user answer với class và style thích hợp
+            var inputClass = userAnswer === correctAnswer ? 'text-success' : 'text-danger';
+            var inputStyle =
+                'border: none; border-bottom: 1px solid #000;'; // Không có border nhưng có gạch chân
+            var replacement = '';
+            if (userAnswer.trim().length == 0) {
+                console.log(1);
+
+                replacement =
+                    `<label><span class = "blank fw-bold bg-danger text-secondary" style="${inputStyle}">&nbsp;&nbsp;&nbsp;</span></label>`;
+            } else {
+                replacement =
+                    `<input type="text" class="blank ${inputClass} fw-bold" value="${userAnswer}" style="${inputStyle}" readonly />`;
             }
-        })
-    }
 
-    function renderExamDetails(data) {
-        let idx = 1;
-        $content.empty();
-        data.forEach(function(item) {
-            var questionText = item.question_text;
-            var answers = item.answers;
 
-            // Sort answers by position to ensure correct replacement order
-            answers.sort(function(a, b) {
-                return a.position - b.position;
+            console.log({
+                userAnswer,
+                correctAnswer
             });
 
-            answers.forEach(function(answer) {
-                var userAnswer = answer.user_answer;
-                var correctAnswer = answer.correct_answer;
+            if (userAnswer !== correctAnswer) {
+                replacement +=
+                    ` [<span class="text-success fw-bold">${formatDisplay(correctAnswer.replace(/</g, '&lt;').replace(/>/g, '&gt;'))}</span>]`;
+                console.log(correctAnswer);
+            }
 
-                // Tạo input cho user answer với class và style thích hợp
-                var inputClass = userAnswer === correctAnswer ? 'text-success' : 'text-danger';
-                var inputStyle = 'border: none; border-bottom: 1px solid #000;'; // Không có border nhưng có gạch chân
-                var replacement = `<input type="text" class="blank ${inputClass} fw-bold" value="${userAnswer}" style="${inputStyle}" readonly />`;
+            // Thay thế chuỗi ___ bằng giá trị của replacement
+            var regex = /___/;
+            questionText = questionText.replace(regex, replacement);
+        });
 
-                if (userAnswer !== correctAnswer) {
-                    replacement += ` [<span class="text-success fw-bold">${formatDisplay(correctAnswer.replace(/</g, '&lt;').replace(/>/g, '&gt;'))}</span>]`;
-                    console.log(correctAnswer);
-                }
-
-                // Thay thế chuỗi ___ bằng giá trị của replacement
-                var regex = /___/;
-                questionText = questionText.replace(regex, replacement);
-            });
-
-            // Append the formatted question to the container
-            var questionHtml = `<div class="row mb-1">
+        // Append the formatted question to the container
+        var questionHtml = `<div class="row mb-1">
                                 <div class="col-md-12 form-group">
                                     <label class="fw-bold">Câu thứ ${idx++}:</label>
                                     <div class="mt-2 p-3">${formatDisplay(questionText)}</div>
                                 </div>
                             </div>`;
-            $content.append(questionHtml);
+        $content.append(questionHtml);
+    });
+    $modal.modal('show');
+}
+
+function isNumeric(value) {
+    return !isNaN(value) && !isNaN(parseFloat(value));
+}
+
+const formatDisplay = function(inputHTML) {
+
+    return inputHTML
+        .replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;') // Thay thế tab bằng không gian trắng
+        .replace(/<p>\s+/g, function(match) {
+            return '<p>' + '&nbsp;'.repeat(match.length - 3); // Thay thế khoảng trắng đầu dòng sau <p>
         });
-        $modal.modal('show');
-    }
-
-    function isNumeric(value) {
-        return !isNaN(value) && !isNaN(parseFloat(value));
-    }
-
-    const formatDisplay = function(inputHTML) {
-        return inputHTML
-            .replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;') // Thay thế tab bằng không gian trắng
-            .replace(/<p>\s+/g, function(match) {
-                return '<p>' + '&nbsp;'.repeat(match.length - 3); // Thay thế khoảng trắng đầu dòng sau <p>
-            });
-    }
+}
 </script>

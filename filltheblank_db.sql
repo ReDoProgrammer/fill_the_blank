@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.0
+-- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th10 03, 2024 lúc 05:16 PM
--- Phiên bản máy phục vụ: 10.4.27-MariaDB
--- Phiên bản PHP: 8.2.0
+-- Host: 127.0.0.1
+-- Generation Time: Nov 05, 2024 at 08:05 PM
+-- Server version: 10.4.32-MariaDB
+-- PHP Version: 8.0.30
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,13 +18,25 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Cơ sở dữ liệu: `filltheblank_db`
+-- Database: `filltheblank_db`
 --
+
+DELIMITER $$
+--
+-- Functions
+--
+CREATE DEFINER=`root`@`localhost` FUNCTION `get_first_name` (`fullname` VARCHAR(255)) RETURNS VARCHAR(255) CHARSET utf8mb4 COLLATE utf8mb4_general_ci DETERMINISTIC BEGIN
+    DECLARE first_name VARCHAR(255);
+    SET first_name = TRIM(SUBSTRING_INDEX(fullname, ' ', -1));
+    RETURN first_name;
+END$$
+
+DELIMITER ;
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `exams`
+-- Table structure for table `exams`
 --
 
 CREATE TABLE `exams` (
@@ -42,18 +54,24 @@ CREATE TABLE `exams` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `exams`
+-- Dumping data for table `exams`
 --
 
 INSERT INTO `exams` (`id`, `title`, `description`, `number_of_questions`, `duration`, `mode`, `thumbnail`, `begin_date`, `end_date`, `subject_id`, `questions`) VALUES
 (5, 'Kiểm tra 45\' HTML', '<p>Làm bài trắc nghiệm khách quan, chọn 1 đáp án đúng trong 4 đáp án</p>', 25, 10, 0, '/public/upload/images/96f9f779936d01d9048e307e7c7d26ac.jpg', '2024-10-17 09:35:00', '2024-10-20 10:35:00', 25, '[\"763\",\"798\",\"755\",\"801\",\"809\",\"743\",\"725\",\"851\",\"797\",\"781\",\"796\",\"724\",\"825\",\"765\",\"733\",\"761\",\"751\",\"758\",\"836\",\"737\",\"750\",\"855\",\"859\",\"817\",\"752\"]'),
-(6, 'Kiểm tra 45\' CSS', '<p>Làm bài trắc nghiệm khách quan, chọn 1 đáp án đúng trong 4 đáp án</p>', 25, 10, 0, '/public/upload/images/db60ca6dcf1cae1a615e4103fca3cd57.jpg', '2024-10-17 09:35:00', '2024-11-27 10:35:00', 26, '[961,874,973,1011,909,986,917,967,942,925,920,930,1036,928,1017,960,968,871,933,971,869,990,1007,1028,937]'),
-(7, 'Kiểm tra 45\' JavaScript', '<p>HSSV làm trắc nghiệm và hoàn thành trước ngày 20/10/2024</p>', 25, 10, 18, '/public/upload/images/618e692386dc9de53a40cd7f7506e3f8.jpg', '2024-10-17 09:35:00', '2024-10-20 10:35:00', 27, '[\"1125\",\"1085\",\"1051\",\"1046\",\"1090\",\"1111\",\"1144\",\"1170\",\"1063\",\"1117\",\"1166\",\"1164\",\"1086\",\"1098\",\"1091\",\"1095\",\"1116\",\"1075\",\"1101\",\"1097\",\"1132\",\"1081\",\"1040\",\"1072\",\"1043\"]');
+(7, 'Kiểm tra 45\' JavaScript', '<p>HSSV làm trắc nghiệm và hoàn thành trước ngày 20/10/2024</p>', 25, 10, 18, '/public/upload/images/618e692386dc9de53a40cd7f7506e3f8.jpg', '2024-10-17 09:35:00', '2024-10-20 10:35:00', 27, '[\"1125\",\"1085\",\"1051\",\"1046\",\"1090\",\"1111\",\"1144\",\"1170\",\"1063\",\"1117\",\"1166\",\"1164\",\"1086\",\"1098\",\"1091\",\"1095\",\"1116\",\"1075\",\"1101\",\"1097\",\"1132\",\"1081\",\"1040\",\"1072\",\"1043\"]'),
+(8, 'test', '<p>3</p>', 3, 15, 0, '', '2024-11-04 00:11:00', '2024-11-19 01:11:00', 26, '[\"915\",\"976\",\"862\"]'),
+(9, '5', '<p><br></p>', 5, 10, 0, '', '2024-11-04 00:11:00', '2024-11-26 01:11:00', 26, '[\"1027\",\"996\",\"1016\",\"872\",\"906\"]'),
+(10, 'test mới html', '<p><br></p>', 10, 15, 0, '', '2024-11-04 00:58:00', '2024-11-25 01:58:00', 25, '[\"813\",\"778\",\"850\",\"809\",\"832\",\"773\",\"731\",\"777\",\"851\",\"753\"]'),
+(11, 'Test html 25 câu 100 điểm', '<p><br></p>', 25, 15, 17, '', '2024-11-04 01:16:00', '2024-11-26 02:16:00', 26, '[\"963\",\"981\",\"941\",\"935\",\"918\",\"867\",\"932\",\"916\",\"998\",\"871\",\"996\",\"878\",\"944\",\"964\",\"1015\",\"975\",\"873\",\"906\",\"968\",\"940\",\"942\",\"881\",\"990\",\"994\",\"979\"]'),
+(12, 'test thumbnail', '<p><br></p>', 10, 15, 0, '', '2024-11-04 01:25:00', '2024-11-18 02:25:00', 27, '[\"1051\",\"1039\",\"1162\",\"1167\",\"1054\",\"1091\",\"1166\",\"1127\",\"1062\",\"1107\"]'),
+(13, 'có thumbnail', '<p><br></p>', 10, 10, 0, '/public/upload/images/fdc70c8108e26e995676aa8e6230a8bf.jpg', '2024-11-04 01:25:00', '2024-11-26 02:25:00', 27, '[\"1071\",\"1127\",\"1052\",\"1182\",\"1150\",\"1093\",\"1160\",\"1118\",\"1175\",\"1097\"]'),
+(14, '25 câu 100 điểm html', '<p><br></p>', 25, 15, 17, '/public/upload/images/738e500c668ae9e818b051f0d3d24629.png', '2024-11-04 01:45:00', '2024-11-25 02:45:00', 26, '[\"947\",\"981\",\"972\",\"1016\",\"984\",\"939\",\"952\",\"996\",\"867\",\"998\",\"967\",\"932\",\"878\",\"1015\",\"873\",\"975\",\"964\",\"968\",\"942\",\"881\",\"906\",\"940\",\"990\",\"979\",\"994\"]');
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `exam_answers`
+-- Table structure for table `exam_answers`
 --
 
 CREATE TABLE `exam_answers` (
@@ -64,10 +82,44 @@ CREATE TABLE `exam_answers` (
   `answer` varchar(255) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `exam_answers`
+--
+
+INSERT INTO `exam_answers` (`id`, `exam_result_id`, `question_id`, `question_blank_id`, `answer`) VALUES
+(5, 2, 24, 57, 'gfdsgsd'),
+(6, 2, 24, 58, 'gfsdgsd'),
+(7, 3, 33, 69, '+'),
+(8, 4, 34, 70, 'age'),
+(9, 4, 35, 71, '<='),
+(10, 5, 34, 70, ''),
+(11, 5, 35, 71, '<='),
+(12, 6, 36, 72, 'function'),
+(13, 7, 36, 72, ''),
+(14, 8, 36, 72, 'function'),
+(15, 9, 14, 41, '<h2>'),
+(16, 9, 14, 42, '</h2>'),
+(17, 10, 40, 80, '+'),
+(18, 11, 39, 78, 'class'),
+(19, 11, 39, 79, 'brand'),
+(20, 12, 40, 80, '+'),
+(21, 13, 39, 78, 'class'),
+(22, 13, 39, 79, 'brand'),
+(23, 14, 38, 76, 'name'),
+(24, 14, 38, 77, 'age'),
+(25, 15, 37, 73, '[1,2]'),
+(26, 16, 36, 72, 'function'),
+(27, 17, 34, 70, 'age'),
+(28, 17, 35, 71, '<='),
+(29, 18, 33, 69, '+'),
+(30, 19, 32, 68, 'var'),
+(31, 20, 26, 60, 'fdasfasdfas'),
+(32, 21, 26, 60, 'gsfdgsdfg');
+
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `exam_configs`
+-- Table structure for table `exam_configs`
 --
 
 CREATE TABLE `exam_configs` (
@@ -78,7 +130,7 @@ CREATE TABLE `exam_configs` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `exam_configs`
+-- Dumping data for table `exam_configs`
 --
 
 INSERT INTO `exam_configs` (`id`, `title`, `subject_id`, `levels`) VALUES
@@ -92,7 +144,7 @@ INSERT INTO `exam_configs` (`id`, `title`, `subject_id`, `levels`) VALUES
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `exam_results`
+-- Table structure for table `exam_results`
 --
 
 CREATE TABLE `exam_results` (
@@ -103,10 +155,36 @@ CREATE TABLE `exam_results` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `exam_results`
+--
+
+INSERT INTO `exam_results` (`id`, `user_id`, `subject_id`, `lession_id`, `created_at`) VALUES
+(2, 2, 26, 33, '2024-11-03 17:23:10'),
+(3, 2, 27, 52, '2024-11-03 17:23:46'),
+(4, 2, 27, 53, '2024-11-03 17:26:05'),
+(5, 2, 27, 53, '2024-11-03 17:34:31'),
+(6, 2, 27, 55, '2024-11-03 17:34:50'),
+(7, 2, 27, 55, '2024-11-03 17:34:59'),
+(8, 2, 27, 55, '2024-11-03 17:35:13'),
+(9, 54, 25, 23, '2024-11-04 11:39:46'),
+(10, 54, 27, 59, '2024-11-04 11:43:41'),
+(11, 54, 27, 58, '2024-11-04 11:44:31'),
+(12, 54, 27, 59, '2024-11-04 11:44:43'),
+(13, 54, 27, 58, '2024-11-04 11:45:04'),
+(14, 54, 27, 57, '2024-11-04 11:45:27'),
+(15, 54, 27, 56, '2024-11-04 11:45:45'),
+(16, 54, 27, 55, '2024-11-04 11:46:02'),
+(17, 54, 27, 53, '2024-11-04 11:46:24'),
+(18, 54, 27, 52, '2024-11-04 11:46:36'),
+(19, 54, 27, 51, '2024-11-04 11:47:03'),
+(20, 54, 26, 35, '2024-11-05 15:43:06'),
+(21, 54, 26, 35, '2024-11-05 15:44:18');
+
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `lessions`
+-- Table structure for table `lessions`
 --
 
 CREATE TABLE `lessions` (
@@ -119,7 +197,7 @@ CREATE TABLE `lessions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `lessions`
+-- Dumping data for table `lessions`
 --
 
 INSERT INTO `lessions` (`id`, `name`, `meta`, `subject_id`, `created_at`, `updated_at`) VALUES
@@ -175,7 +253,7 @@ INSERT INTO `lessions` (`id`, `name`, `meta`, `subject_id`, `created_at`, `updat
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `questions`
+-- Table structure for table `questions`
 --
 
 CREATE TABLE `questions` (
@@ -187,7 +265,7 @@ CREATE TABLE `questions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `questions`
+-- Dumping data for table `questions`
 --
 
 INSERT INTO `questions` (`id`, `lession_id`, `question_text`, `created_at`, `updated_at`) VALUES
@@ -232,7 +310,7 @@ INSERT INTO `questions` (`id`, `lession_id`, `question_text`, `created_at`, `upd
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `question_blanks`
+-- Table structure for table `question_blanks`
 --
 
 CREATE TABLE `question_blanks` (
@@ -243,7 +321,7 @@ CREATE TABLE `question_blanks` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `question_blanks`
+-- Dumping data for table `question_blanks`
 --
 
 INSERT INTO `question_blanks` (`id`, `question_id`, `position`, `blank_text`) VALUES
@@ -310,7 +388,7 @@ INSERT INTO `question_blanks` (`id`, `question_id`, `position`, `blank_text`) VA
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `quizs`
+-- Table structure for table `quizs`
 --
 
 CREATE TABLE `quizs` (
@@ -322,7 +400,7 @@ CREATE TABLE `quizs` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `quizs`
+-- Dumping data for table `quizs`
 --
 
 INSERT INTO `quizs` (`id`, `subject_id`, `question`, `options`, `mark`) VALUES
@@ -809,7 +887,7 @@ INSERT INTO `quizs` (`id`, `subject_id`, `question`, `options`, `mark`) VALUES
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `quiz_results`
+-- Table structure for table `quiz_results`
 --
 
 CREATE TABLE `quiz_results` (
@@ -822,18 +900,31 @@ CREATE TABLE `quiz_results` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `quiz_results`
+-- Dumping data for table `quiz_results`
 --
 
 INSERT INTO `quiz_results` (`id`, `user_id`, `quiz_date`, `spend_time`, `exam_id`, `result`) VALUES
 (14, 50, '2024-10-17 10:50:55', 228, 5, '[{\"id\":\"724\",\"choice\":\"2\"},{\"id\":\"725\",\"choice\":\"3\"},{\"id\":\"733\",\"choice\":\"3\"},{\"id\":\"737\",\"choice\":\"3\"},{\"id\":\"743\",\"choice\":\"2\"},{\"id\":\"750\",\"choice\":\"1\"},{\"id\":\"751\",\"choice\":\"2\"},{\"id\":\"752\",\"choice\":\"3\"},{\"id\":\"755\",\"choice\":\"2\"},{\"id\":\"758\",\"choice\":\"1\"},{\"id\":\"761\",\"choice\":\"2\"},{\"id\":\"796\",\"choice\":\"3\"},{\"id\":\"798\",\"choice\":\"2\"},{\"id\":\"809\",\"choice\":\"2\"},{\"id\":\"825\",\"choice\":\"3\"},{\"id\":\"851\",\"choice\":\"4\"},{\"id\":\"859\",\"choice\":\"3\"},{\"id\":\"855\",\"choice\":\"2\"},{\"id\":\"836\",\"choice\":\"2\"},{\"id\":\"817\",\"choice\":\"3\"},{\"id\":\"801\",\"choice\":\"2\"},{\"id\":\"797\",\"choice\":\"2\"},{\"id\":\"781\",\"choice\":\"2\"},{\"id\":\"765\",\"choice\":\"1\"},{\"id\":\"763\",\"choice\":\"2\"}]'),
 (15, 50, '2024-10-17 14:09:58', 601, 5, '[{\"id\":\"724\",\"choice\":\"-1\"},{\"id\":\"725\",\"choice\":\"-1\"},{\"id\":\"733\",\"choice\":\"-1\"},{\"id\":\"737\",\"choice\":\"-1\"},{\"id\":\"743\",\"choice\":\"-1\"},{\"id\":\"750\",\"choice\":\"-1\"},{\"id\":\"751\",\"choice\":\"-1\"},{\"id\":\"752\",\"choice\":\"-1\"},{\"id\":\"755\",\"choice\":\"-1\"},{\"id\":\"758\",\"choice\":\"-1\"},{\"id\":\"761\",\"choice\":\"-1\"},{\"id\":\"763\",\"choice\":\"-1\"},{\"id\":\"765\",\"choice\":\"-1\"},{\"id\":\"781\",\"choice\":\"-1\"},{\"id\":\"796\",\"choice\":\"-1\"},{\"id\":\"797\",\"choice\":\"-1\"},{\"id\":\"798\",\"choice\":\"-1\"},{\"id\":\"801\",\"choice\":\"-1\"},{\"id\":\"809\",\"choice\":\"-1\"},{\"id\":\"817\",\"choice\":\"-1\"},{\"id\":\"825\",\"choice\":\"-1\"},{\"id\":\"836\",\"choice\":\"-1\"},{\"id\":\"851\",\"choice\":\"-1\"},{\"id\":\"855\",\"choice\":\"-1\"},{\"id\":\"859\",\"choice\":\"-1\"}]'),
-(18, 57, '2024-11-03 23:10:16', 43, 6, '[{\"id\":\"869\",\"choice\":\"3\"},{\"id\":\"1036\",\"choice\":\"3\"},{\"id\":\"1028\",\"choice\":\"4\"},{\"id\":\"1017\",\"choice\":\"3\"},{\"id\":\"1007\",\"choice\":\"4\"},{\"id\":\"990\",\"choice\":\"1\"},{\"id\":\"973\",\"choice\":\"3\"},{\"id\":\"986\",\"choice\":\"1\"},{\"id\":\"971\",\"choice\":\"1\"},{\"id\":\"968\",\"choice\":\"4\"},{\"id\":\"967\",\"choice\":\"1\"},{\"id\":\"961\",\"choice\":\"4\"},{\"id\":\"960\",\"choice\":\"4\"},{\"id\":\"942\",\"choice\":\"4\"},{\"id\":\"937\",\"choice\":\"2\"},{\"id\":\"933\",\"choice\":\"1\"},{\"id\":\"930\",\"choice\":\"2\"},{\"id\":\"928\",\"choice\":\"1\"},{\"id\":\"925\",\"choice\":\"4\"},{\"id\":\"920\",\"choice\":\"4\"},{\"id\":\"917\",\"choice\":\"4\"},{\"id\":\"909\",\"choice\":\"4\"},{\"id\":\"874\",\"choice\":\"2\"},{\"id\":\"871\",\"choice\":\"3\"},{\"id\":\"1011\",\"choice\":\"1\"}]');
+(21, 2, '2024-11-04 00:14:48', 7, 8, '[{\"id\":\"862\",\"choice\":\"3\"},{\"id\":\"915\",\"choice\":\"3\"},{\"id\":\"976\",\"choice\":\"4\"}]'),
+(22, 2, '2024-11-04 00:22:34', 38, 9, '[{\"id\":\"872\",\"choice\":\"1\"},{\"id\":\"996\",\"choice\":\"1\"},{\"id\":\"906\",\"choice\":\"1\"},{\"id\":\"1027\",\"choice\":\"1\"},{\"id\":\"1016\",\"choice\":\"1\"}]'),
+(24, 2, '2024-11-04 01:54:03', 70, 11, '[{\"id\":\"867\",\"choice\":\"1\"},{\"id\":\"871\",\"choice\":\"1\"},{\"id\":\"873\",\"choice\":\"2\"},{\"id\":\"878\",\"choice\":\"4\"},{\"id\":\"881\",\"choice\":\"3\"},{\"id\":\"906\",\"choice\":\"3\"},{\"id\":\"916\",\"choice\":\"4\"},{\"id\":\"918\",\"choice\":\"1\"},{\"id\":\"932\",\"choice\":\"1\"},{\"id\":\"935\",\"choice\":\"3\"},{\"id\":\"940\",\"choice\":\"4\"},{\"id\":\"941\",\"choice\":\"1\"},{\"id\":\"942\",\"choice\":\"3\"},{\"id\":\"944\",\"choice\":\"2\"},{\"id\":\"963\",\"choice\":\"2\"},{\"id\":\"964\",\"choice\":\"4\"},{\"id\":\"968\",\"choice\":\"4\"},{\"id\":\"975\",\"choice\":\"4\"},{\"id\":\"979\",\"choice\":\"4\"},{\"id\":\"981\",\"choice\":\"4\"},{\"id\":\"990\",\"choice\":\"4\"},{\"id\":\"994\",\"choice\":\"1\"},{\"id\":\"996\",\"choice\":\"2\"},{\"id\":\"998\",\"choice\":\"1\"},{\"id\":\"1015\",\"choice\":\"1\"}]'),
+(25, 50, '2024-11-04 02:02:57', 48, 11, '[{\"id\":\"867\",\"choice\":\"4\"},{\"id\":\"871\",\"choice\":\"1\"},{\"id\":\"873\",\"choice\":\"1\"},{\"id\":\"878\",\"choice\":\"1\"},{\"id\":\"881\",\"choice\":\"4\"},{\"id\":\"906\",\"choice\":\"4\"},{\"id\":\"916\",\"choice\":\"1\"},{\"id\":\"918\",\"choice\":\"4\"},{\"id\":\"932\",\"choice\":\"4\"},{\"id\":\"935\",\"choice\":\"1\"},{\"id\":\"940\",\"choice\":\"4\"},{\"id\":\"941\",\"choice\":\"1\"},{\"id\":\"942\",\"choice\":\"2\"},{\"id\":\"944\",\"choice\":\"3\"},{\"id\":\"963\",\"choice\":\"3\"},{\"id\":\"964\",\"choice\":\"1\"},{\"id\":\"968\",\"choice\":\"4\"},{\"id\":\"975\",\"choice\":\"4\"},{\"id\":\"979\",\"choice\":\"4\"},{\"id\":\"981\",\"choice\":\"2\"},{\"id\":\"990\",\"choice\":\"4\"},{\"id\":\"994\",\"choice\":\"4\"},{\"id\":\"996\",\"choice\":\"1\"},{\"id\":\"998\",\"choice\":\"4\"},{\"id\":\"1015\",\"choice\":\"1\"}]'),
+(26, 54, '2024-11-04 02:05:32', 39, 11, '[{\"id\":\"867\",\"choice\":\"3\"},{\"id\":\"871\",\"choice\":\"2\"},{\"id\":\"873\",\"choice\":\"3\"},{\"id\":\"878\",\"choice\":\"4\"},{\"id\":\"881\",\"choice\":\"1\"},{\"id\":\"906\",\"choice\":\"1\"},{\"id\":\"916\",\"choice\":\"4\"},{\"id\":\"918\",\"choice\":\"1\"},{\"id\":\"932\",\"choice\":\"3\"},{\"id\":\"935\",\"choice\":\"3\"},{\"id\":\"940\",\"choice\":\"4\"},{\"id\":\"941\",\"choice\":\"1\"},{\"id\":\"942\",\"choice\":\"4\"},{\"id\":\"944\",\"choice\":\"4\"},{\"id\":\"963\",\"choice\":\"1\"},{\"id\":\"964\",\"choice\":\"4\"},{\"id\":\"968\",\"choice\":\"4\"},{\"id\":\"975\",\"choice\":\"4\"},{\"id\":\"979\",\"choice\":\"4\"},{\"id\":\"981\",\"choice\":\"4\"},{\"id\":\"990\",\"choice\":\"3\"},{\"id\":\"994\",\"choice\":\"3\"},{\"id\":\"996\",\"choice\":\"3\"},{\"id\":\"998\",\"choice\":\"3\"},{\"id\":\"1015\",\"choice\":\"3\"}]'),
+(27, 54, '2024-11-04 02:11:21', 218, 11, '[{\"id\":\"867\",\"choice\":\"1\"},{\"id\":\"871\",\"choice\":\"1\"},{\"id\":\"873\",\"choice\":\"2\"},{\"id\":\"878\",\"choice\":\"4\"},{\"id\":\"881\",\"choice\":\"3\"},{\"id\":\"906\",\"choice\":\"1\"},{\"id\":\"916\",\"choice\":\"4\"},{\"id\":\"918\",\"choice\":\"3\"},{\"id\":\"932\",\"choice\":\"3\"},{\"id\":\"935\",\"choice\":\"1\"},{\"id\":\"940\",\"choice\":\"1\"},{\"id\":\"941\",\"choice\":\"2\"},{\"id\":\"942\",\"choice\":\"1\"},{\"id\":\"944\",\"choice\":\"4\"},{\"id\":\"963\",\"choice\":\"2\"},{\"id\":\"964\",\"choice\":\"4\"},{\"id\":\"968\",\"choice\":\"3\"},{\"id\":\"975\",\"choice\":\"2\"},{\"id\":\"979\",\"choice\":\"1\"},{\"id\":\"981\",\"choice\":\"1\"},{\"id\":\"990\",\"choice\":\"1\"},{\"id\":\"994\",\"choice\":\"1\"},{\"id\":\"996\",\"choice\":\"1\"},{\"id\":\"998\",\"choice\":\"1\"},{\"id\":\"1015\",\"choice\":\"1\"}]'),
+(28, 54, '2024-11-04 19:02:33', 216, 10, '[{\"id\":\"731\",\"choice\":\"2\"},{\"id\":\"753\",\"choice\":\"2\"},{\"id\":\"773\",\"choice\":\"2\"},{\"id\":\"777\",\"choice\":\"1\"},{\"id\":\"778\",\"choice\":\"3\"},{\"id\":\"809\",\"choice\":\"2\"},{\"id\":\"813\",\"choice\":\"1\"},{\"id\":\"832\",\"choice\":\"3\"},{\"id\":\"850\",\"choice\":\"1\"},{\"id\":\"851\",\"choice\":\"2\"}]'),
+(29, 54, '2024-11-04 19:17:11', 601, 9, '[{\"id\":\"872\",\"choice\":\"1\"},{\"id\":\"1027\",\"choice\":\"1\"},{\"id\":\"872\",\"choice\":\"-1\"},{\"id\":\"906\",\"choice\":\"-1\"},{\"id\":\"996\",\"choice\":\"-1\"},{\"id\":\"1016\",\"choice\":\"-1\"},{\"id\":\"1027\",\"choice\":\"-1\"}]'),
+(30, 54, '2024-11-05 23:20:01', 571, 11, '[{\"id\":\"867\",\"choice\":\"1\"},{\"id\":\"871\",\"choice\":\"1\"},{\"id\":\"873\",\"choice\":\"2\"},{\"id\":\"878\",\"choice\":\"3\"},{\"id\":\"881\",\"choice\":\"1\"},{\"id\":\"906\",\"choice\":\"1\"},{\"id\":\"916\",\"choice\":\"2\"},{\"id\":\"918\",\"choice\":\"2\"},{\"id\":\"932\",\"choice\":\"3\"},{\"id\":\"935\",\"choice\":\"1\"},{\"id\":\"940\",\"choice\":\"1\"},{\"id\":\"941\",\"choice\":\"1\"},{\"id\":\"942\",\"choice\":\"1\"},{\"id\":\"944\",\"choice\":\"4\"},{\"id\":\"963\",\"choice\":\"1\"},{\"id\":\"964\",\"choice\":\"4\"},{\"id\":\"968\",\"choice\":\"2\"},{\"id\":\"975\",\"choice\":\"2\"},{\"id\":\"979\",\"choice\":\"1\"},{\"id\":\"981\",\"choice\":\"1\"},{\"id\":\"990\",\"choice\":\"1\"},{\"id\":\"994\",\"choice\":\"1\"},{\"id\":\"996\",\"choice\":\"1\"},{\"id\":\"998\",\"choice\":\"1\"},{\"id\":\"1015\",\"choice\":\"2\"}]'),
+(31, 54, '2024-11-05 23:55:26', 113, 11, '[{\"id\":\"867\",\"choice\":\"1\"},{\"id\":\"871\",\"choice\":\"1\"},{\"id\":\"873\",\"choice\":\"2\"},{\"id\":\"878\",\"choice\":\"3\"},{\"id\":\"881\",\"choice\":\"1\"},{\"id\":\"906\",\"choice\":\"1\"},{\"id\":\"916\",\"choice\":\"2\"},{\"id\":\"918\",\"choice\":\"3\"},{\"id\":\"932\",\"choice\":\"1\"},{\"id\":\"935\",\"choice\":\"1\"},{\"id\":\"940\",\"choice\":\"1\"},{\"id\":\"941\",\"choice\":\"2\"},{\"id\":\"942\",\"choice\":\"3\"},{\"id\":\"944\",\"choice\":\"1\"},{\"id\":\"963\",\"choice\":\"1\"},{\"id\":\"964\",\"choice\":\"1\"},{\"id\":\"968\",\"choice\":\"3\"},{\"id\":\"975\",\"choice\":\"1\"},{\"id\":\"979\",\"choice\":\"1\"},{\"id\":\"981\",\"choice\":\"1\"},{\"id\":\"990\",\"choice\":\"1\"},{\"id\":\"994\",\"choice\":\"1\"},{\"id\":\"996\",\"choice\":\"1\"},{\"id\":\"998\",\"choice\":\"1\"},{\"id\":\"1015\",\"choice\":\"2\"}]'),
+(32, 50, '2024-11-06 00:40:13', 54, 11, '[{\"id\":\"867\",\"choice\":\"1\"},{\"id\":\"871\",\"choice\":\"1\"},{\"id\":\"873\",\"choice\":\"3\"},{\"id\":\"878\",\"choice\":\"1\"},{\"id\":\"881\",\"choice\":\"1\"},{\"id\":\"906\",\"choice\":\"3\"},{\"id\":\"916\",\"choice\":\"1\"},{\"id\":\"918\",\"choice\":\"1\"},{\"id\":\"932\",\"choice\":\"1\"},{\"id\":\"935\",\"choice\":\"1\"},{\"id\":\"940\",\"choice\":\"3\"},{\"id\":\"941\",\"choice\":\"1\"},{\"id\":\"942\",\"choice\":\"1\"},{\"id\":\"944\",\"choice\":\"1\"},{\"id\":\"963\",\"choice\":\"1\"},{\"id\":\"964\",\"choice\":\"1\"},{\"id\":\"968\",\"choice\":\"1\"},{\"id\":\"975\",\"choice\":\"1\"},{\"id\":\"979\",\"choice\":\"3\"},{\"id\":\"981\",\"choice\":\"2\"},{\"id\":\"990\",\"choice\":\"3\"},{\"id\":\"996\",\"choice\":\"2\"},{\"id\":\"998\",\"choice\":\"4\"},{\"id\":\"1015\",\"choice\":\"3\"},{\"id\":\"994\",\"choice\":\"2\"}]'),
+(33, 56, '2024-11-06 00:43:20', 44, 11, '[{\"id\":\"867\",\"choice\":\"1\"},{\"id\":\"871\",\"choice\":\"1\"},{\"id\":\"873\",\"choice\":\"3\"},{\"id\":\"878\",\"choice\":\"1\"},{\"id\":\"881\",\"choice\":\"1\"},{\"id\":\"906\",\"choice\":\"3\"},{\"id\":\"916\",\"choice\":\"1\"},{\"id\":\"918\",\"choice\":\"1\"},{\"id\":\"932\",\"choice\":\"1\"},{\"id\":\"935\",\"choice\":\"3\"},{\"id\":\"940\",\"choice\":\"3\"},{\"id\":\"941\",\"choice\":\"3\"},{\"id\":\"942\",\"choice\":\"4\"},{\"id\":\"944\",\"choice\":\"4\"},{\"id\":\"963\",\"choice\":\"4\"},{\"id\":\"964\",\"choice\":\"3\"},{\"id\":\"968\",\"choice\":\"4\"},{\"id\":\"975\",\"choice\":\"2\"},{\"id\":\"979\",\"choice\":\"2\"},{\"id\":\"981\",\"choice\":\"1\"},{\"id\":\"990\",\"choice\":\"1\"},{\"id\":\"994\",\"choice\":\"1\"},{\"id\":\"996\",\"choice\":\"1\"},{\"id\":\"998\",\"choice\":\"2\"},{\"id\":\"1015\",\"choice\":\"2\"}]'),
+(34, 58, '2024-11-06 00:44:50', 46, 11, '[{\"id\":\"867\",\"choice\":\"1\"},{\"id\":\"871\",\"choice\":\"1\"},{\"id\":\"873\",\"choice\":\"3\"},{\"id\":\"878\",\"choice\":\"1\"},{\"id\":\"881\",\"choice\":\"1\"},{\"id\":\"906\",\"choice\":\"3\"},{\"id\":\"916\",\"choice\":\"1\"},{\"id\":\"918\",\"choice\":\"1\"},{\"id\":\"932\",\"choice\":\"3\"},{\"id\":\"935\",\"choice\":\"3\"},{\"id\":\"940\",\"choice\":\"3\"},{\"id\":\"941\",\"choice\":\"3\"},{\"id\":\"942\",\"choice\":\"3\"},{\"id\":\"944\",\"choice\":\"3\"},{\"id\":\"963\",\"choice\":\"3\"},{\"id\":\"964\",\"choice\":\"3\"},{\"id\":\"968\",\"choice\":\"3\"},{\"id\":\"975\",\"choice\":\"3\"},{\"id\":\"979\",\"choice\":\"3\"},{\"id\":\"981\",\"choice\":\"3\"},{\"id\":\"990\",\"choice\":\"3\"},{\"id\":\"994\",\"choice\":\"3\"},{\"id\":\"996\",\"choice\":\"3\"},{\"id\":\"998\",\"choice\":\"3\"},{\"id\":\"1015\",\"choice\":\"3\"}]'),
+(35, 58, '2024-11-06 00:48:05', 49, 11, '[{\"id\":\"867\",\"choice\":\"1\"},{\"id\":\"871\",\"choice\":\"1\"},{\"id\":\"873\",\"choice\":\"3\"},{\"id\":\"878\",\"choice\":\"1\"},{\"id\":\"881\",\"choice\":\"1\"},{\"id\":\"906\",\"choice\":\"3\"},{\"id\":\"916\",\"choice\":\"1\"},{\"id\":\"918\",\"choice\":\"1\"},{\"id\":\"932\",\"choice\":\"1\"},{\"id\":\"935\",\"choice\":\"3\"},{\"id\":\"940\",\"choice\":\"1\"},{\"id\":\"941\",\"choice\":\"1\"},{\"id\":\"942\",\"choice\":\"1\"},{\"id\":\"944\",\"choice\":\"1\"},{\"id\":\"963\",\"choice\":\"1\"},{\"id\":\"964\",\"choice\":\"1\"},{\"id\":\"968\",\"choice\":\"1\"},{\"id\":\"975\",\"choice\":\"1\"},{\"id\":\"979\",\"choice\":\"1\"},{\"id\":\"981\",\"choice\":\"1\"},{\"id\":\"990\",\"choice\":\"1\"},{\"id\":\"994\",\"choice\":\"1\"},{\"id\":\"996\",\"choice\":\"1\"},{\"id\":\"998\",\"choice\":\"1\"},{\"id\":\"1015\",\"choice\":\"2\"}]');
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `subjects`
+-- Table structure for table `subjects`
 --
 
 CREATE TABLE `subjects` (
@@ -843,7 +934,7 @@ CREATE TABLE `subjects` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `subjects`
+-- Dumping data for table `subjects`
 --
 
 INSERT INTO `subjects` (`id`, `name`, `meta`) VALUES
@@ -854,7 +945,7 @@ INSERT INTO `subjects` (`id`, `name`, `meta`) VALUES
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `users`
+-- Table structure for table `users`
 --
 
 CREATE TABLE `users` (
@@ -869,7 +960,7 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `users`
+-- Dumping data for table `users`
 --
 
 INSERT INTO `users` (`id`, `username`, `user_code`, `password`, `fullname`, `phone`, `email`, `role`) VALUES
@@ -887,18 +978,18 @@ INSERT INTO `users` (`id`, `username`, `user_code`, `password`, `fullname`, `pho
 (59, 'maitx', '2220700058', '827ccb0eea8a706c4c34a16891f84e7b', 'Tô Xuân Mai', '912433999', 'hoangdung@gmail.com', 'user');
 
 --
--- Chỉ mục cho các bảng đã đổ
+-- Indexes for dumped tables
 --
 
 --
--- Chỉ mục cho bảng `exams`
+-- Indexes for table `exams`
 --
 ALTER TABLE `exams`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_subject_id` (`subject_id`);
 
 --
--- Chỉ mục cho bảng `exam_answers`
+-- Indexes for table `exam_answers`
 --
 ALTER TABLE `exam_answers`
   ADD PRIMARY KEY (`id`),
@@ -907,14 +998,14 @@ ALTER TABLE `exam_answers`
   ADD KEY `question_blank_id` (`question_blank_id`);
 
 --
--- Chỉ mục cho bảng `exam_configs`
+-- Indexes for table `exam_configs`
 --
 ALTER TABLE `exam_configs`
   ADD PRIMARY KEY (`id`),
   ADD KEY `subject_id` (`subject_id`);
 
 --
--- Chỉ mục cho bảng `exam_results`
+-- Indexes for table `exam_results`
 --
 ALTER TABLE `exam_results`
   ADD PRIMARY KEY (`id`),
@@ -923,35 +1014,35 @@ ALTER TABLE `exam_results`
   ADD KEY `lession_id` (`lession_id`);
 
 --
--- Chỉ mục cho bảng `lessions`
+-- Indexes for table `lessions`
 --
 ALTER TABLE `lessions`
   ADD PRIMARY KEY (`id`),
   ADD KEY `subject_id` (`subject_id`);
 
 --
--- Chỉ mục cho bảng `questions`
+-- Indexes for table `questions`
 --
 ALTER TABLE `questions`
   ADD PRIMARY KEY (`id`),
   ADD KEY `lession_id` (`lession_id`);
 
 --
--- Chỉ mục cho bảng `question_blanks`
+-- Indexes for table `question_blanks`
 --
 ALTER TABLE `question_blanks`
   ADD PRIMARY KEY (`id`),
   ADD KEY `question_id` (`question_id`);
 
 --
--- Chỉ mục cho bảng `quizs`
+-- Indexes for table `quizs`
 --
 ALTER TABLE `quizs`
   ADD PRIMARY KEY (`id`),
   ADD KEY `subject_id` (`subject_id`);
 
 --
--- Chỉ mục cho bảng `quiz_results`
+-- Indexes for table `quiz_results`
 --
 ALTER TABLE `quiz_results`
   ADD PRIMARY KEY (`id`),
@@ -959,99 +1050,99 @@ ALTER TABLE `quiz_results`
   ADD KEY `exam_id` (`exam_id`);
 
 --
--- Chỉ mục cho bảng `subjects`
+-- Indexes for table `subjects`
 --
 ALTER TABLE `subjects`
   ADD PRIMARY KEY (`id`);
 
 --
--- Chỉ mục cho bảng `users`
+-- Indexes for table `users`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`);
 
 --
--- AUTO_INCREMENT cho các bảng đã đổ
+-- AUTO_INCREMENT for dumped tables
 --
 
 --
--- AUTO_INCREMENT cho bảng `exams`
+-- AUTO_INCREMENT for table `exams`
 --
 ALTER TABLE `exams`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
--- AUTO_INCREMENT cho bảng `exam_answers`
+-- AUTO_INCREMENT for table `exam_answers`
 --
 ALTER TABLE `exam_answers`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
--- AUTO_INCREMENT cho bảng `exam_configs`
+-- AUTO_INCREMENT for table `exam_configs`
 --
 ALTER TABLE `exam_configs`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
--- AUTO_INCREMENT cho bảng `exam_results`
+-- AUTO_INCREMENT for table `exam_results`
 --
 ALTER TABLE `exam_results`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
--- AUTO_INCREMENT cho bảng `lessions`
+-- AUTO_INCREMENT for table `lessions`
 --
 ALTER TABLE `lessions`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=70;
 
 --
--- AUTO_INCREMENT cho bảng `questions`
+-- AUTO_INCREMENT for table `questions`
 --
 ALTER TABLE `questions`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
 
 --
--- AUTO_INCREMENT cho bảng `question_blanks`
+-- AUTO_INCREMENT for table `question_blanks`
 --
 ALTER TABLE `question_blanks`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=81;
 
 --
--- AUTO_INCREMENT cho bảng `quizs`
+-- AUTO_INCREMENT for table `quizs`
 --
 ALTER TABLE `quizs`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1189;
 
 --
--- AUTO_INCREMENT cho bảng `quiz_results`
+-- AUTO_INCREMENT for table `quiz_results`
 --
 ALTER TABLE `quiz_results`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
--- AUTO_INCREMENT cho bảng `subjects`
+-- AUTO_INCREMENT for table `subjects`
 --
 ALTER TABLE `subjects`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
--- AUTO_INCREMENT cho bảng `users`
+-- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=60;
 
 --
--- Các ràng buộc cho các bảng đã đổ
+-- Constraints for dumped tables
 --
 
 --
--- Các ràng buộc cho bảng `exams`
+-- Constraints for table `exams`
 --
 ALTER TABLE `exams`
   ADD CONSTRAINT `fk_subject_id` FOREIGN KEY (`subject_id`) REFERENCES `subjects` (`id`);
 
 --
--- Các ràng buộc cho bảng `exam_answers`
+-- Constraints for table `exam_answers`
 --
 ALTER TABLE `exam_answers`
   ADD CONSTRAINT `exam_answers_ibfk_1` FOREIGN KEY (`exam_result_id`) REFERENCES `exam_results` (`id`),
@@ -1059,13 +1150,13 @@ ALTER TABLE `exam_answers`
   ADD CONSTRAINT `exam_answers_ibfk_3` FOREIGN KEY (`question_blank_id`) REFERENCES `question_blanks` (`id`);
 
 --
--- Các ràng buộc cho bảng `exam_configs`
+-- Constraints for table `exam_configs`
 --
 ALTER TABLE `exam_configs`
   ADD CONSTRAINT `exam_configs_ibfk_1` FOREIGN KEY (`subject_id`) REFERENCES `subjects` (`id`);
 
 --
--- Các ràng buộc cho bảng `exam_results`
+-- Constraints for table `exam_results`
 --
 ALTER TABLE `exam_results`
   ADD CONSTRAINT `exam_results_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
@@ -1073,31 +1164,31 @@ ALTER TABLE `exam_results`
   ADD CONSTRAINT `exam_results_ibfk_3` FOREIGN KEY (`lession_id`) REFERENCES `lessions` (`id`);
 
 --
--- Các ràng buộc cho bảng `lessions`
+-- Constraints for table `lessions`
 --
 ALTER TABLE `lessions`
   ADD CONSTRAINT `lessions_ibfk_1` FOREIGN KEY (`subject_id`) REFERENCES `subjects` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Các ràng buộc cho bảng `questions`
+-- Constraints for table `questions`
 --
 ALTER TABLE `questions`
   ADD CONSTRAINT `questions_ibfk_1` FOREIGN KEY (`lession_id`) REFERENCES `lessions` (`id`);
 
 --
--- Các ràng buộc cho bảng `question_blanks`
+-- Constraints for table `question_blanks`
 --
 ALTER TABLE `question_blanks`
   ADD CONSTRAINT `question_blanks_ibfk_1` FOREIGN KEY (`question_id`) REFERENCES `questions` (`id`);
 
 --
--- Các ràng buộc cho bảng `quizs`
+-- Constraints for table `quizs`
 --
 ALTER TABLE `quizs`
   ADD CONSTRAINT `quizs_ibfk_1` FOREIGN KEY (`subject_id`) REFERENCES `subjects` (`id`);
 
 --
--- Các ràng buộc cho bảng `quiz_results`
+-- Constraints for table `quiz_results`
 --
 ALTER TABLE `quiz_results`
   ADD CONSTRAINT `quiz_results_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),

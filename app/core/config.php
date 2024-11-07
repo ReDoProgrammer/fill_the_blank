@@ -5,4 +5,5 @@ return [
     'db_name' => 'filltheblank_db',
     'db_user' => 'root',
     'db_pass' => '',
+    'db_port' => 3306
 ];

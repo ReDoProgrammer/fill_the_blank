@@ -351,13 +351,29 @@ class ExamModel extends Model
         $keyword = "%$keyword%";
 
         // Query to fetch exams with pagination and keyword filtering
-        $sql = "SELECT * FROM exams 
-            WHERE subject_id = :subject_id AND title LIKE :keyword
-            ORDER BY id
-            LIMIT :offset, :pageSize";
+        $sql = "SELECT
+                    e.id AS exam_id,
+                    e.title,
+                    e.description,
+                    e.number_of_questions,
+                    e.duration,
+                    e.mode,
+                    e.thumbnail,
+                    e.begin_date,
+                    e.end_date,
+                    e.subject_id,
+                    SUM(q.mark) AS total_marks
+                FROM
+                    exams e
+                LEFT JOIN quizs q ON e.questions LIKE CONCAT('%', q.id, '%')
+                WHERE 
+                    e.subject_id = :subject_id AND e.title LIKE :keyword
+                GROUP BY
+                    e.id
+                LIMIT :offset, :pageSize";
 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->bindParam(':subject_id', $subject_id);
+        $stmt->bindParam(':subject_id', $subject_id, PDO::PARAM_INT);
         $stmt->bindParam(':keyword', $keyword);
         $stmt->bindValue(':offset', (int) $offset, PDO::PARAM_INT);
         $stmt->bindValue(':pageSize', (int) $pageSize, PDO::PARAM_INT);
@@ -374,7 +390,7 @@ class ExamModel extends Model
             // Check if the exam is referenced in quiz_results
             $sqlCheck = "SELECT COUNT(*) as count FROM quiz_results WHERE exam_id = :exam_id";
             $stmtCheck = $this->pdo->prepare($sqlCheck);
-            $stmtCheck->bindParam(':exam_id', $exam['id']);
+            $stmtCheck->bindParam(':exam_id', $exam['exam_id']);
             $stmtCheck->execute();
             $resultCheck = $stmtCheck->fetch(PDO::FETCH_ASSOC);
 
@@ -385,7 +401,7 @@ class ExamModel extends Model
         // Query to count total number of exams for pagination
         $sqlTotal = "SELECT COUNT(*) as total FROM exams WHERE subject_id = :subject_id AND title LIKE :keyword";
         $stmtTotal = $this->pdo->prepare($sqlTotal);
-        $stmtTotal->bindParam(':subject_id', $subject_id);
+        $stmtTotal->bindParam(':subject_id', $subject_id, PDO::PARAM_INT);
         $stmtTotal->bindParam(':keyword', $keyword);
         $stmtTotal->execute();
         $total = $stmtTotal->fetch(PDO::FETCH_ASSOC);
@@ -400,6 +416,7 @@ class ExamModel extends Model
             'totalRecords' => $total['total']
         ];
     }
+
 
 
     public function getBySubject($subject_id)
@@ -531,8 +548,4 @@ class ExamModel extends Model
             return ['code' => 500, 'msg' => 'An error occurred: ' . $e->getMessage()];
         }
     }
-
-
-
-
 }

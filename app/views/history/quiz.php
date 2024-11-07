@@ -42,7 +42,7 @@
     </ul>
 </nav>
 
-<div class="modal" tabindex="-1" id="modal">
+<div class="modal" tabindex="-1" id="modal" style="z-index: 9999 !important;">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
@@ -62,53 +62,64 @@
 
 
 <script>
-    const $table = $('#tblData'), pageSize = 10, $pagination = $('.pagination'),
-        $modal = $('#modal'), $modalContent = $('#modalContent');
-    let page = 1;
-    var pageNumber = 1; // Biến toàn cục để theo dõi tổng số trang
-    $(document).ready(function () {
-        LoadHistoryExams();
-        $pagination.on('click', '.page-link', function (e) {
-            e.preventDefault(); // Ngăn chặn hành động mặc định của thẻ <a>
-            currentPage = parseInt($(this).text()); // Lấy giá trị data-page
+const $table = $('#tblData'),
+    pageSize = 10,
+    $pagination = $('.pagination'),
+    $modal = $('#modal'),
+    $modalContent = $('#modalContent');
+let page = 1;
+var pageNumber = 1; // Biến toàn cục để theo dõi tổng số trang
+$(document).ready(function() {
+    LoadHistoryExams();
+    $pagination.on('click', '.page-link', function(e) {
+        e.preventDefault(); // Ngăn chặn hành động mặc định của thẻ <a>
+        currentPage = parseInt($(this).text()); // Lấy giá trị data-page
 
-            if (currentPage !== undefined) {
-                if (currentPage !== 0 && currentPage !== pageNumber) {
-                    page = currentPage;
+        if (currentPage !== undefined) {
+            if (currentPage !== 0 && currentPage !== pageNumber) {
+                page = currentPage;
+                LoadHistoryExams();
+            } else {
+                if (currentPage === 0 && page > 1) {
+                    page--;
                     LoadHistoryExams();
-                } else {
-                    if (currentPage === 0 && page > 1) {
-                        page--;
-                        LoadHistoryExams();
-                    } else if (currentPage == pageNumber && page < pageNumber) {
-                        page++;
-                        LoadHistoryExams();
-                    }
+                } else if (currentPage == pageNumber && page < pageNumber) {
+                    page++;
+                    LoadHistoryExams();
                 }
-                console.log({ page });
-
             }
-        });
-    })
+            console.log({
+                page
+            });
 
-    const ViewResult = function (id) {
-        $modalContent.empty();
-        $.ajax({
-            url: '<?php echo BASE_URL; ?>/history/quiz_detail',
-            type: 'get',
-            dataType: 'json',
-            data: { id },
-            success: function (response) {
-                const { code, msg, data } = response;
-                $modal.modal('show');
-                let idx = 1;
-                data.forEach(q => {
-                    let options = q.options;
-                    $modalContent.append(`
+        }
+    });
+})
+
+const ViewResult = function(id) {
+    $modalContent.empty();
+    $.ajax({
+        url: '<?php echo BASE_URL; ?>/history/quiz_detail',
+        type: 'get',
+        dataType: 'json',
+        data: {
+            id
+        },
+        success: function(response) {
+            const {
+                code,
+                msg,
+                data
+            } = response;
+            $modal.modal('show');
+            let idx = (page - 1) * pageSize;
+            data.forEach(q => {
+                let options = q.options;
+                $modalContent.append(`
                             <div class="container mt-5">
                                 <div class="question-card p-4 shadow-sm bg-light rounded">
                                     <div class="d-flex align-items-center mb-3">
-                                        <span class="text-secondary me-3">Câu số ${idx++}:</span>
+                                        <span class="text-secondary me-3">Câu số ${++idx<10?'0'+idx:idx}:</span>
                                         <h5 class="card-title mb-0">${formatDisplay(q.question_text)}</h5>
                                     </div>
                                     <p class="card-text">
@@ -124,35 +135,44 @@
                                 </div>
                             </div>
                         `);
-                })
-            },
-            error: function (err) {
-                console.log(err);
+            })
+        },
+        error: function(err) {
+            console.log(err);
 
-            }
-        })
-    }
+        }
+    })
+}
 
-    const LoadHistoryExams = function () {
-        $table.empty();
-        $pagination.empty();
-        $.ajax({
-            url: '<?php echo BASE_URL; ?>/history/showquiz',
-            type: 'get',
-            dataType: 'json',
-            data: {
-                page,
-                pageSize,
-                keyword: $('#txtKeyword').val().trim()
-            },
-            success: function (response) {
-                const { history, totalPages, currentPage, hasNext, hasPrev } = response;
+const LoadHistoryExams = function() {
+    $table.empty();
+    $pagination.empty();
+    $.ajax({
+        url: '<?php echo BASE_URL; ?>/history/showquiz',
+        type: 'get',
+        dataType: 'json',
+        data: {
+            page,
+            pageSize,
+            keyword: $('#txtKeyword').val().trim()
+        },
+        success: function(response) {
+            const {
+                history,
+                totalPages,
+                currentPage,
+                hasNext,
+                hasPrev
+            } = response;
 
-                history.forEach(h => {
-                    let idx = (page - 1) * pageSize;
-                    $table.append(`
+            console.log(history);
+
+
+            let idx = (page - 1) * pageSize;
+            history.forEach(h => {
+                $table.append(`
                     <tr class = "align-middle">
-                        <td>${++idx}</td>
+                        <td>${++idx<10?'0'+idx:idx}</td>
                         <td>
                             <img src = "<?php echo BASE_URL; ?>${h.thumbnail.trim().length > 0 ? h.thumbnail : '/public/assets/images/no_image.jpg'}" class = "img-thumbnail" style="width:200; height:120px;"/>
                         </td>
@@ -169,70 +189,76 @@
                 `);
 
 
-                })
-                $pagination.append(`<li class="page-item ${page === 1 ? 'disabled' : ''}"><a class="page-link" href="#">Previous</a></li>`);
-                for (i = 1; i <= totalPages; i++) {
-                    $pagination.append(` <li class="page-item ${i == page ? 'active' : ''}"><a class="page-link " href="#">${i}</a></li>`)
-                }
-                $pagination.append(`<li class="page-item  ${page === totalPages ? 'disabled' : ''}"><a class="page-link" href="#">Next</a></li>`);
-
-
-
-            },
-            error: function (err) {
-                console.log(err);
-
+            })
+            $pagination.append(
+                `<li class="page-item ${page === 1 ? 'disabled' : ''}"><a class="page-link" href="#">Previous</a></li>`
+            );
+            for (i = 1; i <= totalPages; i++) {
+                $pagination.append(
+                    ` <li class="page-item ${i == page ? 'active' : ''}"><a class="page-link " href="#">${i}</a></li>`
+                )
             }
-        })
-    }
+            $pagination.append(
+                `<li class="page-item  ${page === totalPages ? 'disabled' : ''}"><a class="page-link" href="#">Next</a></li>`
+            );
 
 
-    const convertSecondsToHMS = function (seconds) {
-        // Tính toán giờ, phút và giây
-        var hours = Math.floor(seconds / 3600);
-        var minutes = Math.floor((seconds % 3600) / 60);
-        var secs = seconds % 60;
 
-        // Định dạng theo định dạng giờ:phút:giây
-        return (
-            (hours < 10 ? "0" : "") + hours + ":" +
-            (minutes < 10 ? "0" : "") + minutes + ":" +
-            (secs < 10 ? "0" : "") + secs
-        );
-    }
+        },
+        error: function(err) {
+            console.log(err);
 
-    const formatDisplay = function (inputHTML) {
-        // Giữ nguyên nội dung HTML của q.question mà không render
-        var formattedQuestionText = $('<div>').text(inputHTML).html();
-        return formattedQuestionText
-            .replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;') // Thay thế tab bằng không gian trắng
-            .replace(/<p>\s+/g, function (match) {
-                return '<p>' + '&nbsp;'.repeat(match.length - 3); // Thay thế khoảng trắng đầu dòng sau <p>
-            });
-    }
+        }
+    })
+}
+
+
+const convertSecondsToHMS = function(seconds) {
+    // Tính toán giờ, phút và giây
+    var hours = Math.floor(seconds / 3600);
+    var minutes = Math.floor((seconds % 3600) / 60);
+    var secs = seconds % 60;
+
+    // Định dạng theo định dạng giờ:phút:giây
+    return (
+        (hours < 10 ? "0" : "") + hours + ":" +
+        (minutes < 10 ? "0" : "") + minutes + ":" +
+        (secs < 10 ? "0" : "") + secs
+    );
+}
+
+const formatDisplay = function(inputHTML) {
+    // Giữ nguyên nội dung HTML của q.question mà không render
+    var formattedQuestionText = $('<div>').text(inputHTML).html();
+    return formattedQuestionText
+        .replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;') // Thay thế tab bằng không gian trắng
+        .replace(/<p>\s+/g, function(match) {
+            return '<p>' + '&nbsp;'.repeat(match.length - 3); // Thay thế khoảng trắng đầu dòng sau <p>
+        });
+}
 </script>
 
 <style>
-    .question-card {
-        border: 1px solid #dee2e6;
-        border-radius: .25rem;
-        margin-bottom: 1rem;
-        padding: 1.25rem;
-    }
+.question-card {
+    border: 1px solid #dee2e6;
+    border-radius: .25rem;
+    margin-bottom: 1rem;
+    padding: 1.25rem;
+}
 
-    .answer {
-        cursor: pointer;
-    }
+.answer {
+    cursor: pointer;
+}
 
-    .answer.correct {
-        background-color: #d4edda;
-        /* bg-success */
-        color: #155724;
-    }
+.answer.correct {
+    background-color: #d4edda;
+    /* bg-success */
+    color: #155724;
+}
 
-    .answer.incorrect {
-        background-color: #f8d7da;
-        /* bg-danger */
-        color: #721c24;
-    }
+.answer.incorrect {
+    background-color: #f8d7da;
+    /* bg-danger */
+    color: #721c24;
+}
 </style>

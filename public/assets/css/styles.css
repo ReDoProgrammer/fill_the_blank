@@ -48,7 +48,8 @@ body {
     margin-left: auto;
     display: flex;
     align-items: center;
-    position: relative; /* Đảm bảo dropdown-menu định vị đúng */
+    position: relative;
+    /* Đảm bảo dropdown-menu định vị đúng */
 }
 
 
@@ -84,7 +85,8 @@ body {
     background-color: white;
     border: 1px solid #ddd;
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
-    z-index: 9999; /* Đặt giá trị z-index rất cao */
+    z-index: 9999;
+    /* Đặt giá trị z-index rất cao */
     width: 200px;
 }
 
@@ -110,15 +112,16 @@ body {
 
 .sidebar {
     height: 100%;
-    width: 220px;
+    width: 270px;
     position: fixed;
-    top: 50px;
+    top: 60px;
     left: 0;
     background-color: #282A35;
-    padding-top: 20px;
+    padding-top: 10px;
     overflow-x: hidden;
     overflow-y: auto;
     transition: width 0.3s ease;
+    z-index: 8888;
     /* Thêm transition cho width */
 }
 
@@ -127,9 +130,13 @@ body {
     /* Kích thước khi sidebar bị collapse */
 }
 
+.modal {
+    z-index: 9999 !important;
+}
+
 .sidebar a,
 .dropdown-btn {
-    padding: 10px 15px;
+    padding: 5px 15px;
     text-decoration: none;
     font-size: 18px;
     color: white;
@@ -175,7 +182,7 @@ body {
 .main-content {
     margin-left: 240px;
     /* Điều chỉnh theo cấu trúc sidebar của bạn */
-    padding: 20px;
+    padding: 5px;
     margin-top: 10px;
     /* Để tránh bị che bởi navbar cố định */
     transition: margin-left 0.3s ease;
@@ -202,7 +209,7 @@ body {
     color: white;
     text-align: center;
     padding: 5px 0;
-    position: fixed;
+    /* position: fixed; */
     width: 100%;
     bottom: 0;
     left: 0;
@@ -224,13 +231,13 @@ body {
 }
 
 /* Hiển thị sidebar mặc định */
-.sidebar {
+/* .sidebar {
     width: 220px;
     transition: width 0.3s ease;
-}
+} */
 
 .main-content {
-    margin-left: 220px;
+    margin-left: 270px;
     transition: margin-left 0.3s ease;
 }
 

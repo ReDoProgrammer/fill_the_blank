@@ -185,7 +185,12 @@ class HistoryModel extends Model
         ];
     }
 
-
+    private function get_first_name($fullname)
+    {
+        // Tách chuỗi fullname bằng dấu cách và lấy từ cuối cùng
+        $nameParts = explode(' ', trim($fullname));
+        return end($nameParts); // Lấy phần tử cuối cùng
+    }
     public function quizHistory($exam_id, $page = 1, $pageSize = 10, $keyword = '')
     {
         $offset = ($page - 1) * $pageSize;
@@ -193,22 +198,126 @@ class HistoryModel extends Model
         $searchCondition = '';
         $searchParams = [];
         if (!empty($keyword)) {
+            $searchCondition = " AND (u.username LIKE :username OR e.title LIKE :title) ";
+            $searchParams = [
+                ':username' => "%$keyword%",
+                ':title' => "%$keyword%"
+            ];
+        }
+
+        // Truy vấn lấy tất cả kết quả bài thi cho exam_id và các điều kiện tìm kiếm
+        $sql = "
+        SELECT 
+            qr.id AS quiz_result_id,
+            u.username,
+            u.user_code,
+            u.fullname,
+            e.title AS exam_title,
+            e.duration,
+            JSON_LENGTH(e.questions) AS number_of_questions,
+            DATE_FORMAT(e.begin_date, '%d/%m/%Y %H:%i') AS begin_date,
+            DATE_FORMAT(e.end_date, '%d/%m/%Y %H:%i') AS end_date,
+            e.thumbnail,
+            qr.result AS quiz_result,
+            DATE_FORMAT(qr.quiz_date, '%d/%m/%Y %H:%i') AS quiz_date,
+            qr.spend_time AS spent_time,
+            e.questions AS exam_questions
+        FROM 
+            quiz_results qr
+        JOIN 
+            exams e ON qr.exam_id = e.id
+        JOIN 
+            users u ON qr.user_id = u.id
+        WHERE 
+            qr.exam_id = :exam_id
+            $searchCondition
+        ";
+
+        // Thiết lập tham số cho câu lệnh SQL
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':exam_id', $exam_id, PDO::PARAM_INT);
+        // Thêm các tham số tìm kiếm
+        foreach ($searchParams as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
+
+        $stmt->execute();
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Lưu trữ kết quả người dùng với điểm cao nhất
+        $userTopResults = [];
+        foreach ($results as $result) {
+            $quizResult = json_decode($result['quiz_result'], true);
+            $examQuestions = json_decode($result['exam_questions'], true);
+
+            $marks = 0;
+            $gotMarks = 0;
+            $correctAnswers = 0;
+
+            // Tính điểm và số câu trả lời đúng
+            foreach ($examQuestions as $quizId) {
+                $quizSql = "SELECT options, mark FROM quizs WHERE id = ?";
+                $quiz = $this->fetch($quizSql, [$quizId]);
+                if ($quiz) {
+                    $options = json_decode($quiz['options'], true);
+                    $correctOption = $options['correct_option'] ?? '';
+                    $marks += $quiz['mark'];
+
+                    // Kiểm tra câu trả lời của người dùng
+                    foreach ($quizResult as $userAnswer) {
+                        if ($userAnswer['id'] == $quizId && $userAnswer['choice'] == $correctOption) {
+                            $gotMarks += $quiz['mark'];
+                            $correctAnswers++;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            // Ghi nhận kết quả vào mảng
+            $result['marks'] = $marks;
+            $result['got_marks'] = $gotMarks;
+            $result['correct_answers'] = $correctAnswers;
+
+            // Giữ lại bài thi có điểm cao nhất cho mỗi người dùng
+            if (!isset($userTopResults[$result['username']]) || $result['got_marks'] > $userTopResults[$result['username']]['got_marks']) {
+                $userTopResults[$result['username']] = $result;
+            }
+        }
+
+        // Chuyển đổi kết quả thành mảng và sắp xếp theo tên và điểm
+        $finalResults = array_values($userTopResults);
+
+        // Sắp xếp theo tên tăng dần
+        usort($finalResults, function ($a, $b) {
+            return $this->get_first_name($a['fullname']) <=> $this->get_first_name($b['fullname']);
+        });
+
+        // Giới hạn số lượng kết quả trả về
+        $finalResults = array_slice($finalResults, 0, $pageSize);
+
+        return [
+            'history' => $finalResults,
+            'totalResults' => count($userTopResults), // Tổng số kết quả tìm thấy
+            'totalPages' => ceil(count($userTopResults) / $pageSize), // Tổng số trang
+            'currentPage' => (int) $page,
+            'hasNext' => count($finalResults) > $pageSize,
+            'hasPrev' => $page > 1
+        ];
+    }
+
+
+
+
+
+    public function allQuizHistory($exam_id, $keyword = '')
+    {
+        $searchCondition = '';
+        $searchParams = [];
+        if (!empty($keyword)) {
             $searchCondition = " AND (u.username LIKE ? OR q.question LIKE ?) ";
             $searchParams = ["%$keyword%", "%$keyword%"];
         }
-
-        $countSql = "
-        SELECT COUNT(*) as total
-        FROM quiz_results qr
-        JOIN exams e ON qr.exam_id = e.id
-        JOIN users u ON qr.user_id = u.id
-        WHERE qr.exam_id = ?
-        $searchCondition
-    ";
-        $totalResults = $this->fetch($countSql, array_merge([$exam_id], $searchParams))['total'];
-        $totalPages = ceil($totalResults / $pageSize);
-        $hasNext = $page < $totalPages;
-        $hasPrev = $page > 1;
 
         $sql = "
         SELECT 
@@ -236,14 +345,16 @@ class HistoryModel extends Model
             qr.exam_id = ?
             $searchCondition
         ORDER BY 
+            u.fullname ASC, -- Sắp xếp theo họ tên
             qr.quiz_date DESC
-        LIMIT $pageSize OFFSET $offset
     ";
 
         $params = array_merge([$exam_id], $searchParams);
         $results = $this->fetchAll($sql, $params);
 
-        foreach ($results as &$result) {
+        // Lưu trữ điểm cao nhất cho mỗi người dùng
+        $userTopResults = [];
+        foreach ($results as $result) {
             $quizResult = json_decode($result['quiz_result'], true);
             $examQuestions = json_decode($result['exam_questions'], true);
             $marks = 0;
@@ -255,7 +366,7 @@ class HistoryModel extends Model
                 $quizSql = "SELECT options, mark FROM quizs WHERE id = ?";
                 $quiz = $this->fetch($quizSql, [$quizId]);
                 $options = json_decode($quiz['options'], true);
-                $correctOption = $options['correct_option'];
+                $correctOption = $options['correct_option'] ?? '';
                 $marks += $quiz['mark'];
 
                 // Kiểm tra xem người dùng đã chọn đáp án đúng hay chưa
@@ -267,97 +378,25 @@ class HistoryModel extends Model
                     }
                 }
             }
+
+            // Ghi nhận kết quả vào mảng, nhưng chỉ giữ lại điểm cao nhất
             $result['marks'] = $marks;
             $result['got_marks'] = $gotMarks;
             $result['correct_answers'] = $correctAnswers; // Thêm số câu trả lời đúng vào kết quả
-        }
 
-        return [
-            'history' => $results,
-            'totalPages' => $totalPages,
-            'currentPage' => (int) $page,
-            'hasNext' => $hasNext,
-            'hasPrev' => $hasPrev
-        ];
-    }
-
-    public function allQuizHistory($exam_id, $keyword = '')
-    {
-        $searchCondition = '';
-        $searchParams = [];
-        if (!empty($keyword)) {
-            $searchCondition = " AND (u.username LIKE ? OR q.question LIKE ?) ";
-            $searchParams = ["%$keyword%", "%$keyword%"];
-        }
-
-        $sql = "
-    SELECT 
-        qr.id AS quiz_result_id,
-        u.username,
-        u.user_code,
-        u.fullname,
-        e.title AS exam_title,
-        e.duration,
-        JSON_LENGTH(e.questions) AS number_of_questions,
-        DATE_FORMAT(e.begin_date, '%d/%m/%Y %H:%i') AS begin_date,
-        DATE_FORMAT(e.end_date, '%d/%m/%Y %H:%i') AS end_date,
-        e.thumbnail,
-        e.questions AS exam_questions,
-        qr.result AS quiz_result,
-        DATE_FORMAT(qr.quiz_date, '%d/%m/%Y %H:%i') AS quiz_date,
-        qr.spend_time AS spent_time
-    FROM 
-        quiz_results qr
-    JOIN 
-        exams e ON qr.exam_id = e.id
-    JOIN 
-        users u ON qr.user_id = u.id
-    WHERE 
-        qr.exam_id = ?
-        $searchCondition
-    ORDER BY 
-        qr.quiz_date DESC
-";
-
-        $params = array_merge([$exam_id], $searchParams);
-        $results = $this->fetchAll($sql, $params);
-
-        foreach ($results as &$result) {
-            $quizResult = json_decode($result['quiz_result'], true);
-            $examQuestions = json_decode($result['exam_questions'], true);
-            $marks = 0;
-            $gotMarks = 0;
-            $correctAnswers = 0; // Biến đếm số câu trả lời đúng
-
-            // Tính tổng điểm và điểm người dùng đạt được
-            foreach ($examQuestions as $quizId) {
-                $quizSql = "SELECT options, mark FROM quizs WHERE id = ?";
-                $quiz = $this->fetch($quizSql, [$quizId]);
-                $options = json_decode($quiz['options'], true);
-                $correctOption = $options['correct_option'];
-                $marks += $quiz['mark'];
-
-                // Kiểm tra xem người dùng đã chọn đáp án đúng hay chưa
-                foreach ($quizResult as $userAnswer) {
-                    if ($userAnswer['id'] == $quizId && $userAnswer['choice'] == $correctOption) {
-                        $gotMarks += $quiz['mark'];
-                        $correctAnswers++; // Tăng biến đếm nếu người dùng trả lời đúng
-                        break;
-                    }
-                }
+            if (!isset($userTopResults[$result['username']]) || $result['got_marks'] > $userTopResults[$result['username']]['got_marks']) {
+                $userTopResults[$result['username']] = $result;
             }
-            $result['marks'] = $marks;
-            $result['got_marks'] = $gotMarks;
-            $result['correct_answers'] = $correctAnswers; // Thêm số câu trả lời đúng vào kết quả
         }
 
+        // Chuyển đổi kết quả thành mảng
+        $finalResults = array_values($userTopResults);
+
         return [
-            'history' => $results,
-            'totalResults' => count($results), // Trả về tổng số kết quả tìm thấy
+            'history' => $finalResults,
+            'totalResults' => count($finalResults), // Trả về tổng số kết quả tìm thấy
         ];
     }
-
-
 
     public function getTopResults($exam_id)
     {
@@ -568,8 +607,4 @@ class HistoryModel extends Model
 
         return $details;
     }
-
-
-
-
 }

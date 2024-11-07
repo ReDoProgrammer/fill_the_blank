@@ -164,16 +164,23 @@ class LessionModel extends Model
             GROUP BY lessions.name
             ORDER BY subjects.name,lessions.name, total_exams DESC
         ";
-    
+
         // Tham số để truyền vào câu truy vấn
         $params = [
             ':from_date' => $from_date,
             ':to_date' => $to_date,
             ':keyword' => '%' . $keyword . '%',
         ];
-    
+
         // Thực thi truy vấn và trả về kết quả
         return $this->fetchAll($sql, $params);
     }
-    
+
+    public function getReviewStatistic($lessionId, $keyword = '', $page = 1, $pageSize = 10)
+    {
+        return [
+            ':from_date' => 1234,
+            ':to_date' => 456
+        ];
+    }
 }

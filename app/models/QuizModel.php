@@ -246,6 +246,4 @@ class QuizModel extends Model
             return ['code' => 500, 'msg' => 'Đã xảy ra lỗi: ' . $e->getMessage()];
         }
     }
-
-
 }
