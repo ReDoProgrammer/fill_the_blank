@@ -24,27 +24,7 @@
 
     <!-- statistic Table -->
     <table class="table table-bordered table-striped table-hover mt-3" id="table">
-        <thead>
-            <tr>
-                <th rowspan="2" class="align-middle">STT</th>
-                <th rowspan="2" class="align-middle">Mã thành viên</th>
-                <th rowspan="2" class="align-middle">Tài khoản</th>
-                <th rowspan="2" class="align-middle">Họ tên</th>
-                <th rowspan="2" class="align-middle">Số lần làm bài</th>
-                <th colspan="3" class="text-center">Chỗ trống</th>
-                <th colspan="3" class="text-center">Câu hỏi</th>
-                <th rowspan="2"></th>
-            </tr>
-            <tr>
-                <th>Tổng số</th>
-                <th>Điền đúng</th>
-                <th>Tỉ lệ (%)</th>
-                <th>Tổng số</th>
-                <th>Trả lời đúng</th>
-                <th>Tỉ lệ (%)</th>
-            </tr>
-        </thead>
-        <tbody id="tblData"></tbody>
+
     </table>
 </div>
 
@@ -74,7 +54,7 @@
         $search = $('#btnSearch'),
         $modal = $('#modal'),
         $content = $('#modalContent'),
-        $table = $('#tblData'),
+        $table = $('#table'),
         $export = $('#btnExport'),
         pageSize = 10;
 
@@ -85,16 +65,65 @@
     $slLessions.change(function() {
         $table.empty();
         if ($(this).val()) {
+            // Xóa <thead> hiện tại nếu đã tồn tại để tránh trùng lặp
+            $table.find('thead').remove();
+
+            // Thêm mới phần <thead> vào bảng
+            $table.append(`
+                        <thead>
+                            <tr>
+                                <th rowspan="2" class="align-middle">STT</th>
+                                <th rowspan="2" class="align-middle">Mã thành viên</th>
+                                <th rowspan="2" class="align-middle">Tài khoản</th>
+                                <th rowspan="2" class="align-middle">Họ tên</th>
+                                <th rowspan="2" class="align-middle">Số lần làm bài</th>
+                                <th colspan="3" class="text-center">Chỗ trống</th>
+                                <th colspan="3" class="text-center">Câu hỏi</th>
+                                <th rowspan="2"></th>
+                            </tr>
+                            <tr>
+                                <th>Tổng số</th>
+                                <th>Điền đúng</th>
+                                <th>Tỉ lệ (%)</th>
+                                <th>Tổng số</th>
+                                <th>Trả lời đúng</th>
+                                <th>Tỉ lệ (%)</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    `);
+
+
             LoadStatistic($(this).val());
         } else {
-            LoadSubjectStatistic($slSubjects.val());
+            $table.append(`
+                            <thead>
+                                <tr>
+                                    <th rowspan="2" class="align-middle">STT</th>
+                                    <th rowspan="2" class="align-middle">Mã thành viên</th>
+                                    <th rowspan="2" class="align-middle">Tài khoản</th>
+                                    <th rowspan="2" class="align-middle">Họ tên</th>
+                                    <th rowspan="2" class="align-middle">Số lần làm bài</th>
+                                    <th rowspan="2" class="align-middle">Tỉ lệ làm đúng</th>
+                                    <th colspan="3" class="text-center">Bài làm nhiều nhất</th>
+                                </tr>
+                                <tr>
+                                    <th>Tên bài</th>
+                                    <th>Số lần</th>
+                                    <th>Tỉ lệ (%)</th>               
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        `);
+                        
         }
+
 
     })
 
     function LoadSubjectStatistic(subjectId) {
-        
-        
+
+
         $table.empty();
         if (subjectId !== undefined) { // kiểm tra biến lessionId đã có giá trị chưa
             $.ajax({
@@ -108,39 +137,35 @@
                     pageSize
                 },
                 success: function(response) {
-                    // const {
-                    //     code,
-                    //     msg,
-                    //     result
-                    // } = response;
+                    const {
+                        code,
+                        msg,
+                        result
+                    } = response;
                     console.log(response);
-                    
-                    // if (code == 200) {
-                    //     console.log(result);
 
-                    //     let idx = (page - 1) * pageSize;
-                    //     result.forEach(l => {
-                    //         $table.append(`
-                    //         <tr>
-                    //             <td>${++idx<10?'0'+idx:idx}</td>
-                    //             <td class = "fw-bold text-warning">${l.user_code}</td>
-                    //             <td class = "text-info">${l.username}</td>
-                    //             <td>${l.fullname}</td>
-                    //             <td>${l.attempts_count}</td>
-                    //             <td>${l.total_blanks}</td>
-                    //             <td>${l.correct_blanks}</td>
-                    //             <td>${l.correct_blanks_percent}</td>
-                    //             <td>${l.total_questions}</td>
-                    //             <td>${l.max_correct_questions}</td>
-                    //             <td>${l.highest_score_percentage}</td>
-                    //              <td>
-                    //                 <a href="#" onclick="fetchDetail(${l.result_id}); return false;"><i class="fa fa-info-circle" aria-hidden="true"></i></a>
-                    //             </td>
-                    //         </tr>
-                    //     `);
-                    //     })
+                    if (code == 200) {
+                        console.log(result);
 
-                    // }
+                        let idx = (page - 1) * pageSize;
+                        result.forEach(l => {
+                            let row = `
+                            <tr>
+                                <td>${++idx<10?'0'+idx:idx}</td>
+                                <td class = "fw-bold text-warning">${l.user_code}</td>
+                                <td class = "text-info">${l.username}</td>
+                                <td class = "fw-bold">${l.fullname}</td>
+                                <td class = "text-center fw-bold text-danger">${l.total_attempts}</td>
+                                <td class = "text-center">${l.avg_correct_percentage} %</td>
+                                <td class = "text-warning fw-bold">${l.most_attempted_lession_name}</td>
+                                <td class = "text-center">${l.most_attempted_lession_attempts}</td>
+                                <td class = "text-end">${l.most_attempted_lession_correct_percentage} %</td>                                                              
+                            </tr>
+                        `;
+                        $table.find('tbody').append(row);
+                        })
+
+                    }
                 },
                 error: function(err) {
                     console.log(err);
@@ -152,7 +177,6 @@
     }
 
     function LoadStatistic(lessionId) {
-        $table.empty();
         if (lessionId !== undefined) { // kiểm tra biến lessionId đã có giá trị chưa
             $.ajax({
                 url: `<?php echo BASE_URL; ?>/admin/statistic/get_review_statistic`,
@@ -171,29 +195,35 @@
                         result
                     } = response;
                     if (code == 200) {
-                        console.log(result);
-
                         let idx = (page - 1) * pageSize;
+
                         result.forEach(l => {
-                            $table.append(`
-                            <tr>
-                                <td>${++idx<10?'0'+idx:idx}</td>
-                                <td class = "fw-bold text-warning">${l.user_code}</td>
-                                <td class = "text-info">${l.username}</td>
-                                <td>${l.fullname}</td>
-                                <td>${l.attempts_count}</td>
-                                <td>${l.total_blanks}</td>
-                                <td>${l.correct_blanks}</td>
-                                <td>${l.correct_blanks_percent}</td>
-                                <td>${l.total_questions}</td>
-                                <td>${l.max_correct_questions}</td>
-                                <td>${l.highest_score_percentage}</td>
-                                 <td>
-                                    <a href="#" onclick="fetchDetail(${l.result_id}); return false;"><i class="fa fa-info-circle" aria-hidden="true"></i></a>
-                                </td>
-                            </tr>
-                        `);
-                        })
+                            console.log(l); // Kiểm tra dữ liệu của từng phần tử trong result
+
+                            let row = `
+        <tr>
+            <td>${++idx < 10 ? '0' + idx : idx}</td>
+            <td class="fw-bold text-warning">${l.user_code}</td>
+            <td class="text-info">${l.username}</td>
+            <td>${l.fullname}</td>
+            <td>${l.attempts_count}</td>
+            <td>${l.total_blanks}</td>
+            <td>${l.correct_blanks}</td>
+            <td>${l.correct_blanks_percent}</td>
+            <td>${l.total_questions}</td>
+            <td>${l.max_correct_questions}</td>
+            <td>${l.highest_score_percentage}</td>
+            <td>
+                <a href="#" onclick="fetchDetail(${l.result_id}); return false;">
+                    <i class="fa fa-info-circle" aria-hidden="true"></i>
+                </a>
+            </td>
+        </tr>
+    `;
+                            // Thêm dòng vào tbody của bảng
+                            $table.find('tbody').append(row);
+                        });
+
 
                     }
                 },
@@ -231,6 +261,7 @@
     // Xử lý khi chọn môn học
     $slSubjects.change(function() {
         Loadlessions(parseInt($slSubjects.val()));
+        LoadSubjectStatistic(parseInt($slSubjects.val()));
     });
 
     // Tải danh sách bài học dựa trên môn học đã chọn
@@ -353,7 +384,7 @@
 
         // Tạo workbook từ bảng HTML
         var wb = XLSX.utils.table_to_book(table, {
-            sheet: $("#slLessions option:selected").text()
+            sheet: $("#slLessions option:selected").val()?$("#slLessions option:selected").text():'Thống kê tổng quát'
         });
 
         // Xuất file Excel

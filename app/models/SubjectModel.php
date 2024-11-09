@@ -303,7 +303,9 @@ class SubjectModel extends Model
         fullname,
         COUNT(DISTINCT result_id) AS total_attempts,  -- Tổng số lượt làm bài của người dùng cho môn học
         ROUND(AVG((correct_questions / total_questions) * 100), 2) AS avg_correct_percentage,  -- Tỉ lệ % trung bình trả lời đúng
-        most_attempted_lession_name  -- Tên của bài học được làm nhiều nhất
+        most_attempted_lession_name,  -- Tên của bài học được làm nhiều nhất
+        MAX(lession_attempts) AS most_attempted_lession_attempts,  -- Số lần làm bài của bài học được làm nhiều nhất
+        ROUND(MAX(correct_percentage), 2) AS most_attempted_lession_correct_percentage  -- Tỉ lệ % làm bài đúng của bài học này
     FROM (
         SELECT 
             exam_results.id AS result_id,
@@ -311,7 +313,7 @@ class SubjectModel extends Model
             users.username,
             users.fullname,
             users.user_code,
-            lessions.name AS most_attempted_lession_name, -- Thêm tên bài học được làm nhiều nhất
+            lessions.name AS most_attempted_lession_name, -- Tên bài học
             -- Đếm số lần làm mỗi bài học của từng người dùng
             (SELECT COUNT(*) 
              FROM exam_results er
@@ -331,7 +333,9 @@ class SubjectModel extends Model
                  LEFT JOIN exam_answers ea ON qb.id = ea.question_blank_id AND ea.exam_result_id = exam_results.id
                  WHERE qb.question_id = q.id
                  AND (ea.answer IS NULL OR ea.answer != qb.blank_text)
-             )) AS correct_questions
+             )) AS correct_questions,
+            -- Tính tỉ lệ % làm bài đúng của bài học này
+            (SELECT (correct_questions / total_questions) * 100) AS correct_percentage
         FROM exam_results
         JOIN users ON exam_results.user_id = users.id
         JOIN lessions ON exam_results.lession_id = lessions.id
