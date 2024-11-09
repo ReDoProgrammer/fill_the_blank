@@ -296,54 +296,61 @@ class SubjectModel extends Model
     {
         // Câu lệnh SQL để lấy thống kê số lần làm bài và tỉ lệ phần trăm trung bình các câu trả lời đúng
         $sql = "
+    SELECT 
+        user_id,
+        username,
+        user_code,
+        fullname,
+        COUNT(DISTINCT result_id) AS total_attempts,  -- Tổng số lượt làm bài của người dùng cho môn học
+        ROUND(AVG((correct_questions / total_questions) * 100), 2) AS avg_correct_percentage,  -- Tỉ lệ % trung bình trả lời đúng
+        most_attempted_lession_name  -- Tên của bài học được làm nhiều nhất
+    FROM (
         SELECT 
-            user_id,
-            username,
-            user_code,
-            fullname,
-            COUNT(DISTINCT result_id) AS total_attempts,  -- Tổng số lượt làm bài của người dùng cho môn học
-            ROUND(AVG((correct_questions / total_questions) * 100), 2) AS avg_correct_percentage  -- Tỉ lệ % trung bình trả lời đúng
-        FROM (
-            SELECT 
-                exam_results.id AS result_id,
-                exam_results.user_id,
-                users.username,
-                users.fullname,
-                users.user_code,
-                (SELECT COUNT(*) 
-                 FROM questions 
-                 WHERE questions.lession_id = exam_results.lession_id) AS total_questions,
-                -- Tính số câu trả lời đúng cho từng bài làm trong bài học
-                (SELECT COUNT(*) 
-                 FROM questions q
-                 WHERE q.lession_id = exam_results.lession_id
-                 AND NOT EXISTS (
-                     SELECT * 
-                     FROM question_blanks qb
-                     LEFT JOIN exam_answers ea ON qb.id = ea.question_blank_id AND ea.exam_result_id = exam_results.id
-                     WHERE qb.question_id = q.id
-                     AND (ea.answer IS NULL OR ea.answer != qb.blank_text)
-                 )) AS correct_questions
-            FROM exam_results
-            JOIN users ON exam_results.user_id = users.id
-            JOIN lessions ON exam_results.lession_id = lessions.id
-            WHERE lessions.subject_id = :subjectId
-            AND (
-                users.username LIKE :keyword OR 
-                users.fullname LIKE :keyword
-            )
-        ) AS subquery
-        GROUP BY user_id
-        ORDER BY avg_correct_percentage DESC";
-    
+            exam_results.id AS result_id,
+            exam_results.user_id,
+            users.username,
+            users.fullname,
+            users.user_code,
+            lessions.name AS most_attempted_lession_name, -- Thêm tên bài học được làm nhiều nhất
+            -- Đếm số lần làm mỗi bài học của từng người dùng
+            (SELECT COUNT(*) 
+             FROM exam_results er
+             WHERE er.user_id = exam_results.user_id
+             AND er.lession_id = exam_results.lession_id) AS lession_attempts,
+            -- Tổng số câu hỏi trong bài học
+            (SELECT COUNT(*) 
+             FROM questions 
+             WHERE questions.lession_id = exam_results.lession_id) AS total_questions,
+            -- Tính số câu trả lời đúng cho từng bài làm trong bài học
+            (SELECT COUNT(*) 
+             FROM questions q
+             WHERE q.lession_id = exam_results.lession_id
+             AND NOT EXISTS (
+                 SELECT * 
+                 FROM question_blanks qb
+                 LEFT JOIN exam_answers ea ON qb.id = ea.question_blank_id AND ea.exam_result_id = exam_results.id
+                 WHERE qb.question_id = q.id
+                 AND (ea.answer IS NULL OR ea.answer != qb.blank_text)
+             )) AS correct_questions
+        FROM exam_results
+        JOIN users ON exam_results.user_id = users.id
+        JOIN lessions ON exam_results.lession_id = lessions.id
+        WHERE lessions.subject_id = :subjectId
+        AND (
+            users.username LIKE :keyword OR 
+            users.fullname LIKE :keyword
+        )
+    ) AS subquery
+    GROUP BY user_id
+    ORDER BY avg_correct_percentage DESC";
+
         // Các tham số truyền vào truy vấn SQL
         $params = [
             ':subjectId' => $subjectId,
             ':keyword' => '%' . $keyword . '%'
         ];
-    
+
         // Thực thi truy vấn và trả về kết quả
         return $this->fetchAll($sql, $params);
     }
-    
 }
