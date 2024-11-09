@@ -86,9 +86,70 @@
         $table.empty();
         if ($(this).val()) {
             LoadStatistic($(this).val());
+        } else {
+            LoadSubjectStatistic($slSubjects.val());
         }
 
     })
+
+    function LoadSubjectStatistic(subjectId) {
+        
+        
+        $table.empty();
+        if (subjectId !== undefined) { // kiểm tra biến lessionId đã có giá trị chưa
+            $.ajax({
+                url: `<?php echo BASE_URL; ?>/admin/statistic/get_review_statistic_by_subject`,
+                method: 'get',
+                dataType: 'json',
+                data: {
+                    subjectId,
+                    keyword: $keyword.val().trim(),
+                    page,
+                    pageSize
+                },
+                success: function(response) {
+                    // const {
+                    //     code,
+                    //     msg,
+                    //     result
+                    // } = response;
+                    console.log(response);
+                    
+                    // if (code == 200) {
+                    //     console.log(result);
+
+                    //     let idx = (page - 1) * pageSize;
+                    //     result.forEach(l => {
+                    //         $table.append(`
+                    //         <tr>
+                    //             <td>${++idx<10?'0'+idx:idx}</td>
+                    //             <td class = "fw-bold text-warning">${l.user_code}</td>
+                    //             <td class = "text-info">${l.username}</td>
+                    //             <td>${l.fullname}</td>
+                    //             <td>${l.attempts_count}</td>
+                    //             <td>${l.total_blanks}</td>
+                    //             <td>${l.correct_blanks}</td>
+                    //             <td>${l.correct_blanks_percent}</td>
+                    //             <td>${l.total_questions}</td>
+                    //             <td>${l.max_correct_questions}</td>
+                    //             <td>${l.highest_score_percentage}</td>
+                    //              <td>
+                    //                 <a href="#" onclick="fetchDetail(${l.result_id}); return false;"><i class="fa fa-info-circle" aria-hidden="true"></i></a>
+                    //             </td>
+                    //         </tr>
+                    //     `);
+                    //     })
+
+                    // }
+                },
+                error: function(err) {
+                    console.log(err);
+                }
+            });
+        } else {
+            console.log("Lession ID is not defined.");
+        }
+    }
 
     function LoadStatistic(lessionId) {
         $table.empty();
@@ -287,14 +348,15 @@
     }
 
 
-    $export.click(function(){
+    $export.click(function() {
         var table = document.getElementById("table");
-        
+
         // Tạo workbook từ bảng HTML
-        var wb = XLSX.utils.table_to_book(table, { sheet: $( "#slLessions option:selected" ).text() });
-        
+        var wb = XLSX.utils.table_to_book(table, {
+            sheet: $("#slLessions option:selected").text()
+        });
+
         // Xuất file Excel
         XLSX.writeFile(wb, `${$( "#slSubjects option:selected" ).text()}.xlsx`);
     })
-        
 </script>

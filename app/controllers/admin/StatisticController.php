@@ -67,6 +67,24 @@ class StatisticController extends AdminController
             ]);
         }
     }
+    function get_review_statistic_by_subject()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+
+            $keyword = $_GET['keyword'];           
+            $subjectId = (int)$_GET['subjectId'];
+
+
+            header('Content-Type: application/json');
+            $result = $this->subjectModel->getSubjectStatistic($subjectId, $keyword);
+            echo json_encode(['code' => 200, 'msg' => 'Lấy số liệu thống kê phần ôn tập thành công!', 'result' => $result]);
+        } else {
+            echo json_encode([
+                'code' => 405,
+                'msg' => 'Phương thức không được phép'
+            ]);
+        }
+    }
     function get_users_statistic()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
