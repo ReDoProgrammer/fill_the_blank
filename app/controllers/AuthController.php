@@ -31,7 +31,14 @@ class AuthController extends Controller
                     'message' => 'Admin login successful',
                     'redirect' => BASE_URL . '/admin'
                 ]);
-            } elseif (($role === 'user' && $user['role'] === 'user') || ($role === 'user' && $user['role'] === 'admin')) {
+            } elseif($role == 'teacher' && $user['role'] === 'teacher' ){
+                echo json_encode([
+                    'code' => 200,
+                    'message' => 'Teacher login successful',
+                    'redirect' => BASE_URL . '/home'
+                ]);
+            }
+            elseif (($role === 'user' && $user['role'] === 'user') || ($role === 'user' && $user['role'] === 'admin')) {
                 $_SESSION['user_logged_in'] = $user;
                 echo json_encode([
                     'code' => 200,
@@ -55,9 +62,9 @@ class AuthController extends Controller
     }
 
     protected function loginView($role)
-    {
-        $viewPath = ($role === 'admin') ? 'app/views/admin/auth/login.php' : 'app/views/auth/login.php';
-        $title = ($role === 'admin') ? 'Admin Login' : 'User Login';
+    {       
+        $viewPath = ($role === 'admin') ? 'app/views/admin/auth/login.php' : ($role ==='teacher'?'app/views/teacher/auth/login.php':'app/views/auth/login.php');
+        $title = ($role === 'admin') ? 'Admin Login' :(($role === 'teacher') ?'Teacher Login': 'User Login');
         if (file_exists($viewPath)) {
             include $viewPath;
         } else {
@@ -91,7 +98,9 @@ class AuthController extends Controller
     {
         if ($role === 'admin') {
             $_SESSION['admin_logged_in'] = null;
-        } else {
+        } elseif($role === 'teacher') {
+            $_SESSION['teacher_logged_in'] = null;
+        }else{
             $_SESSION['user_logged_in'] = null;
         }
         session_unset();

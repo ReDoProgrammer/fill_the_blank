@@ -32,6 +32,22 @@ class App
                 $this->controller = 'DashboardController'; // Controller mặc định khi chỉ có 'admin'
                 require_once 'app/controllers/admin/' . $this->controller . '.php';
             }
+        } elseif (isset($url[0]) && $url[0] === 'teacher') {
+            array_shift($url); // Loại bỏ 'teacher' khỏi mảng URL
+            if (isset($url[0]) && !empty($url[0])) {
+                $controllerFile = 'app/controllers/teacher/' . ucfirst($url[0]) . 'Controller.php';
+                if (file_exists($controllerFile)) {
+                    $this->controller = ucfirst($url[0]) . 'Controller';
+                    require_once $controllerFile;
+                    unset($url[0]);
+                } else {
+                    $this->controller = 'TeacherAuthController'; // Controller mặc định nếu không tìm thấy
+                    require_once 'app/controllers/teacher/' . $this->controller . '.php';
+                }
+            } else {
+                $this->controller = 'DashboardController'; // Controller mặc định khi chỉ có 'admin'
+                require_once 'app/controllers/teacher/' . $this->controller . '.php';
+            }
         } else {
             if (isset($url[0])) {
                 $controllerFile = 'app/controllers/' . ucfirst($url[0]) . 'Controller.php';
@@ -123,13 +139,14 @@ class App
         }
     }
 
-    public function parseUrl() {
+    public function parseUrl()
+    {
         if (isset($_GET['url'])) {
             return explode('/', filter_var(rtrim($_GET['url'], '/'), FILTER_SANITIZE_URL));
         }
         return [];
     }
-    
+
     protected function loadDefaultController()
     {
         require_once 'app/controllers/' . $this->controller . '.php';
