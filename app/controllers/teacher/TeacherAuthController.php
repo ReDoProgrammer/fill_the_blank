@@ -11,7 +11,7 @@ class TeacherAuthController extends AuthController
             $password = $_POST['password'] ?? '';
             $this->loginWithRole($username, $password, 'teacher');
         } else {
-            // Kiểm tra xem admin đã đăng nhập chưa, nếu đã đăng nhập, không cần phải hiển thị lại trang login
+            // Kiểm tra xem teacher đã đăng nhập chưa, nếu đã đăng nhập, không cần phải hiển thị lại trang login
             if (!empty($_SESSION['teacher_logged_in'])) {
                 header('Location: ' . BASE_URL . '/teacher');
                 exit;

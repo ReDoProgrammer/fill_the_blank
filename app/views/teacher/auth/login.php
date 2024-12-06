@@ -71,45 +71,45 @@
                 var password = $('#password').val();
                 var role = $('#role').val(); // Lấy giá trị role từ select box
 
-                // $.ajax({
-                //     url: '<?php echo BASE_URL; ?>/teacher/auth/login', // URL của phương thức login trong AuthController
-                //     method: 'POST',
-                //     data: {
-                //         username: username,
-                //         password: password
-                //     },
-                //     dataType: 'json', // Đảm bảo rằng AJAX mong đợi phản hồi JSON
-                //     success: function (response) {
-                //         console.log(response);
-                //         const { code, message, redirect } = response;
-                //         if (code == 200) {
-                //             Swal.fire({
-                //                 title: "SUCCESSFULLY",
-                //                 text: message,
-                //                 icon: "success"
-                //             }).then(_ => {
-                //                 window.location.href = redirect;
-                //             });
+                $.ajax({
+                    url: '<?php echo BASE_URL; ?>/teacher/auth/login', // URL của phương thức login trong AuthController
+                    method: 'POST',
+                    data: {
+                        username: username,
+                        password: password
+                    },
+                    dataType: 'json', // Đảm bảo rằng AJAX mong đợi phản hồi JSON
+                    success: function (response) {
+                        console.log(response);
+                        const { code, message, redirect } = response;
+                        if (code == 200) {
+                            Swal.fire({
+                                title: "SUCCESSFULLY",
+                                text: message,
+                                icon: "success"
+                            }).then(_ => {
+                                window.location.href = redirect;
+                            });
 
 
-                //         } else {
-                //             $.toast({
-                //                 heading: `Error: ${code}`,
-                //                 text: message || 'Invalid username or password',
-                //                 showHideTransition: 'fade',
-                //                 icon: 'error'
-                //             });
-                //         }
-                //     },
-                //     error: function () {
-                //         $.toast({
-                //             heading: 'Error',
-                //             text: 'Something went wrong. Please try again.',
-                //             showHideTransition: 'fade',
-                //             icon: 'error'
-                //         });
-                //     }
-                // });
+                        } else {
+                            $.toast({
+                                heading: `Error: ${code}`,
+                                text: message || 'Invalid username or password',
+                                showHideTransition: 'fade',
+                                icon: 'error'
+                            });
+                        }
+                    },
+                    error: function () {
+                        $.toast({
+                            heading: 'Error',
+                            text: 'Something went wrong. Please try again.',
+                            showHideTransition: 'fade',
+                            icon: 'error'
+                        });
+                    }
+                });
             });
         });
     </script>

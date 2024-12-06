@@ -35,7 +35,7 @@ class AuthController extends Controller
                 echo json_encode([
                     'code' => 200,
                     'message' => 'Teacher login successful',
-                    'redirect' => BASE_URL . '/home'
+                    'redirect' => BASE_URL . '/teacher/home'
                 ]);
             }
             elseif (($role === 'user' && $user['role'] === 'user') || ($role === 'user' && $user['role'] === 'admin')) {
