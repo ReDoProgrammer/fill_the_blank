@@ -33,6 +33,7 @@
     </div>
 
     <div class="sidebar">
+        <a href="<?php echo BASE_URL; ?>/admin/teacher"><i class="fa fa-users" aria-hidden="true"></i> Giáo viên</a>
         <a href="<?php echo BASE_URL; ?>/admin/user"><i class="fa fa-users" aria-hidden="true"></i> Tài khoản</a>
         <a href="<?php echo BASE_URL; ?>/admin/subject"><i class="fa fa-book" aria-hidden="true"></i> Bộ môn</a>
         <a href="<?php echo BASE_URL; ?>/admin/lession"><i class="fa fa-book" aria-hidden="true"></i> Bài học</a>
@@ -114,3 +115,23 @@
 </body>
 
 </html>
+<style>
+    html,
+    body {
+        height: 100%;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .main-content {
+        flex: 1;
+        /* Chiếm toàn bộ không gian trống */
+    }
+
+    .footer {
+        text-align: center;
+        padding: 10px 0;
+        box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
+    }
+</style>

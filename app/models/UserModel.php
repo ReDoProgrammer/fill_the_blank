@@ -10,37 +10,38 @@ class UserModel extends Model
 
     // app/models/UserModel.php
 
-    public function getAllUsers($keyword, $page, $pageSize)
+    public function getAllUsers($keyword, $page, $pageSize, $role = 'user')
     {
         // Tính toán OFFSET
         $offset = ($page - 1) * $pageSize;
-
+    
         // Câu lệnh SQL để lấy dữ liệu người dùng theo phân trang
         $sql = "SELECT * FROM users
-            WHERE (username LIKE :keyword OR phone LIKE :keyword OR email LIKE :keyword OR fullname LIKE :keyword)
-           ORDER BY username,fullname LIMIT $offset, $pageSize ";
-
+                WHERE (username LIKE :keyword OR phone LIKE :keyword OR email LIKE :keyword OR fullname LIKE :keyword)
+                  AND role = :role
+                ORDER BY username, fullname
+                LIMIT $offset, $pageSize"; // Chèn trực tiếp OFFSET và LIMIT
+    
         // Câu lệnh SQL để lấy tổng số bản ghi
         $countSql = "SELECT COUNT(*) as total FROM users
-                 WHERE (username LIKE :keyword OR phone LIKE :keyword OR email LIKE :keyword OR fullname LIKE :keyword)";
-
+                     WHERE (username LIKE :keyword OR phone LIKE :keyword OR email LIKE :keyword OR fullname LIKE :keyword)
+                       AND role = :role";
+    
         // Thay đổi các tham số cho PDO
         $params = [
-            ':keyword' => "%$keyword%"
+            ':keyword' => "%$keyword%",
+            ':role' => $role
         ];
-
+    
         // Lấy dữ liệu người dùng
         $users = $this->fetchAll($sql, $params);
-
+    
         // Lấy tổng số bản ghi
-        $countParams = [
-            ':keyword' => "%$keyword%"
-        ];
-        $totalRecords = $this->fetch($countSql, $countParams)['total'];
-
+        $totalRecords = $this->fetch($countSql, $params)['total'];
+    
         // Tính toán số trang
         $totalPages = ceil($totalRecords / $pageSize);
-
+    
         // Trả về dữ liệu cùng với thông tin phân trang
         return [
             'users' => $users,
@@ -50,6 +51,7 @@ class UserModel extends Model
             'totalRecords' => $totalRecords
         ];
     }
+    
 
 
 

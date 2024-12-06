@@ -246,3 +246,24 @@ if (session_status() === PHP_SESSION_NONE) {
 </body>
 
 </html>
+
+<style>
+    html,
+    body {
+        height: 100%;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .main-content {
+        flex: 1;
+        /* Chiếm toàn bộ không gian trống */
+    }
+
+    .footer {
+        text-align: center;
+        padding: 10px 0;
+        box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
+    }
+</style>
