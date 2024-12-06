@@ -42,6 +42,11 @@ class StatisticController extends AdminController
     {
         $this->view('admin/statistic/review', [], 'Thống kê phần ôn tập', 'admin');
     }
+
+    public function answers_statistic()
+    {
+        $this->view('admin/statistic/answers', [], 'Thống kê đáp án', 'admin');
+    }
     public function quiz_statistic()
     {
         $this->view('admin/statistic/quiz', [], 'Thống kê thi trắc nghiệm', 'admin');

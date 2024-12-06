@@ -53,6 +53,7 @@
             <a href="<?php echo BASE_URL; ?>/admin/statistic/lession_statistic">Thống kê bài học</a>
             <a href="<?php echo BASE_URL; ?>/admin/statistic/question_statistic">Thống kê câu hỏi</a>
             <a href="<?php echo BASE_URL; ?>/admin/statistic/review_statistic">Thống kê ôn tập</a>
+            <a href="<?php echo BASE_URL; ?>/admin/statistic/answers_statistic">Thống kê đáp án</a>
             <a href="<?php echo BASE_URL; ?>/admin/statistic/quiz_statistic">Thống kê trắc nghiệm</a>
 
         </div>
