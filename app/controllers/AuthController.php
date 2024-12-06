@@ -32,6 +32,7 @@ class AuthController extends Controller
                     'redirect' => BASE_URL . '/admin'
                 ]);
             } elseif($role == 'teacher' && $user['role'] === 'teacher' ){
+                $_SESSION['teacher_logged_in'] = $user;
                 echo json_encode([
                     'code' => 200,
                     'message' => 'Teacher login successful',
