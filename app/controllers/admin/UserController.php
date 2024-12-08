@@ -17,7 +17,7 @@ class UserController extends AdminController
             $keyword = isset($_GET['keyword']) ? $_GET['keyword'] : '';
             $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
             $pageSize = isset($_GET['pageSize']) ? (int) $_GET['pageSize'] : 10;
-            $role = $_GET['role'];
+            $role = $_GET['role']??'user';
             $userModel = new UserModel();
             $result = $userModel->getAllUsers($keyword, $page, $pageSize,$role);
 
@@ -49,7 +49,7 @@ class UserController extends AdminController
             $email = $_POST['email'] ?? '';
             $phone = $_POST['phone'] ?? '';
             $password = $_POST['password'] ?? '';
-            $role = $_POST['role'];
+            $role = $_POST['role']??'user';
 
             // Chuẩn bị dữ liệu để cập nhật
             $data = [
@@ -80,7 +80,7 @@ class UserController extends AdminController
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Lấy dữ liệu từ POST request
             $id = $_POST['id'] ?? '';
-
+            $role = $_POST['role']??'user';
             // Kiểm tra xem ID có hợp lệ không
             if (empty($id)) {
                 echo json_encode([
@@ -91,7 +91,7 @@ class UserController extends AdminController
             }
 
             // Gọi hàm deleteUser từ model và trả về kết quả dưới dạng JSON
-            $result = $this->userModel->deleteUser($id);
+            $result = $this->userModel->deleteUser($id,$role);
             echo json_encode($result);
         } else {
             // Nếu không phải POST request, trả về lỗi
@@ -112,7 +112,7 @@ class UserController extends AdminController
             $fullname = $_POST['fullname'];
             $email = $_POST['email'];
             $phone = $_POST['phone'];
-            $role = $_POST['role'];
+            $role = $_POST['role']??'user';
 
             // Gọi hàm tạo người dùng từ model và trả về kết quả dưới dạng JSON
             $result = $this->userModel->createUser($username, $usercode, $fullname, $phone, $email, $password,$role);

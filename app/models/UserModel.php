@@ -122,14 +122,14 @@ class UserModel extends Model
             : ['code' => 400, 'msg' => "Cập nhật thông tin $roleMessage không thành công!"];
     }
 
-    public function deleteUser($id)
+    public function deleteUser($id,$role = 'user')
     {
         $sql = "DELETE FROM users WHERE id = :id";
         $result = $this->execute($sql, ['id' => $id]);
-
+        $msg = $role ==='user'?'người dùng':'giáo viên';
         return $result > 0
-            ? ['code' => 200, 'msg' => 'Xóa tài khoản thành công!']
-            : ['code' => 400, 'msg' => 'Xóa tài khoản không thành công!'];
+            ? ['code' => 200, 'msg' => "Xóa tài khoản $msg thành công!"]
+            : ['code' => 400, 'msg' => "Xóa tài khoản $msg không thành công!"];
     }
 
     public function importUsers($users)

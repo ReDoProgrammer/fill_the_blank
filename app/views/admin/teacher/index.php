@@ -13,11 +13,11 @@
                 <i class="fa fa-plus text-white" data-bs-toggle="modal" data-bs-target="#modal"></i> Thêm
                 mới
             </button>
-            <input type="file" id="btnUpload" class="btn btn-warning text-white" style="display:none;"
+            <!-- <input type="file" id="btnUpload" class="btn btn-warning text-white" style="display:none;"
                 accept=".xlsx, .xls" />
             <button class="btn btn-warning text-white" id="uploadTrigger">
                 <i class="fa fa-upload" aria-hidden="true"></i> Upload
-            </button>
+            </button> -->
             <button class="btn btn-danger text-white" id="deleteMany">
                 <i class="fa fa-times" aria-hidden="true"></i> Delete (<span id="deleteCount" class="fw-bold">0</span>)
             </button>
@@ -556,8 +556,10 @@
     }
 
     function DeleteUser(id, username) {
+        console.log({id,username});
+        
         Swal.fire({
-            title: `Bạn thực sự muốn xoá tài khoản <span class="text-warning">${username}</span>?`,
+            title: `Bạn thực sự muốn xoá tài khoản giáo viên <span class="text-warning">${username}</span>?`,
             text: "Bạn sẽ không thể khôi phục lại dữ liệu đã bị xoá!",
             icon: "question",
             showCancelButton: true,
@@ -591,7 +593,8 @@
             url: '<?php echo BASE_URL; ?>/admin/user/delete', // URL của phương thức delete trong UserController
             type: 'POST',
             data: {
-                id
+                id,
+                role:'teacher'
             },
             dataType: 'json',
             success: function(response) {
