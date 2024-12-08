@@ -10,7 +10,7 @@ Controller
     }
     public function index()
     {
-        $this->view('teacher/quiz/index', [], 'Quản lý câu hỏi trắc nghiệm', 'teacher');
+        $this->view('teacher/quiz/index', [], 'Quản lý câu hỏi trắc nghiệm', 'lecture');
     }
 
     public function search()

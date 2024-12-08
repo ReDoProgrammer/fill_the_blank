@@ -9,6 +9,6 @@ class DashboardController extends TeacherController
 
     public function index()
     {
-        $this->view('teacher/dashboard/index', [], 'Dashboard','Teacher');
+        $this->view('teacher/dashboard/index', [], 'Dashboard','lecture');
     }
 }
