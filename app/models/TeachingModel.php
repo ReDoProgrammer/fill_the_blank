@@ -69,6 +69,28 @@ class TeachingModel extends Model
         return $this->fetch($sql, ['id' => $id]);
     }
 
+    public function getClassesByTeacherId($teacherId)
+    {
+        $sql = "
+            SELECT t.id AS teaching_id, t.school_year AS school_year,
+            s.id AS subject_id,
+            s.name AS subject_name,
+            s.meta AS subject_meta
+            FROM teachings t
+            JOIN subjects s ON t.subject_id = s.id
+            WHERE t.teacher_id = :teacherId
+            GROUP BY t.school_year
+            ORDER BY t.school_year DESC";
+        
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindParam(':teacherId', $teacherId, PDO::PARAM_INT);
+        $stmt->execute();
+        $classes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+        return $classes;
+    }
+
+    
     // Thêm teaching mới
     public function createTeaching($teacherId, $subjectId, $schoolYear)
     {
@@ -164,4 +186,6 @@ class TeachingModel extends Model
             'schoolYear' => $schoolYear
         ]);
     }
+
+    
 }

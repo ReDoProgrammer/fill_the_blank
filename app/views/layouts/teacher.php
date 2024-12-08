@@ -75,7 +75,30 @@ if (session_status() === PHP_SESSION_NONE) {
     <script>
     $(document).ready(async function() {
         await RenderQuestionsBankList(); // Gọi hàm render sidebar ngay khi trang tải
+        await RenderOwnClasses();
     });
+
+    const RenderOwnClasses = function(){
+        $.ajax({
+            url: '<?php echo BASE_URL; ?>/teacher/teaching/ownclasses', 
+            type: 'get',
+            dataType: 'json',
+            success:function(response){
+                console.log(response);
+                const $classes = $('#sidebar-classes');
+                $classes.empty();
+                const {classes} = response;
+                classes.forEach(c=>{
+                    $classes.append(`<a href="<?php echo BASE_URL; ?>/teacher/teachingclass/index?s=${c.subject_meta}-${c.teaching_id}" target="_self">${c.subject_name} (${c.school_year})</a>`);
+                })
+                
+            },
+            error:function(err){
+                console.log(err.responseText);
+                
+            }
+        })
+    }
 
     const RenderQuestionsBankList = function() {
         $.ajax({
