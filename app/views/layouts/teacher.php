@@ -77,46 +77,48 @@ if (session_status() === PHP_SESSION_NONE) {
         const $examMenu = $('#sidebar-exam');
 
         $(document).ready(async function() {
-
+            await RenderSubjectsHaveLessions();
         });
 
 
 
-        // const RenderSubjectsHaveExams = function (retries = 3) {
-        //     $.ajax({
-        //         url: '<?php echo BASE_URL; ?>/home/SubjectsHaveExams',
-        //         type: 'get',
-        //         dataType: 'json',
-        //         success: async function (data) {
-        //             $examMenu.empty();
-        //             const { sidebar } = data;
-        //             if (!sidebar || sidebar.length === 0) {
-        //                 console.warn('No subjects available for exams.');
-        //                 return;
-        //             }
+        const RenderSubjectsHaveLessions = function (retries = 3) {
+            $.ajax({
+                url: '<?php echo BASE_URL; ?>/teacher/subject/HaveLessions',
+                type: 'get',
+                dataType: 'json',
+                success: async function (response) {
+                    console.log(response);
+                    
+                    // $examMenu.empty();
+                    // const { sidebar } = data;
+                    // if (!sidebar || sidebar.length === 0) {
+                    //     console.warn('No subjects available for exams.');
+                    //     return;
+                    // }
 
-        //             const appendExamSubjects = async (subject) => {
-        //                 const $subjectLink = $(`<a style="padding-left:25px;" href="<?php echo BASE_URL; ?>/exam/index?s=${subject.meta}-${subject.id}">${subject.name}</a>`);
-        //                 $examMenu.append($subjectLink);
-        //             };
+                    // const appendExamSubjects = async (subject) => {
+                    //     const $subjectLink = $(`<a style="padding-left:25px;" href="<?php echo BASE_URL; ?>/exam/index?s=${subject.meta}-${subject.id}">${subject.name}</a>`);
+                    //     $examMenu.append($subjectLink);
+                    // };
 
-        //             for (const s of sidebar) {
-        //                 await appendExamSubjects(s);
-        //             }
-        //         },
-        //         error: function (err) {
-        //             console.error('Error loading subjects:', err);
-        //             if (retries > 0) {
-        //                 console.log(`Retrying... (${3 - retries + 1}/3)`);
-        //                 setTimeout(() => {  // Thêm delay trước khi retry
-        //                     RenderSubjectsHaveExams(retries - 1);
-        //                 }, 2000);  // Retry sau 2 giây
-        //             } else {
-        //                 console.error('Failed to load subjects after 3 attempts.');
-        //             }
-        //         }
-        //     });
-        // };
+                    // for (const s of sidebar) {
+                    //     await appendExamSubjects(s);
+                    // }
+                },
+                error: function (err) {
+                    console.error('Error loading subjects:', err);
+                    if (retries > 0) {
+                        console.log(`Retrying... (${3 - retries + 1}/3)`);
+                        setTimeout(() => {  // Thêm delay trước khi retry
+                            RenderSubjectsHaveLessions(retries - 1);
+                        }, 2000);  // Retry sau 2 giây
+                    } else {
+                        console.error('Failed to load subjects after 3 attempts.');
+                    }
+                }
+            });
+        };
 
         // const RenderFillTheBlank = function () {
         //     $.ajax({

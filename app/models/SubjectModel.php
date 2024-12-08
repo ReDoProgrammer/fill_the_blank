@@ -99,6 +99,61 @@ class SubjectModel extends Model
         return $subjects;
     }
 
+    // models/SubjectModel.php
+
+    public function getSubjectsWithLessionsByTeacherId($teacherId)
+    {
+        // Truy vấn để lấy thông tin các môn học có ít nhất một bài học của giáo viên
+        $sql = "
+        SELECT s.id AS subject_id, s.name AS subject_name, s.meta AS subject_meta, 
+               l.id AS lession_id, l.name AS lession_name, l.meta AS lession_meta
+        FROM teachings t
+        INNER JOIN subjects s ON s.id = t.subject_id
+        INNER JOIN lessions l ON l.subject_id = s.id
+        WHERE t.teacher_id = :teacherId
+        GROUP BY s.id, l.id
+        ORDER BY s.id, l.id
+    ";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindParam(':teacherId', $teacherId, PDO::PARAM_INT);
+        $stmt->execute();
+
+        // Fetch tất cả các kết quả
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if (!$results) {
+            return null; // Nếu không có môn học và bài học nào
+        }
+
+        $subjects = [];
+        foreach ($results as $result) {
+            $subject_id = $result['subject_id'];
+            if (!isset($subjects[$subject_id])) {
+                // Thêm thông tin môn học mới nếu chưa tồn tại trong danh sách
+                $subjects[$subject_id] = [
+                    'id' => $result['subject_id'],
+                    'name' => $result['subject_name'],
+                    'meta' => $result['subject_meta'],
+                    'lessions' => []
+                ];
+            }
+
+            // Thêm bài học vào danh sách các bài học của môn học
+            $subjects[$subject_id]['lessions'][] = [
+                'id' => $result['lession_id'],
+                'name' => $result['lession_name'],
+                'meta' => $result['lession_meta'],
+            ];
+        }
+
+        // Chuyển mảng subjects từ dạng associative array sang dạng indexed array
+        $subjects = array_values($subjects);
+
+        return $subjects;
+    }
+
+
     public function getSubjectsWithExams()
     {
         // Lấy ngày hiện tại
