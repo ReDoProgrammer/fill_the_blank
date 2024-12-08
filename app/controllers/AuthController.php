@@ -19,11 +19,12 @@ class AuthController extends Controller
     {
         header('Content-Type: application/json');
 
-        // Fetch user from the database
+        // Lấy thông tin người dùng từ cơ sở dữ liệu
         $user = $this->userModel->getUserByUsername($username);
-
-
-        if ($user && md5($password) === $user['password']) {
+        // echo $role;
+        // Kiểm tra nếu người dùng tồn tại và mật khẩu khớp
+        if ($user && password_verify($password, $user['password'])) {
+            // Kiểm tra vai trò và thực hiện đăng nhập tương ứng
             if ($role === 'admin' && $user['role'] === 'admin') {
                 $_SESSION['admin_logged_in'] = $user;
                 echo json_encode([
@@ -31,15 +32,14 @@ class AuthController extends Controller
                     'message' => 'Admin login successful',
                     'redirect' => BASE_URL . '/admin'
                 ]);
-            } elseif($role == 'teacher' && $user['role'] === 'teacher' ){
+            } elseif ($role === 'teacher' && $user['role'] === 'teacher') {
                 $_SESSION['teacher_logged_in'] = $user;
                 echo json_encode([
                     'code' => 200,
                     'message' => 'Teacher login successful',
                     'redirect' => BASE_URL . '/teacher/home'
                 ]);
-            }
-            elseif (($role === 'user' && $user['role'] === 'user') || ($role === 'user' && $user['role'] === 'admin')) {
+            } elseif (($role === 'user' && $user['role'] === 'user') || ($role === 'user' && $user['role'] === 'admin')) {
                 $_SESSION['user_logged_in'] = $user;
                 echo json_encode([
                     'code' => 200,
@@ -53,6 +53,7 @@ class AuthController extends Controller
                 ]);
             }
         } else {
+            // Sai thông tin đăng nhập
             echo json_encode([
                 'code' => 401,
                 'message' => 'Tài khoản hoặc mật khẩu không chính xác!!'
@@ -62,10 +63,11 @@ class AuthController extends Controller
         exit;
     }
 
+
     protected function loginView($role)
-    {       
-        $viewPath = ($role === 'admin') ? 'app/views/admin/auth/login.php' : ($role ==='teacher'?'app/views/teacher/auth/login.php':'app/views/auth/login.php');
-        $title = ($role === 'admin') ? 'Admin Login' :(($role === 'teacher') ?'Teacher Login': 'User Login');
+    {
+        $viewPath = ($role === 'admin') ? 'app/views/admin/auth/login.php' : ($role === 'teacher' ? 'app/views/teacher/auth/login.php' : 'app/views/auth/login.php');
+        $title = ($role === 'admin') ? 'Admin Login' : (($role === 'teacher') ? 'Teacher Login' : 'User Login');
         if (file_exists($viewPath)) {
             include $viewPath;
         } else {
@@ -99,9 +101,9 @@ class AuthController extends Controller
     {
         if ($role === 'admin') {
             $_SESSION['admin_logged_in'] = null;
-        } elseif($role === 'teacher') {
+        } elseif ($role === 'teacher') {
             $_SESSION['teacher_logged_in'] = null;
-        }else{
+        } else {
             $_SESSION['user_logged_in'] = null;
         }
         session_unset();
