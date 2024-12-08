@@ -16,7 +16,7 @@ body {
     width: 100%;
     top: 0;
     /* Để navbar luôn ở đỉnh trang */
-    z-index: 1000;
+    z-index: 9999;
     /* Đảm bảo navbar hiển thị trên các phần tử khác */
     padding: 0 20px;
     /* Thêm padding để không bị dính vào cạnh màn hình */

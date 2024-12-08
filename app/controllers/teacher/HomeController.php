@@ -9,7 +9,7 @@ class HomeController extends Controller
     }
     public function index()
     {
-        $this->view('teacher/home/index', [], 'Home Page','teacher');
+        $this->view('teacher/home/index', [], 'Home Page','lecture');
     }
 
     public function about()
