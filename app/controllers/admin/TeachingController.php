@@ -1,11 +1,11 @@
 <?php
-require_once 'app/models/UserModel.php';
+require_once 'app/models/TeachingModel.php';
 class TeachingController extends AdminController
 {
-    protected $userModel;
+    protected $teachingModel;
     public function __construct()
     {
-        $this->userModel = new UserModel();
+        $this->teachingModel = new TeachingModel();
     }
     public function index()
     {
@@ -17,10 +17,7 @@ class TeachingController extends AdminController
             $keyword = isset($_GET['keyword']) ? $_GET['keyword'] : '';
             $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
             $pageSize = isset($_GET['pageSize']) ? (int) $_GET['pageSize'] : 10;
-
-            $userModel = new UserModel();
-            $result = $userModel->getAllUsers($keyword, $page, $pageSize,'teacher');
-
+            $result = $this->teachingModel->getAllTeachings($keyword, $page, $pageSize);
             echo json_encode($result);
         }
     }
@@ -28,12 +25,6 @@ class TeachingController extends AdminController
     {
         if ($_SERVER["REQUEST_METHOD"] === "GET") {
             $id = isset($_GET["id"]) ? (int) $_GET["id"] : -1;
-            $user = $this->userModel->getUserById($id);
-            if ($user) {
-                echo json_encode(['code' => 200, 'msg' => 'Lấy thông tin tài khoản thành công', 'user' => $user]);
-            } else {
-                echo json_encode(['code' => 404, 'msg' => 'Không tìm thấy tài khoản tương ứng']);
-            }
         }
     }
 
@@ -59,9 +50,8 @@ class TeachingController extends AdminController
                 'password' => md5($password), // Mã hóa mật khẩu
             ];
 
-            // Gọi hàm updateUser từ model và trả về kết quả dưới dạng JSON
-            $result = $this->userModel->updateUser($id, $data);
-            echo json_encode($result);
+
+            // echo json_encode($result);
         } else {
             // Nếu không phải POST request, trả về lỗi
             echo json_encode([
@@ -89,8 +79,8 @@ class TeachingController extends AdminController
             }
 
             // Gọi hàm deleteUser từ model và trả về kết quả dưới dạng JSON
-            $result = $this->userModel->deleteUser($id);
-            echo json_encode($result);
+            // $result = $this->userModel->deleteUser($id);
+            // echo json_encode($result);
         } else {
             // Nếu không phải POST request, trả về lỗi
             echo json_encode([
@@ -104,16 +94,11 @@ class TeachingController extends AdminController
     {
         header('Content-Type: application/json'); // Thiết lập header đúng cho JSON
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $username = $_POST['username'];
-            $usercode = $_POST['usercode'];
-            $password = $_POST['password'];
-            $fullname = $_POST['fullname'];
-            $email = $_POST['email'];
-            $phone = $_POST['phone'];
+            $teacher_id = $_POST['teacher_id'];
+            $subject_id = $_POST['subject_id'];
+            $schoolyear = $_POST['schoolyear'];
 
-            // Gọi hàm tạo người dùng từ model và trả về kết quả dưới dạng JSON
-            $result = $this->userModel->createUser($username, $usercode, $fullname, $phone, $email, $password);
-
+            $result = $this->teachingModel->createTeaching($teacher_id, $subject_id, $schoolyear);
             echo json_encode($result);
         } else {
             // Nếu không phải POST request, trả về lỗi
@@ -121,17 +106,6 @@ class TeachingController extends AdminController
                 'code' => 405,
                 'msg' => 'Phương thức truy vấn không hợp lệ!'
             ]);
-        }
-    }
-
-    public function import()
-    {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $users = $_POST['users'] ?? [];
-            // echo json_encode($users);
-            header('Content-Type: application/json'); // Thiết lập header đúng cho JSON
-            $result = $this->userModel->importUsers($users);
-            echo $result;
         }
     }
 }
