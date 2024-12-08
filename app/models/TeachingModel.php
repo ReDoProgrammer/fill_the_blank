@@ -78,8 +78,7 @@ class TeachingModel extends Model
             s.meta AS subject_meta
             FROM teachings t
             JOIN subjects s ON t.subject_id = s.id
-            WHERE t.teacher_id = :teacherId
-            GROUP BY t.school_year
+            WHERE t.teacher_id = :teacherId            
             ORDER BY t.school_year DESC";
         
         $stmt = $this->pdo->prepare($sql);

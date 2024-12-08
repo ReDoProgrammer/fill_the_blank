@@ -50,12 +50,9 @@ if (session_status() === PHP_SESSION_NONE) {
         <h6 class="text-secondary fw-bold p-3">NGÂN HÀNG CÂU HỎI</h6>
         <div class="sidebar-section" id="sidebar-subjects">
         </div>
-        <h6 class="text-secondary fw-bold p-3">LỚP GIẢNG DẠY</h6>
-        <div class="sidebar-section" id="sidebar-classes">
-        </div>
         <h6 class="text-secondary fw-bold p-3">ĐỀ THI</h6>
-        <div class="sidebar-section" id="sidebar-exam">
-        </div>
+        <div class="sidebar-section" id="sidebar-classes">
+        </div>        
         <h6 class="text-secondary fw-bold p-3">PHÂN TÍCH - THỐNG KÊ</h6>
         <div class="sidebar-section" id="sidebar-statistic">
         </div>
@@ -88,8 +85,10 @@ if (session_status() === PHP_SESSION_NONE) {
                 const $classes = $('#sidebar-classes');
                 $classes.empty();
                 const {classes} = response;
+                console.log(classes);
+                
                 classes.forEach(c=>{
-                    $classes.append(`<a href="<?php echo BASE_URL; ?>/teacher/teachingclass/index?s=${c.subject_meta}-${c.teaching_id}" target="_self">${c.subject_name} (${c.school_year})</a>`);
+                    $classes.append(`<a href="<?php echo BASE_URL; ?>/teacher/exam/index?s=${c.subject_meta}-${c.teaching_id}" target="_self">${c.subject_name} (${c.school_year})</a>`);
                 })
                 
             },
