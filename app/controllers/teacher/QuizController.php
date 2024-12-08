@@ -1,6 +1,7 @@
 <?php
 require_once 'app/models/QuizModel.php';
-class QuizController extends AdminController
+class QuizController extends
+Controller
 {
     protected $quizModel;
     public function __construct()
@@ -9,18 +10,28 @@ class QuizController extends AdminController
     }
     public function index()
     {
-        $this->view('admin/quiz/index', [], 'Quản lý câu hỏi trắc nghiệm', 'admin');
-    }
-    public function exams()
-    {
-        $this->view('admin/quiz/exam', [], 'Quản lý bài thi trắc nghiệm', 'admin');
+        $this->view('teacher/quiz/index', [], 'Quản lý câu hỏi trắc nghiệm', 'teacher');
     }
 
+    public function search()
+    {
+
+        if ($_SERVER["REQUEST_METHOD"] === "GET") {
+            $keyword = isset($_GET['keyword']) ? $_GET['keyword'] : '';
+            $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
+            $pageSize = isset($_GET['pageSize']) ? (int) $_GET['pageSize'] : 10;
+            $subjectId = isset($_GET['subjectId']) ? (int) $_GET['subjectId'] : 0;
+
+            $result = $this->quizModel->getAllQuizzes($subjectId, $page, $pageSize, $keyword);
+
+            echo json_encode($result);
+        }
+    }
     public function create()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             session_start();
-            $created_by = $_SESSION['admin_logged_in']['id'];
+            $created_by = $_SESSION['teacher_logged_in']['id'];
             $subject_id = $_POST['subject_id'];
             $question = $_POST['question'];
             $options = [
@@ -35,7 +46,7 @@ class QuizController extends AdminController
 
 
             header('Content-Type: application/json');
-            $result = $this->quizModel->createQuiz($subject_id, $question, $mark, $options, $correct_option,$created_by);
+            $result = $this->quizModel->createQuiz($subject_id, $question, $mark, $options, $correct_option, $created_by);
             echo json_encode($result);
         }
     }
@@ -45,9 +56,11 @@ class QuizController extends AdminController
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $questions = $_POST['questions'];
             $subject_id = $_POST['subject_id'];
-           
+
             $count = 0;
             $arr = [];
+            session_start();
+            $created_by = $_SESSION['teacher_logged_in']['id'];
             foreach ($questions as $question) {
                 $options = [
                     'option_1' => $question['option_1'],
@@ -60,7 +73,7 @@ class QuizController extends AdminController
                     // Đảm bảo giá trị mark là số thực (float)
                     $mark = (float) $question['mark'];
 
-                    $result = $this->quizModel->createQuiz($subject_id, $question['title'], $mark, $options, $correct_option,$updated_by);
+                    $result = $this->quizModel->createQuiz($subject_id, $question['title'], $mark, $options, $correct_option, $created_by);
 
                     if ($result['code'] == 201) {
                         $count++;
@@ -93,11 +106,10 @@ class QuizController extends AdminController
             $correct_option = (int) $_POST['correct_option'];
             $mark = (float) $_POST['mark'];
             session_start();
-            $updated_by = $_SESSION['admin_logged_in']['id'];
+            $updated_by = $_SESSION['teacher_logged_in']['id'];
             header('Content-Type: application/json');
-            $result = $this->quizModel->updateQuiz($id, $question, $mark, $options, $correct_option,$updated_by);
+            $result = $this->quizModel->updateQuiz($id, $question, $mark, $options, $correct_option, $updated_by);
             echo json_encode($result);
-
         }
     }
 
@@ -123,15 +135,7 @@ class QuizController extends AdminController
         }
     }
 
-    public function search()
-    {
-        if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-            $keyword = $_GET['keyword'];
-            header('Content-Type: application/json');
-            $questions = $this->quizModel->search($keyword);
-            echo json_encode($questions);
-        }
-    }
+    
     public function detail()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
@@ -152,7 +156,8 @@ class QuizController extends AdminController
         }
     }
 
-    public function listMarkAndQuestions(){
+    public function listMarkAndQuestions()
+    {
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $subject_id = $_GET['subject_id'];
             header('Content-Type: application/json');
@@ -160,5 +165,4 @@ class QuizController extends AdminController
             echo json_encode($result);
         }
     }
-
 }

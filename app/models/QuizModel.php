@@ -2,7 +2,7 @@
 require_once 'app/core/Model.php';
 class QuizModel extends Model
 {
-    public function createQuiz($subject_id, $question, $mark, $options, $correct_option)
+    public function createQuiz($subject_id, $question, $mark, $options, $correct_option,$created_by)
     {
         try {
             $this->pdo->beginTransaction();
@@ -17,14 +17,15 @@ class QuizModel extends Model
             ]);
 
             // Thêm câu hỏi trắc nghiệm vào bảng quizs
-            $sql = "INSERT INTO quizs (subject_id, question, options, mark) VALUES (:subject_id, :question, :options, :mark)";
+            $sql = "INSERT INTO quizs (subject_id, question, options, mark,created_by) VALUES (:subject_id, :question, :options, :mark,:created_by)";
             $stmt = $this->pdo->prepare($sql);
             $stmt->bindParam(':subject_id', $subject_id, PDO::PARAM_INT);
             $stmt->bindParam(':question', $question, PDO::PARAM_STR);
             $stmt->bindParam(':options', $optionsJson, PDO::PARAM_STR);
-
+            
             // Sử dụng PDO::PARAM_STR để bind giá trị số thực
             $stmt->bindParam(':mark', $mark, PDO::PARAM_STR);
+            $stmt->bindParam(':created_by', $optionsJson, PDO::PARAM_INT);
 
             $stmt->execute();
 
@@ -38,7 +39,7 @@ class QuizModel extends Model
 
 
 
-    public function updateQuiz($id, $question, $mark, $options, $correct_option)
+    public function updateQuiz($id, $question, $mark, $options, $correct_option,$updated_by)
     {
         try {
             $this->pdo->beginTransaction();
@@ -53,12 +54,13 @@ class QuizModel extends Model
             ]);
 
             // Cập nhật câu hỏi trắc nghiệm trong bảng quizs
-            $sqlUpdateQuiz = "UPDATE quizs SET question = :question, mark = :mark, options = :options WHERE id = :id";
+            $sqlUpdateQuiz = "UPDATE quizs SET question = :question, mark = :mark, options = :options, updated_by = :updated_by, updated_at = NOW() WHERE id = :id";
             $stmtUpdateQuiz = $this->pdo->prepare($sqlUpdateQuiz);
             $stmtUpdateQuiz->bindParam(':id', $id);
             $stmtUpdateQuiz->bindParam(':question', $question);
             $stmtUpdateQuiz->bindParam(':mark', $mark);
             $stmtUpdateQuiz->bindParam(':options', $optionsJson);
+            $stmtUpdateQuiz->bindParam(':updated_by', $updated_by);
             $stmtUpdateQuiz->execute();
 
             $this->pdo->commit();

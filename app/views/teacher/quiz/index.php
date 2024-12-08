@@ -4,14 +4,8 @@
 
 <div class="container">
     <!-- Subject Dropdown and Search/Buttons Section -->
-    <div class="row justify-content-end mb-4">
-        <div class="col-md-4 form-group">
-            <label for="selSubject">Môn học:</label>
-            <select id="selSubject" class="form-control">
-                <!-- Các môn học sẽ được tải từ server và hiển thị ở đây -->
-            </select>
-        </div>
-        <div class="col col-md-4 align-self-end text-end">
+    <div class="row justify-content-end mb-4 mt-3">
+        <div class="col col-md-4 offset-md-4 align-self-end text-end">
             <div class="input-group">
                 <input type="text" id="txtKeyword" class="form-control" placeholder="Search question..." />
                 <button class="btn btn-outline-secondary btn-info text-white" type="button" id="btnSearch">
@@ -171,11 +165,18 @@
     </div>
 
 </div>
-
 <script>
-    var page = 1, pageSize = 10, id = -1;
+    var page = 1,
+        pageSize = 10,
+        id = -1;
     var pageNumber = 1; // Biến toàn cục để theo dõi tổng số trang
-    const $btnSearch = $('#btnSearch'), $btnSubmit = $('#btnSubmit'), $keyword = $('#txtKeyword'), $table = $('#tblData'), $pagination = $('.pagination'), $modal = $('#modal'), $modalTittle = $('#modalTitle');
+    const $btnSearch = $('#btnSearch'),
+        $btnSubmit = $('#btnSubmit'),
+        $keyword = $('#txtKeyword'),
+        $table = $('#tblData'),
+        $pagination = $('.pagination'),
+        $modal = $('#modal'),
+        $modalTittle = $('#modalTitle');
     const $subjects = $('#selSubject');
     const $btnImportExcel = $('#btnImportExcel');
     const $mark = $('#txtMark');
@@ -211,10 +212,24 @@
         $dIsCorrect = $('#DIzCorrect');
 
     const $deleteMany = $('#deleteMany');
+    let subject_id;
+    $(document).ready(function() {
+        // Lấy URL hiện tại
+        var url = window.location.href;
 
-    $(document).ready(function () {
-        LoadSubjects(); // Tải danh sách môn học
-        $mark.on('input', function () {
+        // Tạo đối tượng URLSearchParams
+        var urlParams = new URLSearchParams(window.location.search);
+
+        // Lấy giá trị của tham số "s" và "l"
+        var s = urlParams.get('s'); // "html-25"
+
+        // Tách số từ tham số "s" và "l"
+        subject_id = s.split('-')[1]; // 25
+
+        LoadData();
+
+        // RenderQuestionsBankList();
+        $mark.on('input', function() {
             // Chỉ cho phép số và dấu chấm (.), loại bỏ dấu âm (-)
             var value = $(this).val();
             value = value.replace(/[^0-9.]/g, '');
@@ -228,7 +243,7 @@
         });
 
 
-        $pagination.on('click', '.page-link', function (e) {
+        $pagination.on('click', '.page-link', function(e) {
             e.preventDefault(); // Ngăn chặn hành động mặc định của thẻ <a>
             currentPage = $(this).text(); // Lấy giá trị data-page
 
@@ -250,7 +265,7 @@
 
         $deleteMany.prop('disabled', true);
         // Khi checkAll được chọn hoặc bỏ chọn
-        $('#checkAll').on('change', function () {
+        $('#checkAll').on('change', function() {
             // Lấy trạng thái của checkbox checkAll
             var isChecked = $(this).prop('checked');
 
@@ -262,7 +277,7 @@
         });
 
         // Khi bất kỳ checkbox nào trong bảng được chọn hoặc bỏ chọn
-        $('#tblData').on('change', 'input.form-check-input', function () {
+        $('#tblData').on('change', 'input.form-check-input', function() {
             // Kiểm tra xem tất cả các checkbox trong bảng có được chọn không
             var allChecked = $('#tblData input.form-check-input').length === $('#tblData input.form-check-input:checked').length;
 
@@ -275,9 +290,9 @@
 
     });
 
-    $deleteMany.on('click', function () {
+    $deleteMany.on('click', function() {
         // Lấy mảng các ID của các hàng có checkbox được chọn
-        var selectedIds = $('#tblData input.form-check-input:checked').map(function () {
+        var selectedIds = $('#tblData input.form-check-input:checked').map(function() {
             return parseInt($(this).closest('tr').attr('id'));
         }).get();
 
@@ -302,19 +317,23 @@
 
 
 
-    $btnImportExcel.on('click', function () {
+    $btnImportExcel.on('click', function() {
         $('#excelFile').click(); // Kích hoạt sự kiện click của input file ẩn
     });
 
-    $('#excelFile').on('change', function (e) {
+    $('#excelFile').on('change', function(e) {
         var file = e.target.files[0];
         var reader = new FileReader();
 
-        reader.onload = function (e) {
+        reader.onload = function(e) {
             var data = new Uint8Array(e.target.result);
-            var workbook = XLSX.read(data, { type: 'array' });
+            var workbook = XLSX.read(data, {
+                type: 'array'
+            });
             var firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-            var excelRows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+            var excelRows = XLSX.utils.sheet_to_json(firstSheet, {
+                header: 1
+            });
 
             var arrQuiz = [];
 
@@ -352,24 +371,27 @@
         var chunk = arrQuiz.slice(startIndex, startIndex + chunkSize);
 
         $.ajax({
-            url: '<?php echo BASE_URL; ?>/admin/quiz/import',
+            url: '<?php echo BASE_URL; ?>/teacher/quiz/import',
             type: 'post',
             dataType: 'json',
-            data: { questions: chunk, subject_id: $subjects.val() },
-            success: function (response) {
+            data: {
+                questions: chunk,
+                subject_id: $subjects.val()
+            },
+            success: function(response) {
                 if (startIndex + chunkSize < arrQuiz.length) {
                     sendQuizData(arrQuiz, startIndex + chunkSize, chunkSize);
                 }
 
             },
-            error: function (err) {
+            error: function(err) {
                 console.log(err);
             }
         });
     }
 
 
-    $btnSubmit.click(function () {
+    $btnSubmit.click(function() {
         let question = quill.getText().trim();
         let option_a = quillA.getText().trim();
         let option_b = quillB.getText().trim();
@@ -420,10 +442,16 @@
         option_c = quillC.root.innerHTML.trim();
         option_d = quillD.root.innerHTML.trim();
 
-        const url = `<?php echo BASE_URL; ?>/admin/quiz/${id <= 0 ? 'create' : 'update'}`;
+        const url = `<?php echo BASE_URL; ?>/teacher/quiz/${id <= 0 ? 'create' : 'update'}`;
         const data = {
             subject_id: $subjects.val(),
-            question, option_a, option_b, option_c, option_d, correct_option, mark
+            question,
+            option_a,
+            option_b,
+            option_c,
+            option_d,
+            correct_option,
+            mark
         }
         if (id > 0) data.id = id;
         $.ajax({
@@ -431,8 +459,11 @@
             type: 'POST',
             dataType: 'json',
             data: data,
-            success: function (response) {
-                const { code, msg } = response;
+            success: function(response) {
+                const {
+                    code,
+                    msg
+                } = response;
                 if (code == 200 || code == 201) {
                     $.toast({
                         heading: 'SUCCESSFULLY',
@@ -446,40 +477,16 @@
                 $modal.modal('hide');
                 id = -1;
             },
-            error: function (err) {
+            error: function(err) {
                 console.log(err);
             }
         })
 
-    });
+    });    
 
-    // Tải danh sách môn học
-    function LoadSubjects() {
-        $.ajax({
-            url: '<?php echo BASE_URL; ?>/admin/subject/allSubjects',
-            method: 'GET',
-            dataType: 'json',
-            success: function (response) {
-                const { subjects } = response;
-                subjects.forEach(s => {
-                    $subjects.append(`<option value="${s.id}">${s.name}</option>`);
-                });
-                $subjects.trigger('change');
-            },
-            error: function (err) {
-                console.log(err.responseText);
-            }
-        });
-    }
-
-
-    // Xử lý khi chọn môn học
-    $subjects.change(function () {
-        LoadData();
-    });
 
     // Xử lý khi nhấn nút tìm kiếm
-    $('#btnSearch').click(function () {
+    $('#btnSearch').click(function() {
         page = 1;
         LoadData();
     });
@@ -488,17 +495,23 @@
         $table.empty();
         $pagination.empty();
         $.ajax({
-            url: '<?php echo BASE_URL; ?>/admin/quiz/list',
+            url: '<?php echo BASE_URL; ?>/teacher/quiz/list',
             type: 'get',
             dataType: 'json',
             data: {
                 keyword: $keyword.val(),
                 page,
                 pageSize,
-                subject_id: $subjects.val()
+                subject_id
             },
-            success: function (response) {
-                const { currentPage, pageSize, quizzes, totalPages, totalRecords } = response;
+            success: function(response) {
+                const {
+                    currentPage,
+                    pageSize,
+                    quizzes,
+                    totalPages,
+                    totalRecords
+                } = response;
                 let idx = (currentPage - 1) * pageSize;
                 pageNumber = totalPages;
 
@@ -526,8 +539,8 @@
                     $table.append(`
                     <tr class="align-middle" id="${q.id}">
                         <td class="text-center">                           
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" value="" id="check_${q.id}">
+                            <div class="form-check text-center">
+                                <input class="form-check-input text-center" type="checkbox" value="" id="check_${q.id}">
                             </div>                           
                         </td>
                         <td>${++idx}</td>
@@ -542,7 +555,7 @@
                 `);
                 });
             },
-            error: function (err) {
+            error: function(err) {
                 console.log(err);
             }
         });
@@ -553,12 +566,22 @@
         this.id = id;
         GetDetail(id)
             .then(detail => {
-                const { question, mark, options } = detail.quiz;
-              
-                const { option_1, option_2, option_3, option_4, correct_option } = options;
+                const {
+                    question,
+                    mark,
+                    options
+                } = detail.quiz;
 
-                 // Giữ nguyên nội dung HTML của q.question mà không render
-                 var formattedQuestionText = $('<div>').text(question).html();
+                const {
+                    option_1,
+                    option_2,
+                    option_3,
+                    option_4,
+                    correct_option
+                } = options;
+
+                // Giữ nguyên nội dung HTML của q.question mà không render
+                var formattedQuestionText = $('<div>').text(question).html();
                 quill.root.innerHTML = formattedQuestionText;
 
                 formattedQuestionText = $('<div>').text(option_1).html();
@@ -584,14 +607,19 @@
             })
     }
 
-    const DeleteSingle = function (id) {
+    const DeleteSingle = function(id) {
         $.ajax({
-            url: '<?php echo BASE_URL; ?>/admin/quiz/delete',
+            url: '<?php echo BASE_URL; ?>/teacher/quiz/delete',
             type: 'POST',
-            data: { id },
+            data: {
+                id
+            },
             dataType: 'json',
-            success: function (response) {
-                const { code, msg } = response;
+            success: function(response) {
+                const {
+                    code,
+                    msg
+                } = response;
                 $.toast({
                     heading: code == 200 ? 'THÀNH CÔNG' : `LỖI: ${code}`,
                     text: msg,
@@ -603,7 +631,7 @@
                     LoadData(); // Tải lại dữ liệu sau khi xóa
                 }
             },
-            error: function (err) {
+            error: function(err) {
                 console.log(err.responseText);
             }
         });
@@ -629,13 +657,27 @@
     function ViewDetail(id) {
         GetDetail(id)
             .then(detail => {
-                const { question, mark, options } = detail.quiz;
-                console.log({ question, mark, options });
+                const {
+                    question,
+                    mark,
+                    options
+                } = detail.quiz;
+                console.log({
+                    question,
+                    mark,
+                    options
+                });
 
-                const { option_1, option_2, option_3, option_4, correct_option } = options;
+                const {
+                    option_1,
+                    option_2,
+                    option_3,
+                    option_4,
+                    correct_option
+                } = options;
 
-                 // Giữ nguyên nội dung HTML của q.question mà không render
-                 var formattedQuestionText = $('<div>').text(question).html();
+                // Giữ nguyên nội dung HTML của q.question mà không render
+                var formattedQuestionText = $('<div>').text(question).html();
 
 
                 quill.root.innerHTML = formattedQuestionText;
@@ -668,11 +710,13 @@
     function GetDetail(id) {
         return new Promise((resolve, reject) => {
             $.ajax({
-                url: '<?php echo BASE_URL; ?>/admin/quiz/detail',
+                url: '<?php echo BASE_URL; ?>/teacher/quiz/detail',
                 type: 'get',
                 dataType: 'json',
-                data: { id },
-                success: function (response) {
+                data: {
+                    id
+                },
+                success: function(response) {
                     // Giả sử trong response có thuộc tính 'question' chứa nội dung HTML của câu hỏi
                     if (response && response.question) {
                         // Giữ nguyên nội dung HTML của question mà không render
@@ -681,7 +725,7 @@
 
                     return resolve(response); // Trả về response đã được chỉnh sửa
                 },
-                error: function (err) {
+                error: function(err) {
                     return reject(err);
                 }
             });
@@ -689,7 +733,7 @@
     }
 
 
-    $modal.on('hide.bs.modal', function (e) {
+    $modal.on('hide.bs.modal', function(e) {
         $modalTittle.text('Thêm mới câu hỏi');
         $btnSubmit.show();
         quill.root.innerHTML = '';
@@ -711,6 +755,4 @@
 
         $('#deleteCount').text(checkedCount);
     }
-
-
 </script>

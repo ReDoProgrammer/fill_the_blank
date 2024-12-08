@@ -40,7 +40,7 @@ if (session_status() === PHP_SESSION_NONE) {
         <?php if (isset($_SESSION['teacher_logged_in'])) { ?>
             <div class="profile-menu">
                 <span
-                    class="profile-name"><?php echo $_SESSION['teacher_logged_in']['fullname'] ?? $_SESSION['teacher_logged_in']['username']; ?></span>
+                    class="profile-name"><span class = "text-warning">GV:</span> <?php echo $_SESSION['teacher_logged_in']['fullname'] ?? $_SESSION['teacher_logged_in']['username']; ?></span>
             </div>
         <?php } ?>
         <button class="sidebar-toggle"><i class="fa fa-bars" aria-hidden="true"></i></button>
@@ -73,44 +73,35 @@ if (session_status() === PHP_SESSION_NONE) {
     </div>
 
     <script>
-        const $practiceMenu = $('#sidebar-practice');
-        const $examMenu = $('#sidebar-exam'),
-            $subjects = $('#sidebar-subjects');
-        $(document).ready(async function() {
-            RenderQuestionsBankList();
+    $(document).ready(async function() {
+        await RenderQuestionsBankList(); // Gọi hàm render sidebar ngay khi trang tải
+    });
+
+    const RenderQuestionsBankList = function() {
+        $.ajax({
+            url: '<?php echo BASE_URL; ?>/teacher/subject/HaveLessions', // Lấy dữ liệu từ backend
+            type: 'get',
+            dataType: 'json',
+            success: async function(data) {
+                const $subjects = $('#sidebar-subjects');
+                $subjects.empty(); // Làm trống sidebar trước khi thêm dữ liệu mới
+
+                const { subjects } = data;
+                subjects.forEach(s => {
+                    $subjects.append(`<a href="javascript:void(0)" onClick="GetQuestionsBySubject(${s.id}, '<?php echo BASE_URL; ?>/teacher/quiz/index?s=${s.meta}-${s.id}')">${s.name}</a>`);
+                });
+            },
+            error: function(err) {
+                console.log(err); // In lỗi nếu có
+            }
         });
+    };
 
-        const RenderQuestionsBankList = function() {
-            $.ajax({
-                url: '<?php echo BASE_URL; ?>/teacher/subject/HaveLessions',
-                type: 'get',
-                dataType: 'json',
-                success: async function(data) {
+    function GetQuestionsBySubject(subject_id, url) {
+        window.location.replace(url); // Chuyển hướng khi click vào một subject
+    }
+</script>
 
-                    $subjects.empty();
-                    const {
-                        subjects
-                    } = data;
-
-                    subjects.forEach(s => {
-                        $subjects.append(`<a href="javascript:void(0)" onClick="GetQuestionsBySubject(${s.id}, '<?php echo BASE_URL; ?>/teacher/question/index?s=${s.meta}-${s.id}')">${s.name}</a>`);
-                    });
-
-                },
-                error: function(err) {
-                    console.log(err);
-                }
-            });
-        };
-
-        function GetQuestionsBySubject(subject_id, url) {
-            console.log({
-                subject_id,               
-                url
-            });
-            // window.location.replace(url)
-        }
-    </script>
 </body>
 
 </html>
