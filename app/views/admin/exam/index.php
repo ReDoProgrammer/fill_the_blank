@@ -588,6 +588,7 @@
         $table.empty();
         $pagination.empty();
 
+
         $.ajax({
             url: '<?php echo BASE_URL; ?>/admin/exam/search',
             type: 'get',

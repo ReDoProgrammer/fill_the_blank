@@ -72,7 +72,9 @@ class ExamController extends AdminController
                 $imagePath = '';
             }
             header('Content-Type: application/json');
-            $result = $this->examModel->createExam($title, $description, $number_of_questions, $duration, $mode, $imagePath, $begin_date, $end_date, $subject_id);
+            session_start();
+            $created_by = $_SESSION['admin_logged_in']['id'];
+            $result = $this->examModel->createExam($title, $description, $number_of_questions, $duration, $mode, $imagePath, $begin_date, $end_date, $subject_id,$created_by);
             echo json_encode($result);
         }
     }
@@ -131,7 +133,9 @@ class ExamController extends AdminController
 
             // Gọi hàm updateExam và trả về kết quả dưới dạng JSON
             header('Content-Type: application/json');
-            $result = $this->examModel->updateExam($id, $title, $description, $number_of_questions, $duration, $mode, $imagePath, $begin_date, $end_date, $subject_id);
+            session_start();
+            $updated_by = $_SESSION['admin_logged_in']['id'];
+            $result = $this->examModel->updateExam($id, $title, $description, $number_of_questions, $duration, $mode, $imagePath, $begin_date, $end_date, $subject_id,$updated_by);
             echo json_encode($result);
         }
     }

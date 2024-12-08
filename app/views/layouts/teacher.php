@@ -81,14 +81,11 @@ if (session_status() === PHP_SESSION_NONE) {
             type: 'get',
             dataType: 'json',
             success:function(response){
-                console.log(response);
                 const $classes = $('#sidebar-classes');
                 $classes.empty();
                 const {classes} = response;
-                console.log(classes);
-                
                 classes.forEach(c=>{
-                    $classes.append(`<a href="<?php echo BASE_URL; ?>/teacher/exam/index?s=${c.subject_meta}-${c.teaching_id}" target="_self">${c.subject_name} (${c.school_year})</a>`);
+                    $classes.append(`<a href="<?php echo BASE_URL; ?>/teacher/exam/index?s=${c.subject_meta}-${c.subject_id}" target="_self">${c.subject_name} (${c.school_year})</a>`);
                 })
                 
             },

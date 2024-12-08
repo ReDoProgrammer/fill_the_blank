@@ -3,7 +3,7 @@ require_once 'app/core/Model.php';
 
 class ExamModel extends Model
 {
-    public function createExam($title, $description, $number_of_questions, $duration, $mode, $thumbnail, $begin_date, $end_date, $subject_id)
+    public function createExam($title, $description, $number_of_questions, $duration, $mode, $thumbnail, $begin_date, $end_date, $subject_id, $created_by)
     {
         try {
             $this->pdo->beginTransaction();
@@ -24,8 +24,8 @@ class ExamModel extends Model
             }
 
             // Insert một kỳ thi mới vào bảng exams
-            $sql = "INSERT INTO exams (title, description, number_of_questions, duration, mode, thumbnail, begin_date, end_date, subject_id) 
-                VALUES (:title, :description, :number_of_questions, :duration, :mode, :thumbnail, :begin_date, :end_date, :subject_id)";
+            $sql = "INSERT INTO exams (title, description, number_of_questions, duration, mode, thumbnail, begin_date, end_date, subject_id,created_by) 
+                VALUES (:title, :description, :number_of_questions, :duration, :mode, :thumbnail, :begin_date, :end_date, :subject_id,:created_by)";
             $stmt = $this->pdo->prepare($sql);
             $stmt->bindParam(':title', $title);
             $stmt->bindParam(':description', $description);
@@ -36,6 +36,7 @@ class ExamModel extends Model
             $stmt->bindParam(':begin_date', $begin_date);
             $stmt->bindParam(':end_date', $end_date);
             $stmt->bindParam(':subject_id', $subject_id);
+            $stmt->bindParam(':created_by', $created_by);
             $stmt->execute();
 
             // Lấy id của exam vừa được insert
@@ -125,7 +126,7 @@ class ExamModel extends Model
     }
 
 
-    public function updateExam($id, $title, $description, $number_of_questions, $duration, $mode, $thumbnail, $begin_date, $end_date, $subject_id)
+    public function updateExam($id, $title, $description, $number_of_questions, $duration, $mode, $thumbnail, $begin_date, $end_date, $subject_id, $updated_by)
     {
         try {
             $this->pdo->beginTransaction();
@@ -149,7 +150,7 @@ class ExamModel extends Model
             $sql = "UPDATE exams 
                     SET title = :title, description = :description, number_of_questions = :number_of_questions, 
                         duration = :duration, mode = :mode, 
-                        begin_date = :begin_date, end_date = :end_date, subject_id = :subject_id";
+                        begin_date = :begin_date, end_date = :end_date, subject_id = :subject_id,updated_at = NOW(),updated_by = :updated_by";
 
             // Kiểm tra nếu thumbnail không rỗng, thêm câu lệnh cập nhật thumbnail vào SQL
             if (!empty($thumbnail)) {
@@ -169,6 +170,7 @@ class ExamModel extends Model
             $stmt->bindParam(':begin_date', $begin_date);
             $stmt->bindParam(':end_date', $end_date);
             $stmt->bindParam(':subject_id', $subject_id);
+            $stmt->bindParam(':updated_by', $updated_by);
 
             // Nếu thumbnail không rỗng, bind giá trị thumbnail vào câu lệnh
             if (!empty($thumbnail)) {
@@ -416,6 +418,115 @@ class ExamModel extends Model
             'totalRecords' => $total['total']
         ];
     }
+    public function getOwnExams($subject_id, $from_date = null, $to_date = null, $page = 1, $pageSize = 10, $keyword = '', $created_by)
+    {
+        $offset = ($page - 1) * $pageSize;
+        $keyword = "%$keyword%";
+
+        // Base query
+        $sql = "SELECT
+                    e.id AS exam_id,
+                    e.title,
+                    e.description,
+                    e.number_of_questions,
+                    e.duration,
+                    e.mode,
+                    e.thumbnail,
+                    e.begin_date,
+                    e.end_date,
+                    e.subject_id,
+                    SUM(q.mark) AS total_marks
+                FROM
+                    exams e
+                LEFT JOIN quizs q ON e.questions LIKE CONCAT('%', q.id, '%')
+                WHERE 
+                    e.subject_id = :subject_id 
+                    AND e.title LIKE :keyword 
+                    AND e.created_by = :created_by";
+
+        // Add date filters if provided
+        if (!empty($from_date)) {
+            $sql .= " AND e.begin_date >= :from_date";
+        }
+        if (!empty($to_date)) {
+            $sql .= " AND e.end_date <= :to_date";
+        }
+
+        $sql .= " GROUP BY e.id 
+                  ORDER BY e.begin_date DESC
+                  LIMIT :offset, :pageSize";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindParam(':subject_id', $subject_id, PDO::PARAM_INT);
+        $stmt->bindParam(':keyword', $keyword, PDO::PARAM_STR);
+        $stmt->bindParam(':created_by', $created_by, PDO::PARAM_INT);
+
+        if (!empty($from_date)) {
+            $stmt->bindParam(':from_date', $from_date);
+        }
+        if (!empty($to_date)) {
+            $stmt->bindParam(':to_date', $to_date);
+        }
+
+        $stmt->bindValue(':offset', (int) $offset, PDO::PARAM_INT);
+        $stmt->bindValue(':pageSize', (int) $pageSize, PDO::PARAM_INT);
+
+        $stmt->execute();
+        $exams = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Format and check availability
+        foreach ($exams as &$exam) {
+            // Format date
+            $exam['begin_date'] = DateTime::createFromFormat('Y-m-d H:i:s', $exam['begin_date'])->format('d/m/Y H:i');
+            $exam['end_date'] = DateTime::createFromFormat('Y-m-d H:i:s', $exam['end_date'])->format('d/m/Y H:i');
+
+            // Check availability
+            $sqlCheck = "SELECT COUNT(*) as count FROM quiz_results WHERE exam_id = :exam_id";
+            $stmtCheck = $this->pdo->prepare($sqlCheck);
+            $stmtCheck->bindParam(':exam_id', $exam['exam_id']);
+            $stmtCheck->execute();
+            $resultCheck = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+
+            $exam['available'] = $resultCheck['count'] == 0;
+        }
+
+        // Total count query
+        $sqlTotal = "SELECT COUNT(*) as total FROM exams WHERE subject_id = :subject_id AND title LIKE :keyword AND created_by = :created_by";
+
+        if (!empty($from_date)) {
+            $sqlTotal .= " AND begin_date >= :from_date";
+        }
+        if (!empty($to_date)) {
+            $sqlTotal .= " AND end_date <= :to_date";
+        }
+
+        $stmtTotal = $this->pdo->prepare($sqlTotal);
+        $stmtTotal->bindParam(':subject_id', $subject_id, PDO::PARAM_INT);
+        $stmtTotal->bindParam(':keyword', $keyword, PDO::PARAM_STR);
+        $stmtTotal->bindParam(':created_by', $created_by, PDO::PARAM_INT);
+
+        if (!empty($from_date)) {
+            $stmtTotal->bindParam(':from_date', $from_date);
+        }
+        if (!empty($to_date)) {
+            $stmtTotal->bindParam(':to_date', $to_date);
+        }
+
+        $stmtTotal->execute();
+        $total = $stmtTotal->fetch(PDO::FETCH_ASSOC);
+
+        $totalPages = ceil($total['total'] / $pageSize);
+
+        return [
+            'exams' => $exams,
+            'totalPages' => $totalPages,
+            'currentPage' => $page,
+            'pageSize' => $pageSize,
+            'totalRecords' => $total['total']
+        ];
+    }
+
+
 
 
 
