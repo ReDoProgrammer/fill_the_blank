@@ -25,6 +25,8 @@ class TeachingController extends AdminController
     {
         if ($_SERVER["REQUEST_METHOD"] === "GET") {
             $id = isset($_GET["id"]) ? (int) $_GET["id"] : -1;
+            $result = $this->teachingModel->getTeachingById($id);
+            echo json_encode(['code'=>200,'msg'=>'Lấy thông tin giảng dạy thành công!','detail'=>$result]);
         }
     }
 
@@ -35,23 +37,12 @@ class TeachingController extends AdminController
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Lấy dữ liệu từ POST request
             $id = $_POST['id'] ?? '';
-            $usercode = $_POST['usercode'] ?? '';
-            $fullname = $_POST['fullname'] ?? '';
-            $email = $_POST['email'] ?? '';
-            $phone = $_POST['phone'] ?? '';
-            $password = $_POST['password'] ?? '';
+            $teacher_id = $_POST['teacher_id'];
+            $subject_id = $_POST['subject_id'];
+            $schoolyear = $_POST['schoolyear'];
 
-            // Chuẩn bị dữ liệu để cập nhật
-            $data = [
-                'user_code' => $usercode,
-                'fullname' => $fullname,
-                'email' => $email,
-                'phone' => $phone,
-                'password' => md5($password), // Mã hóa mật khẩu
-            ];
-
-
-            // echo json_encode($result);
+            $result = $this->teachingModel->updateTeaching($id,$teacher_id,$subject_id,$schoolyear);
+            echo json_encode($result);
         } else {
             // Nếu không phải POST request, trả về lỗi
             echo json_encode([
@@ -78,9 +69,8 @@ class TeachingController extends AdminController
                 return;
             }
 
-            // Gọi hàm deleteUser từ model và trả về kết quả dưới dạng JSON
-            // $result = $this->userModel->deleteUser($id);
-            // echo json_encode($result);
+            $result = $this->teachingModel->deleteTeaching($id);
+            echo json_encode($result);
         } else {
             // Nếu không phải POST request, trả về lỗi
             echo json_encode([
