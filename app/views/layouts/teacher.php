@@ -25,17 +25,16 @@ if (session_status() === PHP_SESSION_NONE) {
 
 <body>
     <div class="top-navbar">
-        <a href="<?php echo BASE_URL; ?>" class="logo"><img src="<?php echo BASE_URL; ?>/public/assets/images/logo.png"
+        <a href="<?php echo BASE_URL; ?>/teacher" class="logo"><img src="<?php echo BASE_URL; ?>/public/assets/images/logo.png"
                 style="height:30px; width:auto;" alt="Logo"></a>
         <div class="navbar-links">
-            <a href="<?php echo BASE_URL; ?>">Home</a>
+            <a href="<?php echo BASE_URL; ?>/teacher">Home</a>
             <?php if (isset($_SESSION['teacher_logged_in'])) { ?>
-                <a href="<?php echo BASE_URL; ?>/history/index">Lịch sử ôn bài</a>
-                <a href="<?php echo BASE_URL; ?>/history/quiz">Lịch sử thi</a>
-                <a href="<?php echo BASE_URL; ?>/userauth/profile">Tài khoản</a>
-                <a href="<?php echo BASE_URL; ?>/userauth/logout">Đăng xuất</a>
+              
+                <a href="<?php echo BASE_URL; ?>/teacher/teacherauth/profile">Tài khoản</a>
+                <a href="<?php echo BASE_URL; ?>/teacher/teacherauth/logout">Đăng xuất</a>
             <?php } else { ?>
-                <a href="<?php echo BASE_URL; ?>/userauth/login">Đăng nhập</a>
+                <a href="<?php echo BASE_URL; ?>/teacher/teacherauth/login">Đăng nhập</a>
             <?php } ?>
         </div>
         <?php if (isset($_SESSION['teacher_logged_in'])) { ?>
@@ -78,7 +77,6 @@ if (session_status() === PHP_SESSION_NONE) {
         const $examMenu = $('#sidebar-exam');
 
         $(document).ready(async function() {
-            console.log('teacher hello');
 
         });
 

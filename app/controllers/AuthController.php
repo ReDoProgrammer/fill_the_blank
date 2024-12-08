@@ -101,14 +101,19 @@ class AuthController extends Controller
     {
         if ($role === 'admin') {
             $_SESSION['admin_logged_in'] = null;
+            header('Location: ' . BASE_URL . '/admin');
+
         } elseif ($role === 'teacher') {
             $_SESSION['teacher_logged_in'] = null;
+            header('Location: ' . BASE_URL . '/teacher');
+
         } else {
             $_SESSION['user_logged_in'] = null;
+            header('Location: ' . BASE_URL . '/auth/login');
         }
         session_unset();
         session_destroy();
-        header('Location: ' . BASE_URL . '/auth/login');
+       
         exit;
     }
 }
