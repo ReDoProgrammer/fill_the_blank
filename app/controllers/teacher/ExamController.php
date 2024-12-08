@@ -1,11 +1,16 @@
 <?php
 require_once 'app/models/ExamModel.php';
+require_once 'app/models/ConfigModel.php';
+
 class ExamController extends Controller{
     protected $examModel;
+    protected $configModel;
+    
 
     public function __construct()
     {
         $this->examModel = new ExamModel();
+        $this->configModel = new ConfigModel();
     }
     public function index()
     {
@@ -190,6 +195,16 @@ class ExamController extends Controller{
             $id = $_GET['id'];
             header('Content-Type: application/json');
             $result = $this->examModel->getQuestionsByExamId($id);
+            echo json_encode($result);
+        }
+    }
+
+    function listConfigsBySubject(){
+        if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+            $subject_id = $_GET['subject_id'];
+            $number_of_questions = $_GET['number_of_questions'];
+            header('Content-Type: application/json');
+            $result = $this->configModel->getConfigsBySubjectQuestionsAndMarks($subject_id,$number_of_questions);
             echo json_encode($result);
         }
     }

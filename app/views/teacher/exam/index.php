@@ -391,11 +391,11 @@
         const LoadConfigs = function() {
             $slConfigs.empty();
             $.ajax({
-                url: '<?php echo BASE_URL; ?>/teacher/config/listBySubject',
+                url: '<?php echo BASE_URL; ?>/teacher/exam/listConfigsBySubject',
                 type: 'get',
                 dataType: 'json',
                 data: {
-                    subject_id: $subjects.val(),
+                    subject_id,
                     number_of_questions: parseInt($('#txtNumberOfQuestions').val())
                 },
                 success: function(response) {

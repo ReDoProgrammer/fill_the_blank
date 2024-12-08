@@ -100,17 +100,13 @@ class AuthController extends Controller
     public function logout($role)
     {
         if ($role === 'admin') {
-            $_SESSION['admin_logged_in'] = null;
-            header('Location: ' . BASE_URL . '/admin');
-
+            $_SESSION['admin_logged_in'] = null;          
         } elseif ($role === 'teacher') {
-            $_SESSION['teacher_logged_in'] = null;
-            header('Location: ' . BASE_URL . '/teacher');
-
+            $_SESSION['teacher_logged_in'] = null;          
         } else {
-            $_SESSION['user_logged_in'] = null;
-            header('Location: ' . BASE_URL . '/auth/login');
+            $_SESSION['user_logged_in'] = null;           
         }
+        header('Location: ' . BASE_URL . '/'.$role);
         session_unset();
         session_destroy();
        
