@@ -17,9 +17,9 @@ class UserController extends AdminController
             $keyword = isset($_GET['keyword']) ? $_GET['keyword'] : '';
             $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
             $pageSize = isset($_GET['pageSize']) ? (int) $_GET['pageSize'] : 10;
-
+            $role = $_GET['role'];
             $userModel = new UserModel();
-            $result = $userModel->getAllUsers($keyword, $page, $pageSize);
+            $result = $userModel->getAllUsers($keyword, $page, $pageSize,$role);
 
             echo json_encode($result);
         }
@@ -49,6 +49,7 @@ class UserController extends AdminController
             $email = $_POST['email'] ?? '';
             $phone = $_POST['phone'] ?? '';
             $password = $_POST['password'] ?? '';
+            $role = $_POST['role'];
 
             // Chuẩn bị dữ liệu để cập nhật
             $data = [
@@ -57,6 +58,7 @@ class UserController extends AdminController
                 'email' => $email,
                 'phone' => $phone,
                 'password' => md5($password), // Mã hóa mật khẩu
+                'role'=>$role
             ];
 
             // Gọi hàm updateUser từ model và trả về kết quả dưới dạng JSON
@@ -110,9 +112,10 @@ class UserController extends AdminController
             $fullname = $_POST['fullname'];
             $email = $_POST['email'];
             $phone = $_POST['phone'];
+            $role = $_POST['role'];
 
             // Gọi hàm tạo người dùng từ model và trả về kết quả dưới dạng JSON
-            $result = $this->userModel->createUser($username, $usercode, $fullname, $phone, $email, $password);
+            $result = $this->userModel->createUser($username, $usercode, $fullname, $phone, $email, $password,$role);
 
             echo json_encode($result);
         } else {

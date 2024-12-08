@@ -64,7 +64,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalTittle">Thêm mới tài khoản học viên</h5>
+                <h5 class="modal-title" id="modalTittle">Thêm mới tài khoản giáo viên</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -72,12 +72,12 @@
                     <div class="row mb-3">
                         <div class="col-md-4 form-group">
                             <label for="">Tài khoản:</label>
-                            <input type="text" name="" id="txtUsername" placeholder="Tài khoản học viên"
+                            <input type="text" name="" id="txtUsername" placeholder="Tài khoản giáo viên"
                                 class="form-control">
                         </div>
                         <div class="col-md-4 form-group">
-                            <label for="">Mã học viên:</label>
-                            <input type="text" name="" id="txtUserCode" placeholder="Mã học viên" class="form-control">
+                            <label for="">Mã giáo viên:</label>
+                            <input type="text" name="" id="txtUserCode" placeholder="Mã giáo viên" class="form-control">
                         </div>
                         <div class="col-md-4 form-group">
                             <label for="">Họ và tên:</label>
@@ -359,7 +359,7 @@
         const fullname = $fullname.val().trim();
         const phone = $phone.val().trim();
         const email = $email.val().trim();
-
+        const role='teacher';
         if (username.length == 0) {
             $.toast({
                 heading: 'Ràng buộc dữ liệu',
@@ -373,7 +373,7 @@
         if (usercode.length == 0) {
             $.toast({
                 heading: 'Ràng buộc dữ liệu',
-                text: 'Mã học viên không thể để trống',
+                text: 'Mã giáo viên không thể để trống',
                 icon: 'error',
                 loader: true, // Change it to false to disable loader
                 loaderBg: '#9EC600' // To change the background
@@ -410,7 +410,8 @@
             fullname: capitalizeWords(fullname),
             password: password,
             phone: phone,
-            email: email
+            email: email,
+            role
         }
         if (id > 0) data.id = id;
 
