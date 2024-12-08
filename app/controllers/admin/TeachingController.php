@@ -37,11 +37,12 @@ class TeachingController extends AdminController
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Lấy dữ liệu từ POST request
             $id = $_POST['id'] ?? '';
+            $name = $_POST['name'];
             $teacher_id = $_POST['teacher_id'];
             $subject_id = $_POST['subject_id'];
             $schoolyear = $_POST['schoolyear'];
 
-            $result = $this->teachingModel->updateTeaching($id,$teacher_id,$subject_id,$schoolyear);
+            $result = $this->teachingModel->updateTeaching($id,$name,$teacher_id,$subject_id,$schoolyear);
             echo json_encode($result);
         } else {
             // Nếu không phải POST request, trả về lỗi
@@ -84,11 +85,12 @@ class TeachingController extends AdminController
     {
         header('Content-Type: application/json'); // Thiết lập header đúng cho JSON
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $name = $_POST['name'];
             $teacher_id = $_POST['teacher_id'];
             $subject_id = $_POST['subject_id'];
             $schoolyear = $_POST['schoolyear'];
 
-            $result = $this->teachingModel->createTeaching($teacher_id, $subject_id, $schoolyear);
+            $result = $this->teachingModel->createTeaching($name,$teacher_id, $subject_id, $schoolyear);
             echo json_encode($result);
         } else {
             // Nếu không phải POST request, trả về lỗi

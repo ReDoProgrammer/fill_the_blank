@@ -24,8 +24,10 @@
     <thead>
         <tr>
             <th scope="col">#</th>
+            <th scope="col">Tên lớp</th>
             <th scope="col">Giáo viên</th>
             <th scope="col">Môn học</th>
+            <th scope="col">Sĩ số</th>
             <th scope="col"></th>
         </tr>
     </thead>
@@ -53,10 +55,14 @@
             <div class="modal-body">
                 <div class="containter">
                     <div class="form-group">
+                        <Label>Tên lớp (<span class="text-danger">*</span>)</Label>
+                        <input type="text" name="" id="txtName" class="form-control" placeholder="Tên lớp giảng dạy">
+                    </div>
+                    <div class="form-group mt-2">
                         <Label>Giáo viên</Label>
                         <select name="" id="slTeachers" class="form-control"></select>
                     </div>
-                    <div class="form-group">
+                    <div class="form-group mt-2">
                         <label for="">Môn học</label>
                         <select name="" id="slSubjects" class="form-control"></select>
                     </div>
@@ -84,7 +90,8 @@
         $table = $('#tblData'),
         $pagination = $('.pagination'),
         $modal = $('#modal'),
-        $slSubjects = $('#slSubjects'),
+        $name = $('#txtName');
+    $slSubjects = $('#slSubjects'),
         $slTeachers = $('#slTeachers'),
         $slSchoolYears = $('#slSchoolYears'),
         $modalTittle = $('#modalTittle');
@@ -124,18 +131,29 @@
         });
     });
 
-    $btnSubmit.click(function() {       
-        
+    $btnSubmit.click(function() {
+        let name = $('#txtName').val().trim();
+        if (name.length == 0) {
+            $.toast({
+                heading: 'RÀNG BUỘC DỮ LIỆU',
+                text: `Vui lòng nhập tên lớp giảng dạy`,
+                icon: 'error',
+                loader: true,
+                loaderBg: '#9EC600'
+            });
+            return;
+        }
         let schoolyear = $('#slSchoolYears option:selected').val();
         let teacher_id = $slTeachers.val();
-        let subject_id = $slSubjects.val();       
+        let subject_id = $slSubjects.val();
         let url = `<?php echo BASE_URL; ?>/admin/teaching/${id<0?'add':'update'}`;
         let data = {
+            name,
             teacher_id,
             schoolyear,
             subject_id
         };
-        if (id > 0) data.id = id;        
+        if (id > 0) data.id = id;
         $.ajax({
             url: url,
             type: 'POST',
@@ -209,12 +227,15 @@
                     teachings
                 } = response;
                 let idx = (page - 1) * pageSize;
+
                 teachings.forEach(t => {
                     $table.append(`
                         <tr>
                             <td>${++idx}</td>
+                            <td class = "text-warning fw-bold">${t.name}</td>
                             <td class = "fw-bold text-info">${t.teacher_name}</td>
-                            <td class = "text-info">${t.subject_name}</td>                           
+                            <td class = "text-info">${t.subject_name}</td>      
+                            <td></td>                     
                             <td class="text-end">
                                 <a href="javascript:void(0)" onClick="UpdateTeaching(${t.id})"><i class="fa fa-edit text-warning"></i></a>
                                 <a href="javascript:void(0)" onClick="DeleteTeaching(${t.id},'${t.teacher_name}','${t.subject_name}')"><i class="fa fa-trash-o text-danger"></i></a>
@@ -241,31 +262,47 @@
         })
     }
 
-    function UpdateTeaching(id){
+    function UpdateTeaching(id) {
         this.id = id;
         $.ajax({
             url: `<?php echo BASE_URL; ?>/admin/teaching/detail`,
-            type:'GET',
-            dataType:'json',
-            data:{id},
-            success:function(response){
+            type: 'GET',
+            dataType: 'json',
+            data: {
+                id
+            },
+            success: function(response) {
                 console.log(response);
-                const {code,msg,detail} = response;
-                $modal.modal('show');                
-                const {teacher_id,subject_id} = detail;
+                const {
+                    code,
+                    msg,
+                    detail
+                } = response;
+                $modal.modal('show');
+                const {
+                    name,
+                    teacher_id,
+                    subject_id
+                } = detail;
+                $name.val(name);
                 $slSubjects.val(subject_id);
                 $slTeachers.val(teacher_id);
                 $modalTittle.text('Cập nhật thông tin giảng dạy');
             },
-            error:function(err){
+            error: function(err) {
                 console.log(err.responseText);
-                
+
             }
         })
-        
+
     }
-    function DeleteTeaching(id,teacher_name,subject_name){
-        console.log({id,teacher_name,subject_name});
+
+    function DeleteTeaching(id, teacher_name, subject_name) {
+        console.log({
+            id,
+            teacher_name,
+            subject_name
+        });
         Swal.fire({
             title: `Bạn thực sự muốn xoá quá trình giảng dạy môn <span class="text-warning">${subject_name}</span> của giáo viên <span class = "text-info fw-bold">${teacher_name}</span>?`,
             text: "Bạn sẽ không thể khôi phục lại dữ liệu đã bị xoá!",
@@ -279,10 +316,15 @@
                 $.ajax({
                     url: '<?php echo BASE_URL; ?>/admin/teaching/delete',
                     type: 'POST',
-                    data: { id },
+                    data: {
+                        id
+                    },
                     dataType: 'json',
-                    success: function (response) {
-                        const { code, msg } = response;
+                    success: function(response) {
+                        const {
+                            code,
+                            msg
+                        } = response;
                         $.toast({
                             heading: code == 200 ? 'SUCCESSFULLY' : `ERROR: ${code}`,
                             text: msg,
@@ -294,13 +336,13 @@
                             LoadData();
                         }
                     },
-                    error: function (err) {
+                    error: function(err) {
                         console.log(err.responseText);
                     }
                 });
             }
         });
-        
+
     }
 
     function LoadTeachers() {
@@ -340,6 +382,7 @@
 
     $modal.on('hide.bs.modal', function(e) {
         $modalTittle.text('Thêm mới quá trình giảng dạy');
+        $name.val('');
         id = -1;
     });
 </script>

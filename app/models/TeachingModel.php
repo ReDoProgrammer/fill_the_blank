@@ -72,7 +72,7 @@ class TeachingModel extends Model
     public function getClassesByTeacherId($teacherId)
     {
         $sql = "
-            SELECT t.id AS teaching_id, t.school_year AS school_year,
+            SELECT t.id AS teaching_id,t.name AS class_name, t.school_year AS school_year,
             s.id AS subject_id,
             s.name AS subject_name,
             s.meta AS subject_meta
@@ -91,7 +91,7 @@ class TeachingModel extends Model
 
     
     // Thêm teaching mới
-    public function createTeaching($teacherId, $subjectId, $schoolYear)
+    public function createTeaching($name,$teacherId, $subjectId, $schoolYear)
     {
         // Kiểm tra xem quá trình giảng dạy đã tồn tại hay chưa
         $existingTeaching = $this->isTeachingExist($teacherId, $subjectId, $schoolYear);
@@ -103,9 +103,10 @@ class TeachingModel extends Model
         }
 
         // Thêm mới nếu không tồn tại
-        $sql = "INSERT INTO teachings (teacher_id, subject_id, school_year) 
-                VALUES (:teacherId, :subjectId, :schoolYear)";
+        $sql = "INSERT INTO teachings (name,teacher_id, subject_id, school_year) 
+                VALUES (:name,:teacherId, :subjectId, :schoolYear)";
         $params = [
+            'name'=>$name,
             'teacherId' => $teacherId,
             'subjectId' => $subjectId,
             'schoolYear' => $schoolYear
@@ -119,7 +120,7 @@ class TeachingModel extends Model
     }
 
 
-    public function updateTeaching($id, $teacherId, $subjectId, $schoolYear)
+    public function updateTeaching($id, $name,$teacherId, $subjectId, $schoolYear)
     {
         // Kiểm tra xem đã tồn tại quá trình giảng dạy với thông tin mới hay chưa
         $existingTeaching = $this->isTeachingExist($teacherId, $subjectId, $schoolYear, $id);
@@ -132,12 +133,15 @@ class TeachingModel extends Model
 
         // Cập nhật thông tin nếu không có dữ liệu trùng lặp
         $sql = "UPDATE teachings 
-            SET teacher_id = :teacherId, 
+            SET 
+                name = :name,
+                teacher_id = :teacherId, 
                 subject_id = :subjectId, 
                 school_year = :schoolYear 
             WHERE id = :id";
         $params = [
             'id' => $id,
+            'name' => $name,
             'teacherId' => $teacherId,
             'subjectId' => $subjectId,
             'schoolYear' => $schoolYear

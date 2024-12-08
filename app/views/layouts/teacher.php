@@ -126,8 +126,7 @@ if (session_status() === PHP_SESSION_NONE) {
 </html>
 
 <style>
-    html,
-    body {
+    html, body {
         height: 100%;
         margin: 0;
         display: flex;
@@ -136,7 +135,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
     .main-content {
         flex: 1;
-        /* Chiếm toàn bộ không gian trống */
+        /* Bắt buộc chiếm không gian còn lại */
     }
 
     .footer {
