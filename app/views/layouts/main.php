@@ -75,12 +75,7 @@ if (session_status() === PHP_SESSION_NONE) {
     <script>
         const $practiceMenu = $('#sidebar-practice');
         const $examMenu = $('#sidebar-exam');
-
-
-        // window.onload = async function () {
-        //     await RenderFillTheBlank();
-        //     await RenderSubjectsHaveExams();
-        // };
+       
         $(document).ready(async function () {
             try {
                 await RenderFillTheBlank();

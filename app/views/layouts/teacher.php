@@ -30,7 +30,7 @@ if (session_status() === PHP_SESSION_NONE) {
         <div class="navbar-links">
             <a href="<?php echo BASE_URL; ?>/teacher">Home</a>
             <?php if (isset($_SESSION['teacher_logged_in'])) { ?>
-              
+
                 <a href="<?php echo BASE_URL; ?>/teacher/teacherauth/profile">Tài khoản</a>
                 <a href="<?php echo BASE_URL; ?>/teacher/teacherauth/logout">Đăng xuất</a>
             <?php } else { ?>
@@ -48,7 +48,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
     <div class="sidebar" id="sidebar">
         <h6 class="text-secondary fw-bold p-3">NGÂN HÀNG CÂU HỎI</h6>
-        <div class="sidebar-section" id="sidebar-questions">
+        <div class="sidebar-section" id="sidebar-subjects">
         </div>
         <h6 class="text-secondary fw-bold p-3">LỚP GIẢNG DẠY</h6>
         <div class="sidebar-section" id="sidebar-classes">
@@ -74,167 +74,42 @@ if (session_status() === PHP_SESSION_NONE) {
 
     <script>
         const $practiceMenu = $('#sidebar-practice');
-        const $examMenu = $('#sidebar-exam');
-
+        const $examMenu = $('#sidebar-exam'),
+            $subjects = $('#sidebar-subjects');
         $(document).ready(async function() {
-            await RenderSubjectsHaveLessions();
+            RenderQuestionsBankList();
         });
 
-
-
-        const RenderSubjectsHaveLessions = function (retries = 3) {
+        const RenderQuestionsBankList = function() {
             $.ajax({
                 url: '<?php echo BASE_URL; ?>/teacher/subject/HaveLessions',
                 type: 'get',
                 dataType: 'json',
-                success: async function (response) {
-                    console.log(response);
-                    
-                    // $examMenu.empty();
-                    // const { sidebar } = data;
-                    // if (!sidebar || sidebar.length === 0) {
-                    //     console.warn('No subjects available for exams.');
-                    //     return;
-                    // }
+                success: async function(data) {
 
-                    // const appendExamSubjects = async (subject) => {
-                    //     const $subjectLink = $(`<a style="padding-left:25px;" href="<?php echo BASE_URL; ?>/exam/index?s=${subject.meta}-${subject.id}">${subject.name}</a>`);
-                    //     $examMenu.append($subjectLink);
-                    // };
+                    $subjects.empty();
+                    const {
+                        subjects
+                    } = data;
 
-                    // for (const s of sidebar) {
-                    //     await appendExamSubjects(s);
-                    // }
+                    subjects.forEach(s => {
+                        $subjects.append(`<a href="javascript:void(0)" onClick="GetQuestionsBySubject(${s.id}, '<?php echo BASE_URL; ?>/teacher/question/index?s=${s.meta}-${s.id}')">${s.name}</a>`);
+                    });
+
                 },
-                error: function (err) {
-                    console.error('Error loading subjects:', err);
-                    if (retries > 0) {
-                        console.log(`Retrying... (${3 - retries + 1}/3)`);
-                        setTimeout(() => {  // Thêm delay trước khi retry
-                            RenderSubjectsHaveLessions(retries - 1);
-                        }, 2000);  // Retry sau 2 giây
-                    } else {
-                        console.error('Failed to load subjects after 3 attempts.');
-                    }
+                error: function(err) {
+                    console.log(err);
                 }
             });
         };
 
-        // const RenderFillTheBlank = function () {
-        //     $.ajax({
-        //         url: '<?php echo BASE_URL; ?>/home/SubjectsHaveQuestions',
-        //         type: 'get',
-        //         dataType: 'json',
-        //         success: async function (data) {
-        //             $practiceMenu.empty();
-        //             $examMenu.empty();
-        //             const { sidebar } = data;
-
-        //             const appendPracticeSubjectsAndLessions = async (subject) => {
-        //                 return new Promise((resolve) => {
-        //                     const $subjectButton = $(`
-        //                 <button class="dropdown-btn">${subject.name}
-        //                     <i class="fa fa-caret-down"></i>
-        //                 </button>
-        //             `);
-        //                     const $dropdownContainer = $('<div class="dropdown-container"></div>');
-
-        //                     subject.lessions.forEach((lession) => {
-        //                         const $lessionLink = $(`<a href="javascript:void(0)" onClick="DoFillTheBlank(${subject.id}, ${lession.id}, '<?php echo BASE_URL; ?>/question/index?s=${subject.meta}-${subject.id}&l=${lession.meta}-${lession.id}')">${lession.name}</a>`);
-        //                         $dropdownContainer.append($lessionLink);
-        //                     });
-
-        //                     $practiceMenu.append($subjectButton);
-        //                     $practiceMenu.append($dropdownContainer);
-
-        //                     resolve();
-        //                 });
-        //             };
-
-        //             for (const s of sidebar) {
-        //                 await appendPracticeSubjectsAndLessions(s);
-        //             }
-
-        //             var sidebarToggle = document.querySelector('.sidebar-toggle');
-        //             var sidebarMenu = document.querySelector('.sidebar');
-        //             var mainContent = document.querySelector('.main-content');
-        //             var dropdowns = document.getElementsByClassName("dropdown-btn");
-
-        //             sidebarToggle.addEventListener('click', function () {
-        //                 sidebarMenu.classList.toggle('collapsed');
-        //                 if (sidebar.classList.contains('collapsed')) {
-        //                     sidebarMenu.style.width = '0';
-        //                     Array.from(dropdowns).forEach(function (dropdown) {
-        //                         var dropdownContent = dropdown.nextElementSibling;
-        //                         dropdownContent.style.maxHeight = null;
-        //                     });
-        //                     mainContent.style.marginLeft = '0';
-        //                 } else {
-        //                     sidebarMenu.style.width = '220px';
-        //                     mainContent.style.marginLeft = '240px';
-        //                 }
-        //             });
-
-        //             // Xử lý mở rộng khi nhấn vào thẻ a
-        //             $(document).on('click', '#sidebar-practice a', function () {
-        //                 var $dropdownContainer = $(this).closest('.dropdown-container');
-        //                 var $dropdownButton = $dropdownContainer.prev('.dropdown-btn');
-
-        //                 // Mở rộng phần dropdown container nếu chưa được mở
-        //                 if ($dropdownContainer.css('max-height') === '0px' || !$dropdownContainer.css('max-height')) {
-        //                     // Mở rộng container và gán class "active" cho button tương ứng
-        //                     $dropdownButton.addClass('active');
-        //                     $dropdownContainer.css('max-height', $dropdownContainer.prop('scrollHeight') + 'px');
-        //                 }
-        //             });
-
-        //             for (var i = 0; i < dropdowns.length; i++) {
-        //                 dropdowns[i].addEventListener("click", function () {
-        //                     this.classList.toggle("active");
-        //                     var dropdownContent = this.nextElementSibling;
-        //                     if (dropdownContent.style.maxHeight) {
-        //                         dropdownContent.style.maxHeight = null;
-        //                     } else {
-        //                         dropdownContent.style.maxHeight = dropdownContent.scrollHeight + "px";
-        //                     }
-        //                 });
-        //             }
-
-        //             await RenderSubjectsHaveExams();
-        //         },
-        //         error: function (err) {
-        //             console.log(err);
-        //         }
-        //     });
-        // };
-
-        // function DoFillTheBlank(subject_id, lession_id, url) {
-        //     $.ajax({
-        //         url: '<?php echo BASE_URL; ?>/question/canTakeTest',
-        //         type: 'get',
-        //         dataType: 'json',
-        //         data: { subject_id, lession_id },
-        //         success: function (response) {
-        //             const { code, msg } = response;
-
-        //             if (code == 401) {
-        //                 Swal.fire({
-        //                     icon: "error",
-        //                     title: "Oops...",
-        //                     html: `<p class = "text-danger fw-bold">${msg}</p>`
-        //                 }).then(_ => {
-        //                     window.location.replace(`<?php echo BASE_URL; ?>/userauth/login`);
-        //                 });
-        //             } else {
-        //                 window.location.replace(url);
-        //             }
-
-        //         },
-        //         error: function (err) {
-        //             console.log(err);
-        //         }
-        //     })
-        // }
+        function GetQuestionsBySubject(subject_id, url) {
+            console.log({
+                subject_id,               
+                url
+            });
+            // window.location.replace(url)
+        }
     </script>
 </body>
 
