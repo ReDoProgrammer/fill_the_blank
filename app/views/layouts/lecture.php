@@ -12,6 +12,8 @@ if (session_status() === PHP_SESSION_NONE) {
     <title>Fill the blanks - Teacher zone</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="<?php echo BASE_URL; ?>/public/assets/js/jquery.js"></script>
+    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/public/assets/plugins/font-awesome/font-awesome.min.css">
+
     <style>
         .navbar-custom {
             background-color: #4CAF50;
@@ -134,7 +136,8 @@ if (session_status() === PHP_SESSION_NONE) {
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container-fluid">
             <a class="navbar-brand" href="#">
-                <img src="<?php echo BASE_URL; ?>/public/assets/images/logo.png" style="height:30px; width:auto;" alt="Logo">
+                <img src="<?php echo BASE_URL; ?>/public/assets/images/logo.png" style="height:30px; width:auto;"
+                    alt="Logo">
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -147,7 +150,7 @@ if (session_status() === PHP_SESSION_NONE) {
                             data-bs-toggle="dropdown" aria-expanded="false">
                             Danh sách lớp
                         </a>
-                        <ul class="dropdown-menu" id="ownClassesList">                          
+                        <ul class="dropdown-menu" id="mn-Classes">
                         </ul>
                     </li>
                     <li class="nav-item dropdown">
@@ -164,8 +167,8 @@ if (session_status() === PHP_SESSION_NONE) {
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button"
                             data-bs-toggle="dropdown" aria-expanded="false">
-                            <img src="https://via.placeholder.com/30" alt="Profile"
-                                class="rounded-circle me-2"> <?php echo $_SESSION['teacher_logged_in']['fullname'] ?? $_SESSION['teacher_logged_in']['username']; ?>
+                            <img src="https://via.placeholder.com/30" alt="Profile" class="rounded-circle me-2">
+                            <?php echo $_SESSION['teacher_logged_in']['fullname'] ?? $_SESSION['teacher_logged_in']['username']; ?>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" href="#">Settings</a></li>
@@ -185,25 +188,22 @@ if (session_status() === PHP_SESSION_NONE) {
     <div class="sidebar">
         <ul class="nav flex-column">
             <li class="nav-item">
-                <a class="nav-link" href="#">Dashboard</a>
+                <a class="nav-link" href="<?php echo BASE_URL; ?>/teacher"><i class="fa fa-home" aria-hidden="true"></i>
+                    Home</a>
             </li>
             <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="classesDropdown" role="button" data-bs-toggle="dropdown"
-                    aria-expanded="false">
-                    Classes
+                <a class="nav-link dropdown-toggle" href="#" id="classesDropdown" role="button"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                    Ngân hàng câu hỏi
                 </a>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#">Class 1</a></li>
-                    <li><a class="dropdown-item" href="#">Class 2</a></li>
-                    <li><a class="dropdown-item" href="#">Class 3</a></li>
-                </ul>
+                <ul class="dropdown-menu" id="mn-Questions"></ul>
             </li>
             <li class="nav-item dropdown">
                 <a class="nav-link dropdown-toggle" href="#" id="examsDropdown" role="button" data-bs-toggle="dropdown"
                     aria-expanded="false">
-                    Exams
+                    Đề thi
                 </a>
-                <ul class="dropdown-menu">
+                <ul class="dropdown-menu" id="mn-Exams">
                     <li><a class="dropdown-item" href="#">Exam 1</a></li>
                     <li><a class="dropdown-item" href="#">Exam 2</a></li>
                     <li><a class="dropdown-item" href="#">Exam 3</a></li>
@@ -217,45 +217,50 @@ if (session_status() === PHP_SESSION_NONE) {
 
     <!-- Main Content -->
     <div class="main-content">
-        <h1>Welcome to the Dashboard</h1>
-        <p>This is the main content area.</p>
+        <?php echo $content; ?>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        $(document).ready(function(){
+        $(document).ready(function () {
             RenderOwnClasses();
         })
-        function RenderOwnClasses(){
+        function RenderOwnClasses() {
             $.ajax({
                 url: '<?php echo BASE_URL; ?>/teacher/teaching/ownclasses',
                 type: 'get',
                 dataType: 'json',
-                success: function(response) {
-                    const $classes = $('#ownClassesList');
+                success: function (response) {
+                    const $classes = $('#mn-Classes');
+                    const $questions = $('#mn-Questions');
+                    const $exams = $('#mn-Exams');
                     $classes.empty();
+                    $questions.empty();
+                    $exams.empty();
                     const {
                         classes
                     } = response;
                     console.log(classes);
-                    
-                    classes.forEach(c => {                            
-                        $classes.append(`<li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/teacher/exam/index?s=${c.subject_meta}-${c.subject_id}" target="_self">${c.class_name}</a></li>`);
+
+                    classes.forEach(c => {
+                        $classes.append(`<li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/teacher/classroom/index?s=${c.subject_meta}-${c.subject_id}" target="_self">${c.class_name} - ${c.subject_name} - ${c.school_year}</a></li>`);
+                        $questions.append(`<li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/teacher/quiz/index?s=${c.subject_meta}-${c.subject_id}" target="_self">${c.subject_name}</a></li>`);
+                        $exams.append(`<li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/teacher/exam/index?s=${c.subject_meta}-${c.subject_id}" target="_self">${c.subject_name}</a></li>`);
                     })
 
                 },
-                error: function(err) {
+                error: function (err) {
                     console.log(err.responseText);
 
                 }
             })
         }
-        const RenderExams = function() {
+        const RenderExams = function () {
             $.ajax({
                 url: '<?php echo BASE_URL; ?>/teacher/teaching/ownclasses',
                 type: 'get',
                 dataType: 'json',
-                success: function(response) {
+                success: function (response) {
                     const $exams = $('#sidebar-exams');
                     $exams.empty();
                     const {
@@ -266,34 +271,13 @@ if (session_status() === PHP_SESSION_NONE) {
                     })
 
                 },
-                error: function(err) {
+                error: function (err) {
                     console.log(err.responseText);
 
                 }
             })
         }
 
-        const RenderQuestionsBankList = function() {
-            $.ajax({
-                url: '<?php echo BASE_URL; ?>/teacher/subject/HaveLessions', // Lấy dữ liệu từ backend
-                type: 'get',
-                dataType: 'json',
-                success: async function(data) {
-                    const $subjects = $('#sidebar-subjects');
-                    $subjects.empty(); // Làm trống sidebar trước khi thêm dữ liệu mới
-
-                    const {
-                        subjects
-                    } = data;
-                    subjects.forEach(s => {
-                        $subjects.append(`<a href="javascript:void(0)" onClick="GetQuestionsBySubject(${s.id}, '<?php echo BASE_URL; ?>/teacher/quiz/index?s=${s.meta}-${s.id}')">${s.name}</a>`);
-                    });
-                },
-                error: function(err) {
-                    console.log(err); // In lỗi nếu có
-                }
-            });
-        };
 
         function GetQuestionsBySubject(subject_id, url) {
             window.location.replace(url); // Chuyển hướng khi click vào một subject

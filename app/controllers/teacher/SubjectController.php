@@ -19,4 +19,5 @@ class SubjectController extends Controller
             'subjects'=>$resulst
         ]);
     }
+   
 }
