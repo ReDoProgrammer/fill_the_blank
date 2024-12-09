@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.0
+-- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th12 08, 2024 lúc 07:16 AM
--- Phiên bản máy phục vụ: 10.4.27-MariaDB
--- Phiên bản PHP: 8.2.0
+-- Host: 127.0.0.1
+-- Generation Time: Dec 09, 2024 at 03:48 AM
+-- Server version: 10.4.28-MariaDB
+-- PHP Version: 8.0.28
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -18,12 +18,12 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- Cơ sở dữ liệu: `filltheblank_db`
+-- Database: `filltheblank_db`
 --
 
 DELIMITER $$
 --
--- Các hàm
+-- Functions
 --
 CREATE DEFINER=`root`@`localhost` FUNCTION `get_first_name` (`fullname` VARCHAR(255)) RETURNS VARCHAR(255) CHARSET utf8mb4 COLLATE utf8mb4_general_ci DETERMINISTIC BEGIN
     DECLARE first_name VARCHAR(255);
@@ -36,7 +36,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `exams`
+-- Table structure for table `exams`
 --
 
 CREATE TABLE `exams` (
@@ -54,7 +54,7 @@ CREATE TABLE `exams` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `exams`
+-- Dumping data for table `exams`
 --
 
 INSERT INTO `exams` (`id`, `title`, `description`, `number_of_questions`, `duration`, `mode`, `thumbnail`, `begin_date`, `end_date`, `subject_id`, `questions`) VALUES
@@ -71,7 +71,7 @@ INSERT INTO `exams` (`id`, `title`, `description`, `number_of_questions`, `durat
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `exam_answers`
+-- Table structure for table `exam_answers`
 --
 
 CREATE TABLE `exam_answers` (
@@ -83,7 +83,7 @@ CREATE TABLE `exam_answers` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `exam_answers`
+-- Dumping data for table `exam_answers`
 --
 
 INSERT INTO `exam_answers` (`id`, `exam_result_id`, `question_id`, `question_blank_id`, `answer`) VALUES
@@ -154,7 +154,7 @@ INSERT INTO `exam_answers` (`id`, `exam_result_id`, `question_id`, `question_bla
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `exam_configs`
+-- Table structure for table `exam_configs`
 --
 
 CREATE TABLE `exam_configs` (
@@ -165,7 +165,7 @@ CREATE TABLE `exam_configs` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `exam_configs`
+-- Dumping data for table `exam_configs`
 --
 
 INSERT INTO `exam_configs` (`id`, `title`, `subject_id`, `levels`) VALUES
@@ -179,7 +179,7 @@ INSERT INTO `exam_configs` (`id`, `title`, `subject_id`, `levels`) VALUES
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `exam_results`
+-- Table structure for table `exam_results`
 --
 
 CREATE TABLE `exam_results` (
@@ -191,7 +191,7 @@ CREATE TABLE `exam_results` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `exam_results`
+-- Dumping data for table `exam_results`
 --
 
 INSERT INTO `exam_results` (`id`, `user_id`, `subject_id`, `lession_id`, `created_at`) VALUES
@@ -228,7 +228,7 @@ INSERT INTO `exam_results` (`id`, `user_id`, `subject_id`, `lession_id`, `create
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `lessions`
+-- Table structure for table `lessions`
 --
 
 CREATE TABLE `lessions` (
@@ -241,7 +241,7 @@ CREATE TABLE `lessions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `lessions`
+-- Dumping data for table `lessions`
 --
 
 INSERT INTO `lessions` (`id`, `name`, `meta`, `subject_id`, `created_at`, `updated_at`) VALUES
@@ -297,7 +297,7 @@ INSERT INTO `lessions` (`id`, `name`, `meta`, `subject_id`, `created_at`, `updat
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `questions`
+-- Table structure for table `questions`
 --
 
 CREATE TABLE `questions` (
@@ -309,7 +309,7 @@ CREATE TABLE `questions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `questions`
+-- Dumping data for table `questions`
 --
 
 INSERT INTO `questions` (`id`, `lession_id`, `question_text`, `created_at`, `updated_at`) VALUES
@@ -354,7 +354,7 @@ INSERT INTO `questions` (`id`, `lession_id`, `question_text`, `created_at`, `upd
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `question_blanks`
+-- Table structure for table `question_blanks`
 --
 
 CREATE TABLE `question_blanks` (
@@ -365,7 +365,7 @@ CREATE TABLE `question_blanks` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `question_blanks`
+-- Dumping data for table `question_blanks`
 --
 
 INSERT INTO `question_blanks` (`id`, `question_id`, `position`, `blank_text`) VALUES
@@ -432,7 +432,7 @@ INSERT INTO `question_blanks` (`id`, `question_id`, `position`, `blank_text`) VA
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `quizs`
+-- Table structure for table `quizs`
 --
 
 CREATE TABLE `quizs` (
@@ -448,7 +448,7 @@ CREATE TABLE `quizs` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `quizs`
+-- Dumping data for table `quizs`
 --
 
 INSERT INTO `quizs` (`id`, `subject_id`, `question`, `options`, `mark`, `created_by`, `created_at`, `updated_by`, `updated_at`) VALUES
@@ -936,7 +936,7 @@ INSERT INTO `quizs` (`id`, `subject_id`, `question`, `options`, `mark`, `created
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `quiz_results`
+-- Table structure for table `quiz_results`
 --
 
 CREATE TABLE `quiz_results` (
@@ -949,7 +949,7 @@ CREATE TABLE `quiz_results` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `quiz_results`
+-- Dumping data for table `quiz_results`
 --
 
 INSERT INTO `quiz_results` (`id`, `user_id`, `quiz_date`, `spend_time`, `exam_id`, `result`) VALUES
@@ -973,7 +973,7 @@ INSERT INTO `quiz_results` (`id`, `user_id`, `quiz_date`, `spend_time`, `exam_id
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `subjects`
+-- Table structure for table `subjects`
 --
 
 CREATE TABLE `subjects` (
@@ -983,7 +983,7 @@ CREATE TABLE `subjects` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `subjects`
+-- Dumping data for table `subjects`
 --
 
 INSERT INTO `subjects` (`id`, `name`, `meta`) VALUES
@@ -994,28 +994,29 @@ INSERT INTO `subjects` (`id`, `name`, `meta`) VALUES
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `teachings`
+-- Table structure for table `teachings`
 --
 
 CREATE TABLE `teachings` (
   `id` bigint(20) NOT NULL,
+  `name` varchar(150) NOT NULL,
   `teacher_id` int(11) NOT NULL,
   `subject_id` int(11) NOT NULL,
   `school_year` varchar(9) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `teachings`
+-- Dumping data for table `teachings`
 --
 
-INSERT INTO `teachings` (`id`, `teacher_id`, `subject_id`, `school_year`) VALUES
-(8, 66, 25, '2024-2025'),
-(7, 66, 26, '2024-2025');
+INSERT INTO `teachings` (`id`, `name`, `teacher_id`, `subject_id`, `school_year`) VALUES
+(7, 'Lớp thử nghiệm - 7', 66, 26, '2024-2025'),
+(8, 'Lớp thử nghiệm - 8', 66, 25, '2024-2025');
 
 -- --------------------------------------------------------
 
 --
--- Cấu trúc bảng cho bảng `users`
+-- Table structure for table `users`
 --
 
 CREATE TABLE `users` (
@@ -1026,41 +1027,42 @@ CREATE TABLE `users` (
   `fullname` varchar(30) NOT NULL,
   `phone` varchar(250) NOT NULL,
   `email` varchar(250) NOT NULL,
-  `role` varchar(7) NOT NULL DEFAULT 'user'
+  `role` varchar(7) NOT NULL DEFAULT 'user',
+  `teaching_id` bigint(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Đang đổ dữ liệu cho bảng `users`
+-- Dumping data for table `users`
 --
 
-INSERT INTO `users` (`id`, `username`, `user_code`, `password`, `fullname`, `phone`, `email`, `role`) VALUES
-(2, 'admin', 'FTB-2', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Administrator', '0911397764', 'redoprogrammer@gmail.com', 'admin'),
-(50, 'dungdt', '2220700042', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'ĐIểU Thị Dung', '922343222', 'daothituoi@gmail.com', 'user'),
-(51, 'duongttt', '2220700044', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Trịnh Thị Thùy Dương', '933222123', 'duongqua@gmail.com', 'user'),
-(52, 'hantng', '2220700046', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Trịnh Ngọc Gia Hân', '911234543', 'tieulongnu@gmail.com', 'user'),
-(53, 'hienttt', '22207000471', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'TrươNg Thị Thu HiềN', '942234932', 'doanchibinh@gmail.com', 'user'),
-(54, 'hongnt', '2220700049', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Nông Thị Hồng', '953219832', 'vuongtrungduong@gmail.com', 'user'),
-(55, 'huongttt', '2220700051', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Thạch Thị Thu Hương', '943218381', 'chaubathong@gmail.com', 'user'),
-(56, 'linhbtk', '2220700053', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Bùi Thị Khánh Linh', '936839019', 'quachtinh@gmail.com', 'user'),
-(57, 'loanltt', '2220700054', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Lê Thị Thu Loan', '912433999', 'hoangdung@gmail.com', 'user'),
-(58, 'maintt', '2220700057', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Nguyễn Thị Tuyết Mai', '912433999', 'hoangdung@gmail.com', 'user'),
-(64, 'fdsafdasfdsa', 'fdasfdasf', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Fdsafdasfdsa', '0911397764', 'fdsafjasdlkf@gmail.com', 'user'),
-(65, 'hungtd', 'FTB2024', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Trần Duy Hưng', '988333222', 'tranduyhung@gmail.com', 'user'),
-(66, 'truongnh', '06049287', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'NguyễN HữU TrườNg', '0911397764', 'redoprogrammer1@gmail.com', 'teacher');
+INSERT INTO `users` (`id`, `username`, `user_code`, `password`, `fullname`, `phone`, `email`, `role`, `teaching_id`) VALUES
+(2, 'admin', 'FTB-2', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Administrator', '0911397764', 'redoprogrammer@gmail.com', 'admin', 7),
+(50, 'dungdt', '2220700042', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'ĐIểU Thị Dung', '922343222', 'daothituoi@gmail.com', 'user', 7),
+(51, 'duongttt', '2220700044', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Trịnh Thị Thùy Dương', '933222123', 'duongqua@gmail.com', 'user', 8),
+(52, 'hantng', '2220700046', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Trịnh Ngọc Gia Hân', '911234543', 'tieulongnu@gmail.com', 'user', 7),
+(53, 'hienttt', '22207000471', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'TrươNg Thị Thu HiềN', '942234932', 'doanchibinh@gmail.com', 'user', 8),
+(54, 'hongnt', '2220700049', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Nông Thị Hồng', '953219832', 'vuongtrungduong@gmail.com', 'user', 7),
+(55, 'huongttt', '2220700051', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Thạch Thị Thu Hương', '943218381', 'chaubathong@gmail.com', 'user', 8),
+(56, 'linhbtk', '2220700053', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Bùi Thị Khánh Linh', '936839019', 'quachtinh@gmail.com', 'user', 7),
+(57, 'loanltt', '2220700054', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Lê Thị Thu Loan', '912433999', 'hoangdung@gmail.com', 'user', 8),
+(58, 'maintt', '2220700057', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Nguyễn Thị Tuyết Mai', '912433999', 'hoangdung@gmail.com', 'user', 7),
+(64, 'fdsafdasfdsa', 'fdasfdasf', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Fdsafdasfdsa', '0911397764', 'fdsafjasdlkf@gmail.com', 'user', 7),
+(65, 'hungtd', 'FTB2024', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Trần Duy Hưng', '988333222', 'tranduyhung@gmail.com', 'user', 8),
+(66, 'truongnh', '06049287', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'NguyễN HữU TrườNg', '0911397764', 'redoprogrammer1@gmail.com', 'teacher', 7);
 
 --
--- Chỉ mục cho các bảng đã đổ
+-- Indexes for dumped tables
 --
 
 --
--- Chỉ mục cho bảng `exams`
+-- Indexes for table `exams`
 --
 ALTER TABLE `exams`
   ADD PRIMARY KEY (`id`),
   ADD KEY `fk_subject_id` (`subject_id`);
 
 --
--- Chỉ mục cho bảng `exam_answers`
+-- Indexes for table `exam_answers`
 --
 ALTER TABLE `exam_answers`
   ADD PRIMARY KEY (`id`),
@@ -1069,14 +1071,14 @@ ALTER TABLE `exam_answers`
   ADD KEY `question_blank_id` (`question_blank_id`);
 
 --
--- Chỉ mục cho bảng `exam_configs`
+-- Indexes for table `exam_configs`
 --
 ALTER TABLE `exam_configs`
   ADD PRIMARY KEY (`id`),
   ADD KEY `subject_id` (`subject_id`);
 
 --
--- Chỉ mục cho bảng `exam_results`
+-- Indexes for table `exam_results`
 --
 ALTER TABLE `exam_results`
   ADD PRIMARY KEY (`id`),
@@ -1085,35 +1087,35 @@ ALTER TABLE `exam_results`
   ADD KEY `lession_id` (`lession_id`);
 
 --
--- Chỉ mục cho bảng `lessions`
+-- Indexes for table `lessions`
 --
 ALTER TABLE `lessions`
   ADD PRIMARY KEY (`id`),
   ADD KEY `subject_id` (`subject_id`);
 
 --
--- Chỉ mục cho bảng `questions`
+-- Indexes for table `questions`
 --
 ALTER TABLE `questions`
   ADD PRIMARY KEY (`id`),
   ADD KEY `lession_id` (`lession_id`);
 
 --
--- Chỉ mục cho bảng `question_blanks`
+-- Indexes for table `question_blanks`
 --
 ALTER TABLE `question_blanks`
   ADD PRIMARY KEY (`id`),
   ADD KEY `question_id` (`question_id`);
 
 --
--- Chỉ mục cho bảng `quizs`
+-- Indexes for table `quizs`
 --
 ALTER TABLE `quizs`
   ADD PRIMARY KEY (`id`),
   ADD KEY `subject_id` (`subject_id`);
 
 --
--- Chỉ mục cho bảng `quiz_results`
+-- Indexes for table `quiz_results`
 --
 ALTER TABLE `quiz_results`
   ADD PRIMARY KEY (`id`),
@@ -1121,13 +1123,13 @@ ALTER TABLE `quiz_results`
   ADD KEY `exam_id` (`exam_id`);
 
 --
--- Chỉ mục cho bảng `subjects`
+-- Indexes for table `subjects`
 --
 ALTER TABLE `subjects`
   ADD PRIMARY KEY (`id`);
 
 --
--- Chỉ mục cho bảng `teachings`
+-- Indexes for table `teachings`
 --
 ALTER TABLE `teachings`
   ADD PRIMARY KEY (`id`),
@@ -1135,99 +1137,100 @@ ALTER TABLE `teachings`
   ADD KEY `subject_id` (`subject_id`);
 
 --
--- Chỉ mục cho bảng `users`
+-- Indexes for table `users`
 --
 ALTER TABLE `users`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `teaching_id` (`teaching_id`);
 
 --
--- AUTO_INCREMENT cho các bảng đã đổ
+-- AUTO_INCREMENT for dumped tables
 --
 
 --
--- AUTO_INCREMENT cho bảng `exams`
+-- AUTO_INCREMENT for table `exams`
 --
 ALTER TABLE `exams`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
--- AUTO_INCREMENT cho bảng `exam_answers`
+-- AUTO_INCREMENT for table `exam_answers`
 --
 ALTER TABLE `exam_answers`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=68;
 
 --
--- AUTO_INCREMENT cho bảng `exam_configs`
+-- AUTO_INCREMENT for table `exam_configs`
 --
 ALTER TABLE `exam_configs`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
 
 --
--- AUTO_INCREMENT cho bảng `exam_results`
+-- AUTO_INCREMENT for table `exam_results`
 --
 ALTER TABLE `exam_results`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
--- AUTO_INCREMENT cho bảng `lessions`
+-- AUTO_INCREMENT for table `lessions`
 --
 ALTER TABLE `lessions`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=70;
 
 --
--- AUTO_INCREMENT cho bảng `questions`
+-- AUTO_INCREMENT for table `questions`
 --
 ALTER TABLE `questions`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
 
 --
--- AUTO_INCREMENT cho bảng `question_blanks`
+-- AUTO_INCREMENT for table `question_blanks`
 --
 ALTER TABLE `question_blanks`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=81;
 
 --
--- AUTO_INCREMENT cho bảng `quizs`
+-- AUTO_INCREMENT for table `quizs`
 --
 ALTER TABLE `quizs`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1190;
 
 --
--- AUTO_INCREMENT cho bảng `quiz_results`
+-- AUTO_INCREMENT for table `quiz_results`
 --
 ALTER TABLE `quiz_results`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=36;
 
 --
--- AUTO_INCREMENT cho bảng `subjects`
+-- AUTO_INCREMENT for table `subjects`
 --
 ALTER TABLE `subjects`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
--- AUTO_INCREMENT cho bảng `teachings`
+-- AUTO_INCREMENT for table `teachings`
 --
 ALTER TABLE `teachings`
   MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
--- AUTO_INCREMENT cho bảng `users`
+-- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=67;
 
 --
--- Các ràng buộc cho các bảng đã đổ
+-- Constraints for dumped tables
 --
 
 --
--- Các ràng buộc cho bảng `exams`
+-- Constraints for table `exams`
 --
 ALTER TABLE `exams`
   ADD CONSTRAINT `fk_subject_id` FOREIGN KEY (`subject_id`) REFERENCES `subjects` (`id`);
 
 --
--- Các ràng buộc cho bảng `exam_answers`
+-- Constraints for table `exam_answers`
 --
 ALTER TABLE `exam_answers`
   ADD CONSTRAINT `exam_answers_ibfk_1` FOREIGN KEY (`exam_result_id`) REFERENCES `exam_results` (`id`),
@@ -1235,13 +1238,13 @@ ALTER TABLE `exam_answers`
   ADD CONSTRAINT `exam_answers_ibfk_3` FOREIGN KEY (`question_blank_id`) REFERENCES `question_blanks` (`id`);
 
 --
--- Các ràng buộc cho bảng `exam_configs`
+-- Constraints for table `exam_configs`
 --
 ALTER TABLE `exam_configs`
   ADD CONSTRAINT `exam_configs_ibfk_1` FOREIGN KEY (`subject_id`) REFERENCES `subjects` (`id`);
 
 --
--- Các ràng buộc cho bảng `exam_results`
+-- Constraints for table `exam_results`
 --
 ALTER TABLE `exam_results`
   ADD CONSTRAINT `exam_results_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
@@ -1249,44 +1252,50 @@ ALTER TABLE `exam_results`
   ADD CONSTRAINT `exam_results_ibfk_3` FOREIGN KEY (`lession_id`) REFERENCES `lessions` (`id`);
 
 --
--- Các ràng buộc cho bảng `lessions`
+-- Constraints for table `lessions`
 --
 ALTER TABLE `lessions`
   ADD CONSTRAINT `lessions_ibfk_1` FOREIGN KEY (`subject_id`) REFERENCES `subjects` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Các ràng buộc cho bảng `questions`
+-- Constraints for table `questions`
 --
 ALTER TABLE `questions`
   ADD CONSTRAINT `questions_ibfk_1` FOREIGN KEY (`lession_id`) REFERENCES `lessions` (`id`);
 
 --
--- Các ràng buộc cho bảng `question_blanks`
+-- Constraints for table `question_blanks`
 --
 ALTER TABLE `question_blanks`
   ADD CONSTRAINT `question_blanks_ibfk_1` FOREIGN KEY (`question_id`) REFERENCES `questions` (`id`);
 
 --
--- Các ràng buộc cho bảng `quizs`
+-- Constraints for table `quizs`
 --
 ALTER TABLE `quizs`
   ADD CONSTRAINT `quizs_ibfk_1` FOREIGN KEY (`subject_id`) REFERENCES `subjects` (`id`);
 
 --
--- Các ràng buộc cho bảng `quiz_results`
+-- Constraints for table `quiz_results`
 --
 ALTER TABLE `quiz_results`
   ADD CONSTRAINT `quiz_results_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
   ADD CONSTRAINT `quiz_results_ibfk_2` FOREIGN KEY (`exam_id`) REFERENCES `exams` (`id`);
 
 --
--- Các ràng buộc cho bảng `teachings`
+-- Constraints for table `teachings`
 --
 ALTER TABLE `teachings`
   ADD CONSTRAINT `teaching_subject_fk` FOREIGN KEY (`subject_id`) REFERENCES `subjects` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `teaching_teacher_fk` FOREIGN KEY (`teacher_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `teachings_ibfk_1` FOREIGN KEY (`subject_id`) REFERENCES `subjects` (`id`),
   ADD CONSTRAINT `teachings_ibfk_2` FOREIGN KEY (`teacher_id`) REFERENCES `users` (`id`);
+
+--
+-- Constraints for table `users`
+--
+ALTER TABLE `users`
+  ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`teaching_id`) REFERENCES `teachings` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
