@@ -32,8 +32,8 @@ class UserModel extends Model
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindValue(':keyword', "%$keyword%", PDO::PARAM_STR);
         $stmt->bindValue(':role', $role, PDO::PARAM_STR);
-        $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT); // Ép kiểu số nguyên
-        $stmt->bindValue(':pageSize', (int)$pageSize, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int) $offset, PDO::PARAM_INT); // Ép kiểu số nguyên
+        $stmt->bindValue(':pageSize', (int) $pageSize, PDO::PARAM_INT);
         $stmt->execute();
         $users = $stmt->fetchAll();
 
@@ -52,6 +52,61 @@ class UserModel extends Model
             'totalRecords' => $totalRecords
         ];
     }
+
+    public function listByTeachingId($teachingId, $keyword, $page, $pageSize, $role = 'user')
+    {
+        // Tính toán OFFSET
+        $offset = ($page - 1) * $pageSize;
+
+        // Câu lệnh SQL để lấy dữ liệu người dùng theo phân trang
+        $sql = "SELECT * FROM users
+                WHERE (username LIKE :keyword OR phone LIKE :keyword OR email LIKE :keyword OR fullname LIKE :keyword)
+                  AND role = :role
+                  AND teaching_id = :teachingId
+                ORDER BY username, fullname
+                LIMIT :offset, :pageSize"; // Dùng tham số hóa
+
+        // Câu lệnh SQL để lấy tổng số bản ghi
+        $countSql = "SELECT COUNT(*) as total FROM users
+                     WHERE (username LIKE :keyword OR phone LIKE :keyword OR email LIKE :keyword OR fullname LIKE :keyword)
+                       AND role = :role
+                       AND teaching_id = :teachingId";
+
+        // Thay đổi các tham số cho PDO
+        $params = [
+            ':keyword' => "%$keyword%",
+            ':role' => $role,
+            ':teachingId' => $teachingId
+        ];
+
+        // Lấy dữ liệu người dùng (truyền OFFSET và LIMIT bằng cách nối chuỗi hoặc ép kiểu)
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':keyword', "%$keyword%", PDO::PARAM_STR);
+        $stmt->bindValue(':role', $role, PDO::PARAM_STR);
+        $stmt->bindValue(':teachingId', $teachingId, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int) $offset, PDO::PARAM_INT); // Ép kiểu số nguyên
+        $stmt->bindValue(':pageSize', (int) $pageSize, PDO::PARAM_INT);
+        $stmt->execute();
+        $users = $stmt->fetchAll();
+
+        // Lấy tổng số bản ghi
+        $totalRecordsStmt = $this->pdo->prepare($countSql);
+        $totalRecordsStmt->execute($params);
+        $totalRecords = $totalRecordsStmt->fetch(PDO::FETCH_ASSOC)['total'];
+
+        // Tính toán số trang
+        $totalPages = ceil($totalRecords / $pageSize);
+
+        // Trả về dữ liệu cùng với thông tin phân trang
+        return [
+            'users' => $users,
+            'totalPages' => $totalPages,
+            'currentPage' => $page,
+            'pageSize' => $pageSize,
+            'totalRecords' => $totalRecords
+        ];
+    }
+
 
 
     public function getUserById($id)
@@ -122,11 +177,11 @@ class UserModel extends Model
             : ['code' => 400, 'msg' => "Cập nhật thông tin $roleMessage không thành công!"];
     }
 
-    public function deleteUser($id,$role = 'user')
+    public function deleteUser($id, $role = 'user')
     {
         $sql = "DELETE FROM users WHERE id = :id";
         $result = $this->execute($sql, ['id' => $id]);
-        $msg = $role ==='user'?'người dùng':'giáo viên';
+        $msg = $role === 'user' ? 'người dùng' : 'giáo viên';
         return $result > 0
             ? ['code' => 200, 'msg' => "Xóa tài khoản $msg thành công!"]
             : ['code' => 400, 'msg' => "Xóa tài khoản $msg không thành công!"];
