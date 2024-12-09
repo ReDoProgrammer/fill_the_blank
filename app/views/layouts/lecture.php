@@ -243,7 +243,7 @@ if (session_status() === PHP_SESSION_NONE) {
                     console.log(classes);
 
                     classes.forEach(c => {
-                        $classes.append(`<li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/teacher/classroom/index?s=${c.subject_meta}-${c.subject_id}" target="_self">${c.class_name} - ${c.subject_name} - ${c.school_year}</a></li>`);
+                        $classes.append(`<li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/teacher/classroom/index?s=${c.subject_meta}-${c.teaching_id}" target="_self">${c.class_name} - ${c.subject_name} - ${c.school_year}</a></li>`);
                         $questions.append(`<li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/teacher/quiz/index?s=${c.subject_meta}-${c.subject_id}" target="_self">${c.subject_name}</a></li>`);
                         $exams.append(`<li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/teacher/exam/index?s=${c.subject_meta}-${c.subject_id}" target="_self">${c.subject_name}</a></li>`);
                     })

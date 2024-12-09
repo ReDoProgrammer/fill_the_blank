@@ -15,7 +15,7 @@ class ClassroomController extends Controller{
     }
 
     public function getStudentsByClassId(){
-        $teachingId = $_GET['classId'];
+        $teachingId = $_GET['teachingId'];
         $page  = $_GET['page'];
         $pageSize = $_GET['pageSize'];
         $keyword = $_GET['keyword'];
