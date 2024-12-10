@@ -24,8 +24,8 @@ class ExamModel extends Model
             }
 
             // Insert một kỳ thi mới vào bảng exams
-            $sql = "INSERT INTO exams (title, description, number_of_questions, duration, mode, thumbnail, begin_date, end_date, subject_id,created_by) 
-                VALUES (:title, :description, :number_of_questions, :duration, :mode, :thumbnail, :begin_date, :end_date, :subject_id,:created_by)";
+            $sql = "INSERT INTO exams (teaching_id,title, description, number_of_questions, duration, mode, thumbnail, begin_date, end_date, subject_id,created_by) 
+                VALUES (:teaching_id,:title, :description, :number_of_questions, :duration, :mode, :thumbnail, :begin_date, :end_date, :subject_id,:created_by)";
             $stmt = $this->pdo->prepare($sql);
             $stmt->bindParam(':teaching_id', $teaching_id);
             $stmt->bindParam(':title', $title);
@@ -149,7 +149,7 @@ class ExamModel extends Model
 
             // Khởi tạo câu lệnh SQL với các trường cập nhật cơ bản
             $sql = "UPDATE exams 
-                    SET title = :title, description = :description, number_of_questions = :number_of_questions, 
+                    SET teaching_id=:teaching_id,title = :title, description = :description, number_of_questions = :number_of_questions, 
                         duration = :duration, mode = :mode, 
                         begin_date = :begin_date, end_date = :end_date, subject_id = :subject_id,updated_at = NOW(),updated_by = :updated_by";
 
