@@ -214,7 +214,7 @@
                         url: '<?php echo BASE_URL; ?>/admin/user/import',
                         type: 'POST',
                         dataType: 'json',
-                        data: { users: result },
+                        data: { users: result ,teaching_id:$('#slTeachingM').val()},
                         success: function (response) {
                             const { code, msg } = response;
                             if (code === 201) {
