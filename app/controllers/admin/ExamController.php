@@ -25,6 +25,7 @@ class ExamController extends AdminController
     {
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Lấy dữ liệu từ POST
+            $teaching_id = $_POST['teaching_id'];
             $subject_id = $_POST['subject_id'];
             $title = $_POST['title'];
             $description = $_POST['description'];
@@ -74,7 +75,7 @@ class ExamController extends AdminController
             header('Content-Type: application/json');
             session_start();
             $created_by = $_SESSION['admin_logged_in']['id'];
-            $result = $this->examModel->createExam($title, $description, $number_of_questions, $duration, $mode, $imagePath, $begin_date, $end_date, $subject_id,$created_by);
+            $result = $this->examModel->createExam($teaching_id,$title, $description, $number_of_questions, $duration, $mode, $imagePath, $begin_date, $end_date, $subject_id,$created_by);
             echo json_encode($result);
         }
     }
@@ -84,6 +85,7 @@ class ExamController extends AdminController
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Lấy dữ liệu từ POST
             $id = $_POST['id'];
+            $teaching_id = $_POST['teaching_id'];
             $subject_id = $_POST['subject_id'];
             $title = $_POST['title'];
             $description = $_POST['description'];
@@ -135,7 +137,7 @@ class ExamController extends AdminController
             header('Content-Type: application/json');
             session_start();
             $updated_by = $_SESSION['admin_logged_in']['id'];
-            $result = $this->examModel->updateExam($id, $title, $description, $number_of_questions, $duration, $mode, $imagePath, $begin_date, $end_date, $subject_id,$updated_by);
+            $result = $this->examModel->updateExam($id, $teaching_id,$title, $description, $number_of_questions, $duration, $mode, $imagePath, $begin_date, $end_date, $subject_id,$updated_by);
             echo json_encode($result);
         }
     }

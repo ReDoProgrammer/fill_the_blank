@@ -69,6 +69,33 @@ class TeachingModel extends Model
         return $this->fetch($sql, ['id' => $id]);
     }
 
+  //hàm trả về danh sách các lớp giảng dạy của năm học hiện tại
+    public function listCurrentClasses()
+    {
+        // Lấy năm hiện tại
+        $currentYear = date('Y');
+
+        // Câu truy vấn SQL để lấy danh sách theo điều kiện school_year chứa năm hiện tại
+        $sql = "
+        SELECT t.*, 
+               u.fullname AS teacher_name, 
+               s.name AS subject_name 
+        FROM teachings t
+        JOIN users u ON t.teacher_id = u.id
+        JOIN subjects s ON t.subject_id = s.id
+        WHERE t.school_year LIKE :currentYear
+        ORDER BY t.school_year DESC, u.fullname, s.name";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':currentYear', "%$currentYear%", PDO::PARAM_STR);
+        $stmt->execute();
+
+        $currentClasses = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        return $currentClasses;
+    }
+
+
     public function getClassesByTeacherId($teacherId)
     {
         $sql = "
@@ -80,18 +107,18 @@ class TeachingModel extends Model
             JOIN subjects s ON t.subject_id = s.id
             WHERE t.teacher_id = :teacherId            
             ORDER BY t.school_year DESC";
-        
+
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindParam(':teacherId', $teacherId, PDO::PARAM_INT);
         $stmt->execute();
         $classes = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
         return $classes;
     }
 
-    
+
     // Thêm teaching mới
-    public function createTeaching($name,$teacherId, $subjectId, $schoolYear)
+    public function createTeaching($name, $teacherId, $subjectId, $schoolYear)
     {
         // Kiểm tra xem quá trình giảng dạy đã tồn tại hay chưa
         $existingTeaching = $this->isTeachingExist($teacherId, $subjectId, $schoolYear);
@@ -106,7 +133,7 @@ class TeachingModel extends Model
         $sql = "INSERT INTO teachings (name,teacher_id, subject_id, school_year) 
                 VALUES (:name,:teacherId, :subjectId, :schoolYear)";
         $params = [
-            'name'=>$name,
+            'name' => $name,
             'teacherId' => $teacherId,
             'subjectId' => $subjectId,
             'schoolYear' => $schoolYear
@@ -120,7 +147,7 @@ class TeachingModel extends Model
     }
 
 
-    public function updateTeaching($id, $name,$teacherId, $subjectId, $schoolYear)
+    public function updateTeaching($id, $name, $teacherId, $subjectId, $schoolYear)
     {
         // Kiểm tra xem đã tồn tại quá trình giảng dạy với thông tin mới hay chưa
         $existingTeaching = $this->isTeachingExist($teacherId, $subjectId, $schoolYear, $id);
@@ -190,5 +217,5 @@ class TeachingModel extends Model
         ]);
     }
 
-    
+
 }

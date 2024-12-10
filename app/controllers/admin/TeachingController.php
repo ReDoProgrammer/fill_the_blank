@@ -21,6 +21,18 @@ class TeachingController extends AdminController
             echo json_encode($result);
         }
     }
+
+    //trả về danh sách các lớp giảng dạy của năm học hiện tại
+    public function listCurretCLassese(){
+        if ($_SERVER["REQUEST_METHOD"] === "GET") {
+            $result = $this->teachingModel->listCurrentClasses();
+            echo json_encode([
+                'code'=>200,
+                'msg'=>'Lấy danh sách lớp giảng dạy của năm học hiện tại thành công!',
+                'classese'=>$result
+            ]);
+        }
+    }
     public function detail()
     {
         if ($_SERVER["REQUEST_METHOD"] === "GET") {

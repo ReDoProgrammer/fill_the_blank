@@ -88,7 +88,7 @@
 
     <!-- Modal -->
     <div class="modal fade" id="modal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="modalTitle">Thêm mới cuộc thi</h5>
@@ -96,6 +96,12 @@
                 </div>
                 <div class="modal-body" style="height:550px; overflow-y:auto;">
                     <form class="container">
+                        <div class="row mb-3">
+                            <div class="col-md-12 form-group">
+                                <label for="">Lớp</label>
+                                <select name="" id="slTeaching" class="form-control"></select>
+                            </div>
+                        </div>
                         <div class="row mb-3">
                             <div class="col-md-12 form-group">
                                 <label for="">Tiêu đề cuộc thi</label>
@@ -256,7 +262,8 @@
         $pagination = $('.pagination'),
         $modal = $('#modal'),
         $modalTittle = $('#modalTitle'),
-        $questionsList = $('#questions');
+        $questionsList = $('#questions'),
+        $slTeaching = $('#slTeaching');;
     const $subjects = $('#selSubject'),
         $slConfigs = $('#slConfigs'),
         $slQuestions = $('#slQuestions');
@@ -308,7 +315,7 @@
             $('#begin_date').datetimepicker('maxDate', e.date);
         });
 
-
+        LoadTeachings();
 
         LoadSubjects(); // Tải danh sách môn học
 
@@ -348,6 +355,25 @@
         });
 
     });
+
+    function LoadTeachings(){
+        $.ajax({
+            url:`<?php echo BASE_URL; ?>/admin/teaching/listCurretCLassese`,
+            type:'GET',
+            dataType:'json',
+            success:function(response){
+                const {classese} = response;
+                classese.forEach(c=>{
+                    $slTeaching.append(`<option value = "${c.id}">[${c.subject_name}] ${c.name} (${c.school_year} - ${c.teacher_name})</option>`);
+                })
+                
+            },
+            error:function(err){
+                console.log(err);
+                
+            }
+        })
+    }
 
     $('#btnUsingConfig').click(function() {
         if (!$slConfigs.val()) {
@@ -494,6 +520,7 @@
         // Tạo FormData để gửi dữ liệu
         var formData = new FormData();
         if (id > 0) formData.append('id', id);
+        formData.append('teaching_id', $slTeaching.val());
         formData.append('subject_id', $subjects.val());
         formData.append('title', title);
         formData.append('description', description);
