@@ -12,7 +12,7 @@
 <div class="container">
 
     <!-- Subject Dropdown and Search/Buttons Section -->
-    <div class="row justify-content-end mb-4">      
+    <div class="row justify-content-end mb-4">
 
         <div class="col-md-2">
             <label for="">Từ ngày</label>
@@ -90,6 +90,12 @@
                 </div>
                 <div class="modal-body" style="height:550px; overflow-y:auto;">
                     <form class="container">
+                        <div class="row mb-3">
+                            <div class="col-md-12 form-group">
+                                <label for="">Lớp giảng dạy</label>
+                                <select name="" id="slOwnClasses" class="form-control"></select>
+                            </div>
+                        </div>
                         <div class="row mb-3">
                             <div class="col-md-12 form-group">
                                 <label for="">Tiêu đề cuộc thi</label>
@@ -250,7 +256,8 @@
             $pagination = $('.pagination'),
             $modal = $('#modal'),
             $modalTittle = $('#modalTitle'),
-            $questionsList = $('#questions');
+            $questionsList = $('#questions'),
+            $slOwnClasses = $('#slOwnClasses');
         const $subjects = $('#selSubject'),
             $slConfigs = $('#slConfigs'),
             $slQuestions = $('#slQuestions');
@@ -266,7 +273,7 @@
 
         var subject_id;
 
-        $(document).ready(function() {
+        $(document).ready(function () {
 
             // Lấy URL hiện tại
             var url = window.location.href;
@@ -279,7 +286,9 @@
 
             // Tách số từ tham số "s" và "l"
             subject_id = s.split('-')[1]; // 25
-            
+
+
+
 
 
             var today = new Date();
@@ -311,21 +320,21 @@
             });
 
             // Ràng buộc end_date phải lớn hơn begin_date
-            $('#begin_date').on('change.datetimepicker', function(e) {
+            $('#begin_date').on('change.datetimepicker', function (e) {
                 $('#end_date').datetimepicker('minDate', e.date);
             });
 
-            $('#end_date').on('change.datetimepicker', function(e) {
+            $('#end_date').on('change.datetimepicker', function (e) {
                 $('#begin_date').datetimepicker('maxDate', e.date);
             });
 
 
 
-            $('#imageInput').on('change', function() {
+            $('#imageInput').on('change', function () {
                 var file = this.files[0];
                 if (file) {
                     var reader = new FileReader();
-                    reader.onload = function(e) {
+                    reader.onload = function (e) {
                         $('#imagePreview').attr('src', e.target.result);
                         $('#imagePreview').show();
                     }
@@ -335,7 +344,7 @@
                 }
             });
 
-            $pagination.on('click', '.page-link', function(e) {
+            $pagination.on('click', '.page-link', function (e) {
                 e.preventDefault(); // Ngăn chặn hành động mặc định của thẻ <a>
                 currentPage = $(this).text(); // Lấy giá trị data-page
 
@@ -359,7 +368,16 @@
 
         });
 
-        $('#btnUsingConfig').click(function() {
+        // menuRendered đảm bảo sự kiện này được chạy sau khi menu đã được render trong layout xong
+        $(document).on('menuRendered', function () {
+            $slOwnClasses.empty();
+            $('#mn-Classes li').each(function (index, element) {
+                // Lấy nội dung của từng phần tử <li>
+                $slOwnClasses.append(`<option value = "${$(this).attr('id')}">${$(this).text()}</option>`);
+            });
+        })
+
+        $('#btnUsingConfig').click(function () {
             if (!$slConfigs.val()) {
                 Swal.fire({
                     icon: "error",
@@ -380,15 +398,15 @@
             }
             $('#modalUsingConfig').modal('hide');
         })
-        $('#modalCustomize').on('shown.bs.modal', function() {
+        $('#modalCustomize').on('shown.bs.modal', function () {
             $('#slQuestions').select2('open');
         });
 
 
-        $(document).on('input', '#txtNumberOfQuestions', function() {
+        $(document).on('input', '#txtNumberOfQuestions', function () {
             LoadConfigs();
         })
-        const LoadConfigs = function() {
+        const LoadConfigs = function () {
             $slConfigs.empty();
             $.ajax({
                 url: '<?php echo BASE_URL; ?>/teacher/exam/listConfigsBySubject',
@@ -398,7 +416,7 @@
                     subject_id,
                     number_of_questions: parseInt($('#txtNumberOfQuestions').val())
                 },
-                success: function(response) {
+                success: function (response) {
                     const {
                         code,
                         configs
@@ -410,14 +428,14 @@
                         );
                     })
                 },
-                error: function(err) {
+                error: function (err) {
                     console.log(err);
 
                 }
             })
         }
 
-        const ViewQuestions = function(id) {
+        const ViewQuestions = function (id) {
             $.ajax({
                 url: '<?php echo BASE_URL; ?>/teacher/exam/getQuestionsList',
                 type: 'get',
@@ -425,7 +443,7 @@
                 data: {
                     id
                 },
-                success: function(response) {
+                success: function (response) {
                     $('#modalQuestions').modal('show');
                     $('#divQuestions').empty();
                     const {
@@ -458,13 +476,13 @@
                             `);
                     });
                 },
-                error: function(err) {
+                error: function (err) {
                     console.log(err);
                 }
             });
         }
 
-        $('input[type=radio][name=rbtExamMode]').change(function() {
+        $('input[type=radio][name=rbtExamMode]').change(function () {
             if (this.id == 'rbtUsingConfig') {
                 $('#modalUsingConfig').modal('show');
             } else {
@@ -473,7 +491,7 @@
         });
 
 
-        $btnSubmit.click(function() {
+        $btnSubmit.click(function () {
 
             // Lấy dữ liệu từ các trường trong form
             var title = $('#txtTitle').val();
@@ -526,7 +544,7 @@
                 data: formData,
                 contentType: false,
                 processData: false,
-                success: function(response) {
+                success: function (response) {
                     console.log(response);
 
                     const {
@@ -552,7 +570,7 @@
                     }
 
                 },
-                error: function(err) {
+                error: function (err) {
                     console.log(err.responseText); // Hiển thị lỗi trong console
                 }
 
@@ -561,20 +579,20 @@
 
 
         // Xử lý khi nhấn nút tìm kiếm
-        $('#btnSearch').click(function() {
+        $('#btnSearch').click(function () {
             page = 1;
             LoadData();
         });
 
 
 
-        function LoadData() {          
-            
+        function LoadData() {
+
             $table.empty();
             $pagination.empty();
 
             $.ajax({
-                url:  '<?php echo BASE_URL; ?>/teacher/exam/search',
+                url: '<?php echo BASE_URL; ?>/teacher/exam/search',
                 type: 'get',
                 dataType: 'json',
                 data: {
@@ -583,7 +601,7 @@
                     subject_id,
                     keyword: $keyword.val().trim()
                 },
-                success: function(response) {
+                success: function (response) {
                     const {
                         exams,
                         currentPage,
@@ -632,7 +650,7 @@
 
                     })
                 },
-                error: function(err) {
+                error: function (err) {
                     console.log(err);
 
                 }
@@ -692,7 +710,7 @@
                             id
                         },
                         dataType: 'json',
-                        success: function(response) {
+                        success: function (response) {
                             const {
                                 code,
                                 msg
@@ -708,7 +726,7 @@
                                 LoadData(); // Tải lại dữ liệu sau khi xóa
                             }
                         },
-                        error: function(err) {
+                        error: function (err) {
                             console.log(err.responseText);
                         }
                     });
@@ -756,17 +774,17 @@
                     data: {
                         id
                     },
-                    success: function(response) {
+                    success: function (response) {
                         return resolve(response)
                     },
-                    error: function(err) {
+                    error: function (err) {
                         return reject(err);
                     }
                 })
             })
         }
 
-        $modal.on('hide.bs.modal', function(e) {
+        $modal.on('hide.bs.modal', function (e) {
             id = -1;
             $modalTittle.text('Thêm mới cuộc thi');
             $btnSubmit.show();
@@ -780,18 +798,18 @@
             modeValue = 0;
 
         });
-        $('#modalUsingConfig').on('hide.bs.modal', function(e) {
+        $('#modalUsingConfig').on('hide.bs.modal', function (e) {
             if (!modeValue > 0) {
                 $('#rbtRandom').prop('checked', true);
             }
         });
 
-        const formatDisplay = function(inputHTML) {
+        const formatDisplay = function (inputHTML) {
             // Giữ nguyên nội dung HTML của q.question mà không render
             var formattedQuestionText = $('<div>').text(inputHTML).html();
             return formattedQuestionText
                 .replace(/\t/g, '&nbsp;&nbsp;&nbsp;&nbsp;') // Thay thế tab bằng không gian trắng
-                .replace(/<p>\s+/g, function(match) {
+                .replace(/<p>\s+/g, function (match) {
                     return '<p>' + '&nbsp;'.repeat(match.length - 3); // Thay thế khoảng trắng đầu dòng sau <p>
                 });
         }
