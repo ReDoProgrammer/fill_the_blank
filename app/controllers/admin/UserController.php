@@ -14,12 +14,12 @@ class UserController extends AdminController
     public function search()
     {
         if ($_SERVER["REQUEST_METHOD"] === "GET") {
+            $teaching_id = $_GET['teaching_id'];
             $keyword = isset($_GET['keyword']) ? $_GET['keyword'] : '';
             $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
             $pageSize = isset($_GET['pageSize']) ? (int) $_GET['pageSize'] : 10;
             $role = $_GET['role'] ?? 'user';
-            $userModel = new UserModel();
-            $result = $userModel->getAllUsers($keyword, $page, $pageSize, $role);
+            $result = $this->userModel->getAllUsers($teaching_id,$keyword, $page, $pageSize, $role);
 
             echo json_encode($result);
         }
@@ -44,6 +44,7 @@ class UserController extends AdminController
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Lấy dữ liệu từ POST request
             $id = $_POST['id'] ?? '';
+            $teaching_id = $_POST['teaching_id'] ?? '';
             $usercode = $_POST['usercode'] ?? '';
             $fullname = $_POST['fullname'] ?? '';
             $email = $_POST['email'] ?? '';
@@ -57,7 +58,8 @@ class UserController extends AdminController
                 'fullname' => $fullname,
                 'email' => $email,
                 'phone' => $phone,
-                'role' => $role
+                'role' => $role,
+                'teaching_id'=>$teaching_id
             ];
 
             // Nếu có mật khẩu mới, mã hóa mật khẩu
@@ -126,9 +128,10 @@ class UserController extends AdminController
             $email = $_POST['email'];
             $phone = $_POST['phone'];
             $role = $_POST['role'] ?? 'user';
+            $teaching_id = $_POST['teaching_id'];
 
             // Gọi hàm tạo người dùng từ model và trả về kết quả dưới dạng JSON
-            $result = $this->userModel->createUser($username, $usercode, $fullname, $phone, $email, $password, $role);
+            $result = $this->userModel->createUser($username, $usercode, $fullname, $phone, $email, $password, $role,$teaching_id);
 
             echo json_encode($result);
         } else {
@@ -144,10 +147,10 @@ class UserController extends AdminController
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $users = $_POST['users'] ?? [];
-            // echo json_encode($users);
+            $teaching_id = $_POST['teaching_id'];
             header('Content-Type: application/json'); // Thiết lập header đúng cho JSON
-            $result = $this->userModel->importUsers($users);
-            echo $result;
+            $result = $this->userModel->importUsers($users,$teaching_id);
+            echo json_encode($result);
         }
     }
 }

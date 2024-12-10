@@ -1,5 +1,8 @@
 <div class="container">
-    <div class="row justify-content-end mb-4">
+    <div class="row justify-content-end mb-4 mt-2">
+        <div class="col-md-4">
+            <select name="" id="slTeachingM" class="form-control slTeaching"></select>
+        </div>
         <div class="col col-md-4 align-self-end text-end">
             <div class="input-group">
                 <input type="text" id="txtKeyword" class="form-control" placeholder="Search user..." />
@@ -37,12 +40,14 @@
                 </div>
             </th>
             <th scope="col">#</th>
-            <th scope="col">Tài khoản</th>
+            <th scope="col">Năm học</th>
+            <th scope="col">Môn học</th>
+            <th scope="col">Giảng viên</th>
             <th scope="col">Mã học viên</th>
+            <th scope="col">Tài khoản</th>
             <th scope="col">Họ và tên</th>
             <th scope="col">Điện thoại</th>
             <th scope="col">Email</th>
-            <th scope="col">Quyền</th>
             <th scope="col"></th>
         </tr>
     </thead>
@@ -69,6 +74,12 @@
             </div>
             <div class="modal-body">
                 <div class="containter">
+                    <div class="row mb-3">
+                        <div class="col-md-12 form-group">
+                            <label for="">Lớp</label>
+                            <select name="" id="slTeachingIM" class="form-control slTeaching"></select>
+                        </div>
+                    </div>
                     <div class="row mb-3">
                         <div class="col-md-4 form-group">
                             <label for="">Tài khoản:</label>
@@ -124,8 +135,10 @@
     const $username = $('#txtUsername'), $usercode = $('#txtUserCode'), $fullname = $('#txtFullname'), $password = $('#txtPassword'), $confirmPassword = $('#txtConfirmPassword'), $phone = $('#txtPhone'), $email = $('#txtEmail');
     const $uploadTrigger = $('#uploadTrigger');
     const $deleteMany = $('#deleteMany');
+    const $slTeaching = $('#slTeaching');
     $(document).ready(function () {
-        LoadData();
+        LoadTeachings();
+        
 
         // Khi click vào nút upload, giả lập click vào input file
         $uploadTrigger.click(function () {
@@ -284,6 +297,29 @@
         });
     });
 
+    function LoadTeachings() {
+        $.ajax({
+            url: `<?php echo BASE_URL; ?>/admin/teaching/listCurretCLassese`,
+            type: 'GET',
+            dataType: 'json',
+            success: function (response) {
+                const { classese } = response;
+                classese.forEach(c => {
+                    $('.slTeaching').append(`<option value = "${c.id}">[${c.subject_name}] ${c.name} (${c.school_year} - ${c.teacher_name})</option>`);
+                })
+                $slTeaching.trigger('change');
+
+            },
+            error: function (err) {
+                console.log(err);
+
+            }
+        })
+    }
+    $slTeaching.on('change',function(){
+        LoadData();        
+    })
+
 
 
     $deleteMany.on('click', function () {
@@ -379,7 +415,8 @@
             fullname: capitalizeWords(fullname),
             password: password,
             phone: phone,
-            email: email
+            email: email,
+            teaching_id: $('#slTeachingIM').val()
         }
         if (id > 0) data.id = id;
 
@@ -413,6 +450,10 @@
 
     })
 
+    $('#slTeachingM').on('change',function(){
+        LoadData();
+    })
+
     function LoadData() {
         $.ajax({
             url: '<?php echo BASE_URL; ?>/admin/user/search', // URL của phương thức search trong UserController
@@ -420,7 +461,8 @@
             data: {
                 keyword,
                 page,
-                pageSize
+                pageSize,
+                teaching_id:$('#slTeachingM').val()
             },
             dataType: 'json',
             success: function (response) {
@@ -444,12 +486,14 @@
                         </td>
 
                         <td>${++idx}</td>
-                        <td class="fw-bold">${u.username}</td>
+                        <td class="fw-bold">${u.school_year}</td>
+                        <td class="fw-bold">${u.subject_name}</td>
+                        <td class="fw-bold">${u.teacher_name}</td>
                         <td class="fw-bold text-secondary">${u.user_code}</td>
+                        <td class="fw-bold">${u.username}</td>
                         <td>${u.fullname}</td>
                         <td>${u.phone}</td>
                         <td>${u.email}</td>
-                        <td class="fw-bold text-success">${u.role}</td>
                         <td class="text-end">
                         <a href="javascript:void(0)" onClick="UpdateUser(${u.id})"><i class="fa fa-edit text-warning"></i></a>
                         ${u.role == 'user' ? `
@@ -500,6 +544,7 @@
                     $confirmPassword.val('12345');
                     $phone.val(user.phone);
                     $email.val(user.email);
+                    $slTeaching.val(user.teaching_id);
                 }
             },
             error: function (err) {
@@ -519,7 +564,7 @@
         }).then((result) => {
             if (result.isConfirmed) {
                 DeleteSingle(id);
-            }            
+            }
         });
     }
 

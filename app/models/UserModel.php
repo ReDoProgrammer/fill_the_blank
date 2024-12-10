@@ -5,53 +5,61 @@ require_once 'app/core/Model.php';
 
 class UserModel extends Model
 {
-    public function getAllUsers($keyword, $page, $pageSize, $role = 'user')
-    {
-        // Tính toán OFFSET
-        $offset = ($page - 1) * $pageSize;
+    public function getAllUsers($teaching_id, $keyword, $page, $pageSize, $role = 'user')
+{
+    // Tính toán OFFSET
+    $offset = ($page - 1) * $pageSize;
 
-        // Câu lệnh SQL để lấy dữ liệu người dùng theo phân trang
-        $sql = "SELECT * FROM users
-                WHERE (username LIKE :keyword OR phone LIKE :keyword OR email LIKE :keyword OR fullname LIKE :keyword)
-                  AND role = :role
-                ORDER BY username, fullname
-                LIMIT :offset, :pageSize"; // Dùng tham số hóa
+    // Câu lệnh SQL để lấy dữ liệu người dùng theo phân trang
+    $sql = "SELECT u.*, t.name AS class_name, t.school_year,
+                   gv.fullname AS teacher_name, s.name AS subject_name
+            FROM users u
+            JOIN teachings t ON u.teaching_id = t.id
+            JOIN users gv ON t.teacher_id = gv.id
+            JOIN subjects s ON t.subject_id = s.id
+            WHERE 
+                u.teaching_id = :teaching_id AND
+                (u.username LIKE :keyword OR u.phone LIKE :keyword OR u.email LIKE :keyword OR u.fullname LIKE :keyword)
+                AND u.role = :role
+            ORDER BY t.name, t.school_year, u.username, u.fullname
+            LIMIT :offset, :pageSize";
 
-        // Câu lệnh SQL để lấy tổng số bản ghi
-        $countSql = "SELECT COUNT(*) as total FROM users
-                     WHERE (username LIKE :keyword OR phone LIKE :keyword OR email LIKE :keyword OR fullname LIKE :keyword)
-                       AND role = :role";
+    // Chuẩn bị và thực thi câu lệnh SQL
+    $stmt = $this->pdo->prepare($sql);
+    $stmt->bindValue(':teaching_id', (int) $teaching_id, PDO::PARAM_INT);
+    $stmt->bindValue(':keyword', "%$keyword%", PDO::PARAM_STR);
+    $stmt->bindValue(':role', $role, PDO::PARAM_STR);
+    $stmt->bindValue(':offset', (int) $offset, PDO::PARAM_INT);
+    $stmt->bindValue(':pageSize', (int) $pageSize, PDO::PARAM_INT);
+    $stmt->execute();
+    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-        // Thay đổi các tham số cho PDO
-        $params = [
-            ':keyword' => "%$keyword%",
-            ':role' => $role
-        ];
+    // Câu lệnh SQL để lấy tổng số bản ghi
+    $countSql = "SELECT COUNT(*) as total
+                 FROM users
+                 WHERE (username LIKE :keyword OR phone LIKE :keyword OR email LIKE :keyword OR fullname LIKE :keyword)
+                   AND role = :role";
 
-        // Lấy dữ liệu người dùng (truyền OFFSET và LIMIT bằng cách nối chuỗi hoặc ép kiểu)
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->bindValue(':keyword', "%$keyword%", PDO::PARAM_STR);
-        $stmt->bindValue(':role', $role, PDO::PARAM_STR);
-        $stmt->bindValue(':offset', (int) $offset, PDO::PARAM_INT); // Ép kiểu số nguyên
-        $stmt->bindValue(':pageSize', (int) $pageSize, PDO::PARAM_INT);
-        $stmt->execute();
-        $users = $stmt->fetchAll();
+    // Lấy tổng số bản ghi
+    $stmtCount = $this->pdo->prepare($countSql);
+    $stmtCount->bindValue(':keyword', "%$keyword%", PDO::PARAM_STR);
+    $stmtCount->bindValue(':role', $role, PDO::PARAM_STR);
+    $stmtCount->execute();
+    $totalRecords = $stmtCount->fetch(PDO::FETCH_ASSOC)['total'];
 
-        // Lấy tổng số bản ghi
-        $totalRecords = $this->fetch($countSql, $params)['total'];
+    // Tính toán số trang
+    $totalPages = ceil($totalRecords / $pageSize);
 
-        // Tính toán số trang
-        $totalPages = ceil($totalRecords / $pageSize);
+    // Trả về dữ liệu cùng với thông tin phân trang
+    return [
+        'users' => $users,
+        'totalPages' => $totalPages,
+        'currentPage' => $page,
+        'pageSize' => $pageSize,
+        'totalRecords' => $totalRecords
+    ];
+}
 
-        // Trả về dữ liệu cùng với thông tin phân trang
-        return [
-            'users' => $users,
-            'totalPages' => $totalPages,
-            'currentPage' => $page,
-            'pageSize' => $pageSize,
-            'totalRecords' => $totalRecords
-        ];
-    }
 
     public function listByTeachingId($teachingId, $keyword, $page, $pageSize, $role = 'user')
     {
@@ -111,7 +119,7 @@ class UserModel extends Model
 
     public function getUserById($id)
     {
-        $sql = "SELECT * FROM users WHERE id = :id";
+        $sql = "SELECT u.*,t.name FROM users u JOIN teachings t ON u.teaching_id = t.id WHERE u.id = :id";
         return $this->fetch($sql, ['id' => $id]);
     }
 
@@ -121,7 +129,7 @@ class UserModel extends Model
         return $this->fetch($sql, ['username' => $username]);
     }
 
-    public function createUser($username, $usercode, $fullname, $phone, $email, $password, $role)
+    public function createUser($username, $usercode, $fullname, $phone, $email, $password, $role,$teaching_id)
     {
         if ($this->getUserByUsername($username)) {
             return ['code' => 409, 'msg' => 'Username này đã tồn tại trong hệ thống!'];
@@ -137,8 +145,8 @@ class UserModel extends Model
 
         $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
 
-        $sql = "INSERT INTO users (username, user_code, fullname, phone, email, password, role) 
-                VALUES (:username, :user_code, :fullname, :phone, :email, :password, :role)";
+        $sql = "INSERT INTO users (username, user_code, fullname, phone, email, password, role,teaching_id) 
+                VALUES (:username, :user_code, :fullname, :phone, :email, :password, :role,:teaching_id)";
 
         $data = [
             ':username' => $username,
@@ -148,6 +156,7 @@ class UserModel extends Model
             ':email' => $email,
             ':password' => $hashedPassword,
             ':role' => $role,
+            ':teaching_id'=>$teaching_id
         ];
 
         $this->execute($sql, $data);
@@ -161,7 +170,7 @@ class UserModel extends Model
     public function updateUser($id, $data)
     {
         $sql = "UPDATE users 
-                SET user_code = :user_code, fullname = :fullname, phone = :phone, email = :email, password = :password, role = :role 
+                SET user_code = :user_code, fullname = :fullname, phone = :phone, email = :email, password = :password, role = :role, teaching_id=:teaching_id 
                 WHERE id = :id";
 
         $data['id'] = $id;
@@ -187,10 +196,9 @@ class UserModel extends Model
             : ['code' => 400, 'msg' => "Xóa tài khoản $msg không thành công!"];
     }
 
-    public function importUsers($users)
+    public function importUsers($users,$teaching_id)
     {
         $failedUsers = [];
-
         foreach ($users as $user) {
             $username = $user['Username'];
             $usercode = $user['Usercode'];
@@ -198,12 +206,11 @@ class UserModel extends Model
             $phone = $user['Phone'];
             $email = $user['Email'];
             $password = $user['Password'];
-
             if ($this->getUserByUsername($username)) {
                 $username .= rand(100, 999);
             }
 
-            $result = $this->createUser($username, $usercode, $fullname, $phone, $email, $password, 'user');
+            $result = $this->createUser($username, $usercode, $fullname, $phone, $email, $password, 'user',$teaching_id);
 
             if ($result['code'] !== 201) {
                 $failedUsers[] = [
