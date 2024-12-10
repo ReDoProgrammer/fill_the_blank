@@ -494,6 +494,7 @@
         $btnSubmit.click(function () {
 
             // Lấy dữ liệu từ các trường trong form
+            var teaching_id =$slOwnClasses.val();
             var title = $('#txtTitle').val();
             var description = quill.root.innerHTML; // Quill.js editor content
             var begin_date = $('#begin_date_input').val();
@@ -522,6 +523,7 @@
             // Tạo FormData để gửi dữ liệu
             var formData = new FormData();
             if (id > 0) formData.append('id', id);
+            formData.append('teaching_id', teaching_id);
             formData.append('subject_id', subject_id);
             formData.append('title', title);
             formData.append('description', description);

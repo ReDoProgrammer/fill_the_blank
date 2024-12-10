@@ -3,7 +3,7 @@ require_once 'app/core/Model.php';
 
 class ExamModel extends Model
 {
-    public function createExam($title, $description, $number_of_questions, $duration, $mode, $thumbnail, $begin_date, $end_date, $subject_id, $created_by)
+    public function createExam($teaching_id,$title, $description, $number_of_questions, $duration, $mode, $thumbnail, $begin_date, $end_date, $subject_id, $created_by)
     {
         try {
             $this->pdo->beginTransaction();
@@ -27,6 +27,7 @@ class ExamModel extends Model
             $sql = "INSERT INTO exams (title, description, number_of_questions, duration, mode, thumbnail, begin_date, end_date, subject_id,created_by) 
                 VALUES (:title, :description, :number_of_questions, :duration, :mode, :thumbnail, :begin_date, :end_date, :subject_id,:created_by)";
             $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':teaching_id', $teaching_id);
             $stmt->bindParam(':title', $title);
             $stmt->bindParam(':description', $description);
             $stmt->bindValue(':number_of_questions', $number_of_questions, PDO::PARAM_INT);
@@ -126,7 +127,7 @@ class ExamModel extends Model
     }
 
 
-    public function updateExam($id, $title, $description, $number_of_questions, $duration, $mode, $thumbnail, $begin_date, $end_date, $subject_id, $updated_by)
+    public function updateExam($id, $teaching_id,$title, $description, $number_of_questions, $duration, $mode, $thumbnail, $begin_date, $end_date, $subject_id, $updated_by)
     {
         try {
             $this->pdo->beginTransaction();
@@ -162,6 +163,7 @@ class ExamModel extends Model
 
             $stmt = $this->pdo->prepare($sql);
             $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+            $stmt->bindParam(':teaching_id', $teaching_id);
             $stmt->bindParam(':title', $title);
             $stmt->bindParam(':description', $description);
             $stmt->bindValue(':number_of_questions', $number_of_questions, PDO::PARAM_INT);
