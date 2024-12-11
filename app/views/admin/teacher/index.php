@@ -13,11 +13,7 @@
                 <i class="fa fa-plus text-white" data-bs-toggle="modal" data-bs-target="#modal"></i> Thêm
                 mới
             </button>
-            <!-- <input type="file" id="btnUpload" class="btn btn-warning text-white" style="display:none;"
-                accept=".xlsx, .xls" />
-            <button class="btn btn-warning text-white" id="uploadTrigger">
-                <i class="fa fa-upload" aria-hidden="true"></i> Upload
-            </button> -->
+            
             <button class="btn btn-danger text-white" id="deleteMany">
                 <i class="fa fa-times" aria-hidden="true"></i> Delete (<span id="deleteCount" class="fw-bold">0</span>)
             </button>
@@ -129,7 +125,6 @@
         $pagination = $('.pagination'),
         $modal = $('#modal'),
         $modalTittle = $('#modalTittle');
-    const $btnUpload = $('#btnUpload');
     const $username = $('#txtUsername'),
         $usercode = $('#txtUserCode'),
         $fullname = $('#txtFullname'),
@@ -137,15 +132,9 @@
         $confirmPassword = $('#txtConfirmPassword'),
         $phone = $('#txtPhone'),
         $email = $('#txtEmail');
-    const $uploadTrigger = $('#uploadTrigger');
     const $deleteMany = $('#deleteMany');
-    $(document).ready(function() {
+    $(document).ready(function () {
         LoadData();
-
-        // Khi click vào nút upload, giả lập click vào input file
-        $uploadTrigger.click(function() {
-            $btnUpload.click();
-        });
 
         // Hàm tạo username từ fullname
         function generateUsername(fullName) {
@@ -159,107 +148,10 @@
             return lastName + initials;
         }
 
-        // Sự kiện khi file được chọn
-        $btnUpload.change(function(event) {
-            var file = event.target.files[0];
-            var reader = new FileReader();
-
-            reader.onload = function(e) {
-                var data = new Uint8Array(e.target.result);
-                var workbook = XLSX.read(data, {
-                    type: 'array'
-                });
-
-                var jsonData = [];
-
-                workbook.SheetNames.forEach(function(sheetName) {
-                    var worksheet = workbook.Sheets[sheetName];
-                    var sheetJson = XLSX.utils.sheet_to_json(worksheet, {
-                        header: 1
-                    });
-
-                    // Kiểm tra xem file có tiêu đề cột hay không
-                    var headers = Array.isArray(sheetJson[0]) ? sheetJson.shift() : [];
-
-                    var result = sheetJson.map(function(row) {
-                        var rowData = {};
-
-                        // Tạo một đối tượng từ mỗi hàng
-                        row.forEach(function(cell, index) {
-                            var key = headers[index] || `Column${index + 1}`;
-                            rowData[key] = cell;
-                        });
-
-                        // Nếu có cột fullname, thêm cột username
-                        if (rowData['Fullname']) {
-                            rowData['Username'] = generateUsername(rowData['Fullname']);
-                        }
-
-                        return rowData;
-                    });
-
-                    jsonData.push({
-                        sheetName: sheetName,
-                        data: result
-                    });
-                });
-
-
-                const result = jsonData[0].data;
-
-                if (!checkPropertyInArray(result, 'Usercode') || !checkPropertyInArray(result, 'Fullname') || !checkPropertyInArray(result, 'Phone') || !checkPropertyInArray(result, 'Email') || !checkPropertyInArray(result, 'Password')) {
-                    Swal.fire({
-                        title: "Dữ liệu không hợp lệ!",
-                        text: "Có vẻ như bạn đang import 1 file excel không đúng định dạng. Vui lòng kiểm tra lại",
-                        icon: "error"
-                    });
-                    return;
-                }
-                if (result && result.length > 1) {
-                    $.ajax({
-                        url: '<?php echo BASE_URL; ?>/admin/user/import',
-                        type: 'POST',
-                        dataType: 'json',
-                        data: {
-                            users: result
-                        },
-                        success: function(response) {
-                            const {
-                                code,
-                                msg
-                            } = response;
-                            if (code === 201) {
-                                $.toast({
-                                    heading: code === 200 || code === 201 ? 'SUCCESSFULLY' : `ERROR: ${code}`,
-                                    text: msg,
-                                    icon: code === 200 || code === 201 ? 'success' : 'error',
-                                    loader: true, // Change it to false to disable loader
-                                    loaderBg: '#9EC600' // To change the background
-                                });
-                                LoadData();
-                            }
-                        },
-                        error: function(err) {
-                            console.log(err);
-
-                        }
-                    })
-                } else {
-                    Swal.fire({
-                        title: "Dữ liệu không hợp lệ!",
-                        text: "File danh sách thành viên không có dữ liệu",
-                        icon: "error"
-                    });
-                }
-
-            };
-
-            reader.readAsArrayBuffer(file);
-        });
-
+        
         $deleteMany.prop('disabled', true);
         // Khi checkAll được chọn hoặc bỏ chọn
-        $('#checkAll').on('change', function() {
+        $('#checkAll').on('change', function () {
             // Lấy trạng thái của checkbox checkAll
             var isChecked = $(this).prop('checked');
 
@@ -271,7 +163,7 @@
         });
 
         // Khi bất kỳ checkbox nào trong bảng được chọn hoặc bỏ chọn
-        $('#tblData').on('change', 'input.form-check-input', function() {
+        $('#tblData').on('change', 'input.form-check-input', function () {
             // Kiểm tra xem tất cả các checkbox trong bảng có được chọn không
             var allChecked = $('#tblData input.form-check-input').length === $('#tblData input.form-check-input:checked').length;
 
@@ -283,7 +175,7 @@
         });
 
 
-        $('.pagination').on('click', '.page-link', function(e) {
+        $('.pagination').on('click', '.page-link', function (e) {
 
             e.preventDefault(); // Ngăn chặn hành động mặc định của thẻ <a>
             currentPage = $(this).data('page'); // Lấy giá trị data-page
@@ -315,9 +207,9 @@
 
 
 
-    $deleteMany.on('click', function() {
+    $deleteMany.on('click', function () {
         // Lấy mảng các ID của các hàng có checkbox được chọn
-        var selectedIds = $('#tblData input.form-check-input:checked').map(function() {
+        var selectedIds = $('#tblData input.form-check-input:checked').map(function () {
             return parseInt($(this).closest('tr').attr('id'));
         }).get();
 
@@ -341,7 +233,7 @@
     });
 
 
-    $btnSearch.click(function() {
+    $btnSearch.click(function () {
         page = 1;
         keyword = $keyword.val().trim();
         console.log({
@@ -351,7 +243,7 @@
     })
 
 
-    $btnSubmit.click(function() {
+    $btnSubmit.click(function () {
         const username = $username.val().trim();
         const usercode = $usercode.val().trim();
         const password = $password.val().trim();
@@ -359,7 +251,7 @@
         const fullname = $fullname.val().trim();
         const phone = $phone.val().trim();
         const email = $email.val().trim();
-        const role='teacher';
+        const role = 'teacher';
         if (username.length == 0) {
             $.toast({
                 heading: 'Ràng buộc dữ liệu',
@@ -420,7 +312,7 @@
             type: 'POST',
             data: data,
             dataType: 'json', // Chỉ định rằng bạn mong đợi JSON
-            success: function(response) {
+            success: function (response) {
 
                 // Nếu response không phải là đối tượng JSON, hãy thử parse nó
                 // response = JSON.parse(response); // Sử dụng nếu dữ liệu không tự động parse
@@ -441,7 +333,7 @@
                     LoadData();
                 }
             },
-            error: function(err) {
+            error: function (err) {
                 console.log(err);
             }
         });
@@ -454,11 +346,11 @@
             method: 'GET',
             data: {
                 keyword,
-                page,              
+                page,
                 pageSize
             },
             dataType: 'json',
-            success: function(response) {
+            success: function (response) {
 
                 // Hiển thị dữ liệu người dùng và thông tin phân trang
                 const {
@@ -513,7 +405,7 @@
                 </li>`);
 
             },
-            error: function(err) {
+            error: function (err) {
                 console.log(err.responseText);
             }
         });
@@ -528,7 +420,7 @@
                 id
             },
             dataType: 'json',
-            success: function(response) {
+            success: function (response) {
                 const {
                     code,
                     msg,
@@ -549,15 +441,15 @@
                     $email.val(user.email);
                 }
             },
-            error: function(err) {
+            error: function (err) {
                 console.log(err);
             }
         })
     }
 
     function DeleteUser(id, username) {
-        console.log({id,username});
-        
+        console.log({ id, username });
+
         Swal.fire({
             title: `Bạn thực sự muốn xoá tài khoản giáo viên <span class="text-warning">${username}</span>?`,
             text: "Bạn sẽ không thể khôi phục lại dữ liệu đã bị xoá!",
@@ -574,7 +466,7 @@
     }
 
 
-    $modal.on('hide.bs.modal', function(e) {
+    $modal.on('hide.bs.modal', function (e) {
         $modalTittle.text('Thêm mới tài khoản');
         $username.prop('readonly', false);
         $usercode.val('');
@@ -588,16 +480,16 @@
     });
 
 
-    const DeleteSingle = function(id) {
+    const DeleteSingle = function (id) {
         $.ajax({
             url: '<?php echo BASE_URL; ?>/admin/user/delete', // URL của phương thức delete trong UserController
             type: 'POST',
             data: {
                 id,
-                role:'teacher'
+                role: 'teacher'
             },
             dataType: 'json',
-            success: function(response) {
+            success: function (response) {
                 const {
                     code,
                     msg
@@ -613,7 +505,7 @@
                     LoadData(); // Tải lại dữ liệu sau khi xóa thành công
                 }
             },
-            error: function(err) {
+            error: function (err) {
                 console.log(err.responseText);
             }
         });
@@ -639,7 +531,7 @@
     }
 
     function checkPropertyInArray(array, property) {
-        return array.every(function(item) {
+        return array.every(function (item) {
             return item.hasOwnProperty(property);
         });
     }
