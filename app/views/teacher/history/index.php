@@ -1,6 +1,6 @@
 <div class="card">
     <div class="card-header" id="cardTitle">
-        Featured
+        HỌC VIÊN KHÔNG TỒN TẠI
     </div>
     <div class="card-body">
        
@@ -27,7 +27,9 @@
             success:function(response){
                 console.log(response);
                 const {user} = response;
-                $('#cardTitle').html(`Lịch sử ôn tập của học viên: ${user.user_code}. Họ tên: <span class = "fw-bold text-info">${user.fullname}</span>. Lớp: <span class="text-warning">${user.name}</span>`);
+                if(user.user_code == code){
+                    $('#cardTitle').html(`Lịch sử ôn tập của học viên: ${user.user_code}. Họ tên: <span class = "fw-bold text-info">${user.fullname}</span>. Lớp: <span class="text-warning">${user.name}</span>`);
+                }
             },
             error:function(err){
                 console.log(err.responseText);
