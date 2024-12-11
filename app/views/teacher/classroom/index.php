@@ -23,7 +23,7 @@
 </nav>
 <script>
     const $table = $('#tblData'),
-    $pagination = $('.pagination');
+        $pagination = $('.pagination');
     $(document).ready(function () {
         // Lấy URL hiện tại
         var url = window.location.href;
@@ -61,13 +61,20 @@
                 users.forEach(u => {
                     $table.append(`
                     <tr id = "${u.id}">                   
-                        <td>${++idx}</td>
+                        <td class = "text-center">${++idx}</td>
                         <td class="fw-bold">${u.username}</td>
                         <td class="fw-bold text-secondary">${u.user_code}</td>
-                        <td>${u.fullname}</td>
+                        <td class = "text-info fw-bold">${u.fullname}</td>
                         <td>${u.phone}</td>
                         <td>${u.email}</td>
-                        <td class="fw-bold text-success">
+                        <td class="text-success text-center">
+                            <button class="btn btn-sm text-white btn-warning dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fa fa-gear"></i>
+                            </button>
+                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                                <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/teacher/history/index?u=${u.id}&c=${u.user_code}">Lịch sử luyện tập</a></li>
+                                <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/teacher/history/quiz?u=${u.id}&c=${u.user_code}">Lịch sử thi</a></li>
+                            </ul>
                         </td>
                     </tr>
                 `);
