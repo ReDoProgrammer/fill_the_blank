@@ -5,60 +5,77 @@ require_once 'app/core/Model.php';
 
 class UserModel extends Model
 {
-    public function getAllUsers($teaching_id, $keyword, $page, $pageSize, $role = 'user')
-{
-    // Tính toán OFFSET
-    $offset = ($page - 1) * $pageSize;
+    public function getAllUsers($keyword, $page, $pageSize, $role = 'user', $teaching_id = 0)
+    {
+        // Tính toán OFFSET
+        $offset = ($page - 1) * $pageSize;
 
-    // Câu lệnh SQL để lấy dữ liệu người dùng theo phân trang
-    $sql = "SELECT u.*, t.name AS class_name, t.school_year,
+        // Câu lệnh SQL cơ bản
+        $sql = "SELECT u.*, t.name AS class_name, t.school_year,
                    gv.fullname AS teacher_name, s.name AS subject_name
             FROM users u
             JOIN teachings t ON u.teaching_id = t.id
             JOIN users gv ON t.teacher_id = gv.id
             JOIN subjects s ON t.subject_id = s.id
             WHERE 
-                u.teaching_id = :teaching_id AND
                 (u.username LIKE :keyword OR u.phone LIKE :keyword OR u.email LIKE :keyword OR u.fullname LIKE :keyword)
-                AND u.role = :role
-            ORDER BY t.name, t.school_year, u.username, u.fullname
-            LIMIT :offset, :pageSize";
+                AND u.role = :role";
 
-    // Chuẩn bị và thực thi câu lệnh SQL
-    $stmt = $this->pdo->prepare($sql);
-    $stmt->bindValue(':teaching_id', (int) $teaching_id, PDO::PARAM_INT);
-    $stmt->bindValue(':keyword', "%$keyword%", PDO::PARAM_STR);
-    $stmt->bindValue(':role', $role, PDO::PARAM_STR);
-    $stmt->bindValue(':offset', (int) $offset, PDO::PARAM_INT);
-    $stmt->bindValue(':pageSize', (int) $pageSize, PDO::PARAM_INT);
-    $stmt->execute();
-    $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        // Chỉ thêm điều kiện teaching_id nếu teaching_id khác 0
+        if ($teaching_id != 0) {
+            $sql .= " AND u.teaching_id = :teaching_id";
+        }
 
-    // Câu lệnh SQL để lấy tổng số bản ghi
-    $countSql = "SELECT COUNT(*) as total
+        // Thêm phần sắp xếp và giới hạn
+        $sql .= " ORDER BY t.name, t.school_year, u.username, u.fullname
+              LIMIT :offset, :pageSize";
+
+        // Chuẩn bị và thực thi câu lệnh SQL
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':keyword', "%$keyword%", PDO::PARAM_STR);
+        $stmt->bindValue(':role', $role, PDO::PARAM_STR);
+        if ($teaching_id != 0) {
+            $stmt->bindValue(':teaching_id', (int) $teaching_id, PDO::PARAM_INT);
+        }
+        $stmt->bindValue(':offset', (int) $offset, PDO::PARAM_INT);
+        $stmt->bindValue(':pageSize', (int) $pageSize, PDO::PARAM_INT);
+        $stmt->execute();
+        $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Câu lệnh SQL để lấy tổng số bản ghi
+        $countSql = "SELECT COUNT(*) as total
                  FROM users
                  WHERE (username LIKE :keyword OR phone LIKE :keyword OR email LIKE :keyword OR fullname LIKE :keyword)
                    AND role = :role";
 
-    // Lấy tổng số bản ghi
-    $stmtCount = $this->pdo->prepare($countSql);
-    $stmtCount->bindValue(':keyword', "%$keyword%", PDO::PARAM_STR);
-    $stmtCount->bindValue(':role', $role, PDO::PARAM_STR);
-    $stmtCount->execute();
-    $totalRecords = $stmtCount->fetch(PDO::FETCH_ASSOC)['total'];
+        // Chỉ thêm điều kiện teaching_id nếu teaching_id khác 0
+        if ($teaching_id != 0) {
+            $countSql .= " AND teaching_id = :teaching_id";
+        }
 
-    // Tính toán số trang
-    $totalPages = ceil($totalRecords / $pageSize);
+        // Lấy tổng số bản ghi
+        $stmtCount = $this->pdo->prepare($countSql);
+        $stmtCount->bindValue(':keyword', "%$keyword%", PDO::PARAM_STR);
+        $stmtCount->bindValue(':role', $role, PDO::PARAM_STR);
+        if ($teaching_id != 0) {
+            $stmtCount->bindValue(':teaching_id', (int) $teaching_id, PDO::PARAM_INT);
+        }
+        $stmtCount->execute();
+        $totalRecords = $stmtCount->fetch(PDO::FETCH_ASSOC)['total'];
 
-    // Trả về dữ liệu cùng với thông tin phân trang
-    return [
-        'users' => $users,
-        'totalPages' => $totalPages,
-        'currentPage' => $page,
-        'pageSize' => $pageSize,
-        'totalRecords' => $totalRecords
-    ];
-}
+        // Tính toán số trang
+        $totalPages = ceil($totalRecords / $pageSize);
+
+        // Trả về dữ liệu cùng với thông tin phân trang
+        return [
+            'users' => $users,
+            'totalPages' => $totalPages,
+            'currentPage' => $page,
+            'pageSize' => $pageSize,
+            'totalRecords' => $totalRecords
+        ];
+    }
+
 
 
     public function listByTeachingId($teachingId, $keyword, $page, $pageSize, $role = 'user')
@@ -129,7 +146,7 @@ class UserModel extends Model
         return $this->fetch($sql, ['username' => $username]);
     }
 
-    public function createUser($username, $usercode, $fullname, $phone, $email, $password, $role,$teaching_id)
+    public function createUser($username, $usercode, $fullname, $phone, $email, $password, $role, $teaching_id)
     {
         if ($this->getUserByUsername($username)) {
             return ['code' => 409, 'msg' => 'Username này đã tồn tại trong hệ thống!'];
@@ -156,7 +173,7 @@ class UserModel extends Model
             ':email' => $email,
             ':password' => $hashedPassword,
             ':role' => $role,
-            ':teaching_id'=>$teaching_id
+            ':teaching_id' => $teaching_id
         ];
 
         $this->execute($sql, $data);
@@ -196,7 +213,7 @@ class UserModel extends Model
             : ['code' => 400, 'msg' => "Xóa tài khoản $msg không thành công!"];
     }
 
-    public function importUsers($users,$teaching_id)
+    public function importUsers($users, $teaching_id)
     {
         $failedUsers = [];
         foreach ($users as $user) {
@@ -210,7 +227,7 @@ class UserModel extends Model
                 $username .= rand(100, 999);
             }
 
-            $result = $this->createUser($username, $usercode, $fullname, $phone, $email, $password, 'user',$teaching_id);
+            $result = $this->createUser($username, $usercode, $fullname, $phone, $email, $password, 'user', $teaching_id);
 
             if ($result['code'] !== 201) {
                 $failedUsers[] = [

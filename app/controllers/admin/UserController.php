@@ -19,7 +19,7 @@ class UserController extends AdminController
             $page = isset($_GET['page']) ? (int) $_GET['page'] : 1;
             $pageSize = isset($_GET['pageSize']) ? (int) $_GET['pageSize'] : 10;
             $role = $_GET['role'] ?? 'user';
-            $result = $this->userModel->getAllUsers($teaching_id,$keyword, $page, $pageSize, $role);
+            $result = $this->userModel->getAllUsers($keyword, $page, $pageSize, $role,$teaching_id);
 
             echo json_encode($result);
         }
