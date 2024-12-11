@@ -236,7 +236,6 @@
                                 });
                                 LoadData();
                             } else {
-                                console.log(failedUsers);
                                 Swal.fire({
                                     title: "Vui lòng kiểm tra lại thông tin trong danh sách lỗi",
                                     text: "Import học viên thất bại!",
