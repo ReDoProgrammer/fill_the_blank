@@ -213,7 +213,7 @@
 
     const $deleteMany = $('#deleteMany');
     let subject_id;
-    $(document).ready(function() {
+    $(document).ready(function () {
         // Lấy URL hiện tại
         var url = window.location.href;
 
@@ -229,7 +229,7 @@
         LoadData();
 
         // RenderQuestionsBankList();
-        $mark.on('input', function() {
+        $mark.on('input', function () {
             // Chỉ cho phép số và dấu chấm (.), loại bỏ dấu âm (-)
             var value = $(this).val();
             value = value.replace(/[^0-9.]/g, '');
@@ -243,7 +243,7 @@
         });
 
 
-        $pagination.on('click', '.page-link', function(e) {
+        $pagination.on('click', '.page-link', function (e) {
             e.preventDefault(); // Ngăn chặn hành động mặc định của thẻ <a>
             currentPage = $(this).text(); // Lấy giá trị data-page
 
@@ -265,7 +265,7 @@
 
         $deleteMany.prop('disabled', true);
         // Khi checkAll được chọn hoặc bỏ chọn
-        $('#checkAll').on('change', function() {
+        $('#checkAll').on('change', function () {
             // Lấy trạng thái của checkbox checkAll
             var isChecked = $(this).prop('checked');
 
@@ -277,7 +277,7 @@
         });
 
         // Khi bất kỳ checkbox nào trong bảng được chọn hoặc bỏ chọn
-        $('#tblData').on('change', 'input.form-check-input', function() {
+        $('#tblData').on('change', 'input.form-check-input', function () {
             // Kiểm tra xem tất cả các checkbox trong bảng có được chọn không
             var allChecked = $('#tblData input.form-check-input').length === $('#tblData input.form-check-input:checked').length;
 
@@ -290,9 +290,9 @@
 
     });
 
-    $deleteMany.on('click', function() {
+    $deleteMany.on('click', function () {
         // Lấy mảng các ID của các hàng có checkbox được chọn
-        var selectedIds = $('#tblData input.form-check-input:checked').map(function() {
+        var selectedIds = $('#tblData input.form-check-input:checked').map(function () {
             return parseInt($(this).closest('tr').attr('id'));
         }).get();
 
@@ -317,15 +317,19 @@
 
 
 
-    $btnImportExcel.on('click', function() {
+
+    $btnImportExcel.on('click', function () {
         $('#excelFile').click(); // Kích hoạt sự kiện click của input file ẩn
     });
 
-    $('#excelFile').on('change', function(e) {
+    $('#excelFile').on('change', async function (e) {
         var file = e.target.files[0];
+
+        if (!file) return; // Kiểm tra nếu không có file nào được chọn
+
         var reader = new FileReader();
 
-        reader.onload = function(e) {
+        reader.onload = async function (e) {
             var data = new Uint8Array(e.target.result);
             var workbook = XLSX.read(data, {
                 type: 'array'
@@ -341,7 +345,6 @@
                 var quiz = {
                     index: excelRows[i][0] || '',
                     title: excelRows[i][1] || '',
-                    // Chuyển đổi mark thành số thực (float)
                     mark: parseFloat(excelRows[i][2]) || 0,
                     option_1: excelRows[i][3] || '',
                     option_2: excelRows[i][4] || '',
@@ -352,46 +355,60 @@
                 arrQuiz.push(quiz);
             }
 
-
-            sendQuizData(arrQuiz); // Gửi dữ liệu chia nhỏ
-            $.toast({
-                heading: 'Successfully',
-                text: 'Import dữ liệu câu hỏi thành công!',
-                icon: 'success',
-                loader: true,
-                loaderBg: '#9EC600'
-            });
-            LoadData();
+            try {
+                await sendQuizData(arrQuiz); // Chờ quá trình gửi dữ liệu hoàn thành
+                $.toast({
+                    heading: 'Successfully',
+                    text: 'Import dữ liệu câu hỏi thành công!',
+                    icon: 'success',
+                    loader: true,
+                    loaderBg: '#9EC600'
+                });
+                LoadData(); // Gọi LoadData sau khi nhập dữ liệu thành công
+            } catch (err) {
+                $.toast({
+                    heading: 'Error',
+                    text: 'Có lỗi xảy ra khi nhập dữ liệu!',
+                    icon: 'error',
+                    loader: true,
+                    loaderBg: '#FF3B30'
+                });
+                console.log(err);
+            } finally {
+                // Reset lại input file để có thể import lần tiếp theo
+                $('#excelFile').val(''); // Reset lại input file
+            }
         };
 
         reader.readAsArrayBuffer(file);
     });
 
-    function sendQuizData(arrQuiz, startIndex = 0, chunkSize = 100) {
-        var chunk = arrQuiz.slice(startIndex, startIndex + chunkSize);
+    async function sendQuizData(arrQuiz, startIndex = 0, chunkSize = 100) {
+        const chunk = arrQuiz.slice(startIndex, startIndex + chunkSize);
 
-        $.ajax({
-            url: '<?php echo BASE_URL; ?>/teacher/quiz/import',
-            type: 'post',
-            dataType: 'json',
-            data: {
-                questions: chunk,
-                subject_id: $subjects.val()
-            },
-            success: function(response) {
-                if (startIndex + chunkSize < arrQuiz.length) {
-                    sendQuizData(arrQuiz, startIndex + chunkSize, chunkSize);
+        try {
+            const response = await $.ajax({
+                url: '<?php echo BASE_URL; ?>/teacher/quiz/import',
+                type: 'post',
+                dataType: 'json',
+                data: {
+                    questions: chunk,
+                    subject_id
                 }
+            });
 
-            },
-            error: function(err) {
-                console.log(err);
+            // Nếu còn dữ liệu, tiếp tục gửi
+            if (startIndex + chunkSize < arrQuiz.length) {
+                await sendQuizData(arrQuiz, startIndex + chunkSize, chunkSize);
             }
-        });
+        } catch (err) {
+            console.error('Error sending data:', err);
+            throw err; // Đẩy lỗi ra ngoài để catch trong phần gọi
+        }
     }
 
 
-    $btnSubmit.click(function() {
+    $btnSubmit.click(function () {
         let question = quill.getText().trim();
         let option_a = quillA.getText().trim();
         let option_b = quillB.getText().trim();
@@ -459,7 +476,7 @@
             type: 'POST',
             dataType: 'json',
             data: data,
-            success: function(response) {
+            success: function (response) {
                 const {
                     code,
                     msg
@@ -477,16 +494,16 @@
                 $modal.modal('hide');
                 id = -1;
             },
-            error: function(err) {
+            error: function (err) {
                 console.log(err);
             }
         })
 
-    });    
+    });
 
 
     // Xử lý khi nhấn nút tìm kiếm
-    $('#btnSearch').click(function() {
+    $('#btnSearch').click(function () {
         page = 1;
         LoadData();
     });
@@ -504,7 +521,7 @@
                 pageSize,
                 subject_id
             },
-            success: function(response) {
+            success: function (response) {
                 const {
                     currentPage,
                     pageSize,
@@ -555,7 +572,7 @@
                 `);
                 });
             },
-            error: function(err) {
+            error: function (err) {
                 console.log(err);
             }
         });
@@ -607,7 +624,7 @@
             })
     }
 
-    const DeleteSingle = function(id) {
+    const DeleteSingle = function (id) {
         $.ajax({
             url: '<?php echo BASE_URL; ?>/teacher/quiz/delete',
             type: 'POST',
@@ -615,7 +632,7 @@
                 id
             },
             dataType: 'json',
-            success: function(response) {
+            success: function (response) {
                 const {
                     code,
                     msg
@@ -631,7 +648,7 @@
                     LoadData(); // Tải lại dữ liệu sau khi xóa
                 }
             },
-            error: function(err) {
+            error: function (err) {
                 console.log(err.responseText);
             }
         });
@@ -716,7 +733,7 @@
                 data: {
                     id
                 },
-                success: function(response) {
+                success: function (response) {
                     // Giả sử trong response có thuộc tính 'question' chứa nội dung HTML của câu hỏi
                     if (response && response.question) {
                         // Giữ nguyên nội dung HTML của question mà không render
@@ -725,7 +742,7 @@
 
                     return resolve(response); // Trả về response đã được chỉnh sửa
                 },
-                error: function(err) {
+                error: function (err) {
                     return reject(err);
                 }
             });
@@ -733,7 +750,7 @@
     }
 
 
-    $modal.on('hide.bs.modal', function(e) {
+    $modal.on('hide.bs.modal', function (e) {
         $modalTittle.text('Thêm mới câu hỏi');
         $btnSubmit.show();
         quill.root.innerHTML = '';
