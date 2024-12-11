@@ -43,9 +43,11 @@ class QuizController extends AdminController
     public function import()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            session_start();
+            $created_by = $_SESSION['admin_logged_in']['id'];
             $questions = $_POST['questions'];
             $subject_id = $_POST['subject_id'];
-           
+            
             $count = 0;
             $arr = [];
             foreach ($questions as $question) {
@@ -60,7 +62,7 @@ class QuizController extends AdminController
                     // Đảm bảo giá trị mark là số thực (float)
                     $mark = (float) $question['mark'];
 
-                    $result = $this->quizModel->createQuiz($subject_id, $question['title'], $mark, $options, $correct_option,$updated_by);
+                    $result = $this->quizModel->createQuiz($subject_id, $question['title'], $mark, $options, $correct_option,$created_by);
 
                     if ($result['code'] == 201) {
                         $count++;

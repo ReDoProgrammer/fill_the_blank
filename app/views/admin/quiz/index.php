@@ -306,15 +306,22 @@
         $('#excelFile').click(); // Kích hoạt sự kiện click của input file ẩn
     });
 
-    $('#excelFile').on('change', function (e) {
+    $('#excelFile').on('change', async function (e) {
         var file = e.target.files[0];
+
+        if (!file) return; // Kiểm tra nếu không có file nào được chọn
+
         var reader = new FileReader();
 
-        reader.onload = function (e) {
+        reader.onload = async function (e) {
             var data = new Uint8Array(e.target.result);
-            var workbook = XLSX.read(data, { type: 'array' });
+            var workbook = XLSX.read(data, {
+                type: 'array'
+            });
             var firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-            var excelRows = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+            var excelRows = XLSX.utils.sheet_to_json(firstSheet, {
+                header: 1
+            });
 
             var arrQuiz = [];
 
@@ -322,7 +329,6 @@
                 var quiz = {
                     index: excelRows[i][0] || '',
                     title: excelRows[i][1] || '',
-                    // Chuyển đổi mark thành số thực (float)
                     mark: parseFloat(excelRows[i][2]) || 0,
                     option_1: excelRows[i][3] || '',
                     option_2: excelRows[i][4] || '',
@@ -333,40 +339,58 @@
                 arrQuiz.push(quiz);
             }
 
-
-            sendQuizData(arrQuiz); // Gửi dữ liệu chia nhỏ
-            $.toast({
-                heading: 'Successfully',
-                text: 'Import dữ liệu câu hỏi thành công!',
-                icon: 'success',
-                loader: true,
-                loaderBg: '#9EC600'
-            });
-            LoadData();
+            try {
+                await sendQuizData(arrQuiz); // Chờ quá trình gửi dữ liệu hoàn thành
+                $.toast({
+                    heading: 'Successfully',
+                    text: 'Import dữ liệu câu hỏi thành công!',
+                    icon: 'success',
+                    loader: true,
+                    loaderBg: '#9EC600'
+                });
+                LoadData(); // Gọi LoadData sau khi nhập dữ liệu thành công
+            } catch (err) {
+                $.toast({
+                    heading: 'Error',
+                    text: 'Có lỗi xảy ra khi nhập dữ liệu!',
+                    icon: 'error',
+                    loader: true,
+                    loaderBg: '#FF3B30'
+                });
+                console.log(err);
+            } finally {
+                // Reset lại input file để có thể import lần tiếp theo
+                $('#excelFile').val(''); // Reset lại input file
+            }
         };
 
         reader.readAsArrayBuffer(file);
     });
 
-    function sendQuizData(arrQuiz, startIndex = 0, chunkSize = 100) {
-        var chunk = arrQuiz.slice(startIndex, startIndex + chunkSize);
+    async function sendQuizData(arrQuiz, startIndex = 0, chunkSize = 100) {
+        const chunk = arrQuiz.slice(startIndex, startIndex + chunkSize);
 
-        $.ajax({
-            url: '<?php echo BASE_URL; ?>/admin/quiz/import',
-            type: 'post',
-            dataType: 'json',
-            data: { questions: chunk, subject_id: $subjects.val() },
-            success: function (response) {
-                if (startIndex + chunkSize < arrQuiz.length) {
-                    sendQuizData(arrQuiz, startIndex + chunkSize, chunkSize);
+        try {
+            const response = await $.ajax({
+                url: '<?php echo BASE_URL; ?>/admin/quiz/import',
+                type: 'post',
+                dataType: 'json',
+                data: {
+                    questions: chunk,
+                    subject_id: $subjects.val()
                 }
+            });
 
-            },
-            error: function (err) {
-                console.log(err);
+            // Nếu còn dữ liệu, tiếp tục gửi
+            if (startIndex + chunkSize < arrQuiz.length) {
+                await sendQuizData(arrQuiz, startIndex + chunkSize, chunkSize);
             }
-        });
+        } catch (err) {
+            console.error('Error sending data:', err);
+            throw err; // Đẩy lỗi ra ngoài để catch trong phần gọi
+        }
     }
+
 
 
     $btnSubmit.click(function () {
@@ -554,11 +578,11 @@
         GetDetail(id)
             .then(detail => {
                 const { question, mark, options } = detail.quiz;
-              
+
                 const { option_1, option_2, option_3, option_4, correct_option } = options;
 
-                 // Giữ nguyên nội dung HTML của q.question mà không render
-                 var formattedQuestionText = $('<div>').text(question).html();
+                // Giữ nguyên nội dung HTML của q.question mà không render
+                var formattedQuestionText = $('<div>').text(question).html();
                 quill.root.innerHTML = formattedQuestionText;
 
                 formattedQuestionText = $('<div>').text(option_1).html();
@@ -634,8 +658,8 @@
 
                 const { option_1, option_2, option_3, option_4, correct_option } = options;
 
-                 // Giữ nguyên nội dung HTML của q.question mà không render
-                 var formattedQuestionText = $('<div>').text(question).html();
+                // Giữ nguyên nội dung HTML của q.question mà không render
+                var formattedQuestionText = $('<div>').text(question).html();
 
 
                 quill.root.innerHTML = formattedQuestionText;
