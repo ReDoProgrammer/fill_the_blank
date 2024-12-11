@@ -231,9 +231,10 @@ class UserModel extends Model
 
             if ($result['code'] !== 201) {
                 $failedUsers[] = [
-                    'username' => $username,
-                    'fullname' => $fullname,
-                    'reason' => $result['msg'],
+                    'Tài khoản' => $username,
+                    'Họ tên' => $fullname,
+                    'Mã thành viên' => $usercode,
+                    'Lý do' => $result['msg'],
                 ];
             }
         }

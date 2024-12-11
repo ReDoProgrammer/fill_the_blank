@@ -126,6 +126,7 @@
     </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
 
 <script>
     var keyword = '', page = 1, pageSize = 10, id = -1;
@@ -138,7 +139,7 @@
     const $slTeaching = $('#slTeaching');
     $(document).ready(function () {
         LoadTeachings();
-        
+
 
         // Khi click vào nút upload, giả lập click vào input file
         $uploadTrigger.click(function () {
@@ -201,6 +202,8 @@
 
                 const result = jsonData[0].data;
 
+
+
                 if (!checkPropertyInArray(result, 'Usercode') || !checkPropertyInArray(result, 'Fullname') || !checkPropertyInArray(result, 'Phone') || !checkPropertyInArray(result, 'Email') || !checkPropertyInArray(result, 'Password')) {
                     Swal.fire({
                         title: "Dữ liệu không hợp lệ!",
@@ -209,14 +212,20 @@
                     });
                     return;
                 }
+
+
                 if (result && result.length > 1) {
+
                     $.ajax({
                         url: '<?php echo BASE_URL; ?>/admin/user/import',
                         type: 'POST',
                         dataType: 'json',
-                        data: { users: result ,teaching_id:$('#slTeachingM').val()},
+                        data: {
+                            users: result,
+                            teaching_id: $('#slTeachingM').val()
+                        },
                         success: function (response) {
-                            const { code, msg } = response;
+                            const { code, msg, failedUsers } = response;
                             if (code === 201) {
                                 $.toast({
                                     heading: code === 200 || code === 201 ? 'SUCCESSFULLY' : `ERROR: ${code}`,
@@ -226,10 +235,28 @@
                                     loaderBg: '#9EC600'  // To change the background
                                 });
                                 LoadData();
+                            } else {
+                                console.log(failedUsers);
+                                Swal.fire({
+                                    title: "Vui lòng kiểm tra lại thông tin trong danh sách lỗi",
+                                    text: "Import học viên thất bại!",
+                                    icon: "error"
+                                }).then(_ => {
+                                    // Chuyển đổi dữ liệu JSON thành sheet Excel
+                                    const ws = XLSX.utils.json_to_sheet(failedUsers);
+
+                                    // Tạo workbook chứa sheet
+                                    const wb = XLSX.utils.book_new();
+                                    XLSX.utils.book_append_sheet(wb, ws, "failedUsers");
+
+                                    // Xuất file Excel
+                                    XLSX.writeFile(wb, "user_data.xlsx");
+                                });
+
                             }
                         },
                         error: function (err) {
-                            console.log(err);
+                            console.log(err.responseText);
 
                         }
                     })
@@ -316,8 +343,8 @@
             }
         })
     }
-    $slTeaching.on('change',function(){
-        LoadData();        
+    $slTeaching.on('change', function () {
+        LoadData();
     })
 
 
@@ -450,7 +477,7 @@
 
     })
 
-    $('#slTeachingM').on('change',function(){
+    $('#slTeachingM').on('change', function () {
         LoadData();
     })
 
@@ -462,7 +489,7 @@
                 keyword,
                 page,
                 pageSize,
-                teaching_id:$('#slTeachingM').val()
+                teaching_id: $('#slTeachingM').val()
             },
             dataType: 'json',
             success: function (response) {
