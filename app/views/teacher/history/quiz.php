@@ -14,6 +14,7 @@
                     <th scope="col" class="text-center">Thời gian thi</th>
                     <th scope="col" class="text-center">Trả lời đúng (câu)</th>
                     <th scope="col" class="text-center">Điểm</th>
+                    <th scope="col" class="text-center">Thứ hạng</th>
                 </tr>
             </thead>
             <tbody id="tblHistory"></tbody>
