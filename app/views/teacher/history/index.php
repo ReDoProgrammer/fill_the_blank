@@ -43,7 +43,11 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" style="max-height:550px; overflow-y:auto">
-                <p class = "fw-bold"><span class = "fw-bold text-decoration-underline">Chú ý: </span><span class="text-success">Câu trả lời có màu xanh</span> tương ứng câu trả lời đúng. Ngược lại: <span class="text-danger">Câu trả lời sai của bạn có màu đỏ</span> [<span class="text-success">Còn đây là đáp án đúng của chỗ trống</span>]</p>
+                <p class = "fw-bold">
+                    <span class = "fw-bold text-decoration-underline">Chú ý: </span><span class="text-success">Câu trả lời có màu xanh</span> tương ứng câu trả lời đúng. Ngược lại: <span class="text-danger">Câu trả lời sai của bạn có màu đỏ</span> [<span class="text-success">Còn đây là đáp án đúng của chỗ trống</span>].
+                    <br/>
+                    <label>Để trống đáp án <span class = "blank fw-bold bg-danger text-secondary">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> sẽ được tính là câu trả lời sai.</label>
+            </p>
                 <div class="containter p-5" id="modalContent"></div>
             </div>
             <div class="modal-footer">
@@ -197,10 +201,8 @@
                     'border: none; border-bottom: 1px solid #000;'; // Không có border nhưng có gạch chân
                 var replacement = '';
                 if (userAnswer.trim().length == 0) {
-                    console.log(1);
-
                     replacement =
-                        `<label><span class = "blank fw-bold bg-danger text-secondary" style="${inputStyle}">&nbsp;&nbsp;&nbsp;</span></label>`;
+                        `<label><span class = "blank fw-bold bg-danger text-secondary" style="${inputStyle}">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></label>`;
                 } else {
                     replacement =
                         `<input type="text" class="blank ${inputClass} fw-bold" value="${userAnswer}" style="${inputStyle}" readonly />`;
@@ -237,7 +239,7 @@
 
     function fetchDetail(id) {
         $.ajax({
-            url: '<?php echo BASE_URL; ?>/history/detail',
+            url: '<?php echo BASE_URL; ?>/teacher/user/practiceDetail',
             type: 'get',
             dataType: 'json',
             data: {

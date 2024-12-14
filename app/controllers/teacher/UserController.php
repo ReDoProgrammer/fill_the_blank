@@ -37,4 +37,18 @@ class UserController extends AdminController
             ]);
         }
     }
+
+    public function practiceDetail()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+            $id = $_GET['id'];
+            $result = $this->historyModel->detail($id);
+            header('Content-Type: application/json');
+            echo json_encode(['code' => 200, 'msg' => 'Lấy chi tiết bài thi thành công!', 'data' => $result]);
+        } else {
+            // Nếu không phải phương thức POST, trả về lỗi
+            header('HTTP/1.1 405 Method Not Allowed');
+            echo json_encode(['message' => 'Phương thức không được phép.']);
+        }
+    }
 }
