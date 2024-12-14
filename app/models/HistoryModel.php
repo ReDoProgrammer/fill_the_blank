@@ -7,7 +7,7 @@ class HistoryModel extends Model
     {
         // Tính toán chỉ số bắt đầu cho LIMIT
         $offset = ($currentPage - 1) * $resultsPerPage;
-
+    
         // Tạo điều kiện tìm kiếm nếu có từ khóa
         $searchCondition = '';
         $searchParams = [];
@@ -15,7 +15,7 @@ class HistoryModel extends Model
             $searchCondition = " AND (s.name LIKE ? OR l.name LIKE ?) ";
             $searchParams = ["%$keyword%", "%$keyword%"];
         }
-
+    
         // Đếm tổng số kết quả
         $countSql = "
             SELECT COUNT(*) as total
@@ -26,14 +26,14 @@ class HistoryModel extends Model
             $searchCondition
         ";
         $totalResults = $this->fetch($countSql, array_merge([$user_id], $searchParams))['total'];
-
+    
         // Tính toán tổng số trang
         $totalPages = ceil($totalResults / $resultsPerPage);
-
+    
         // Kiểm tra có trang trước và trang sau hay không
         $hasNext = $currentPage < $totalPages;
         $hasPrev = $currentPage > 1;
-
+    
         // Lấy danh sách kết quả với LIMIT và OFFSET
         $sql = "
             SELECT 
@@ -77,13 +77,32 @@ class HistoryModel extends Model
                 er.user_id = ?
                 $searchCondition
             ORDER BY 
-                er.created_at DESC,s.id,l.id
+                s.id, l.id, er.id ASC
             LIMIT $resultsPerPage OFFSET $offset
         ";
-
+    
         $params = array_merge([$user_id], $searchParams);
         $results = $this->fetchAll($sql, $params);
-
+    
+        // Tính số lần ôn tập và tỉ lệ
+        $attempts = [];
+        foreach ($results as &$result) {
+            $key = $result['lession_name'] . '|' . $result['subject_name'];
+            if (!isset($attempts[$key])) {
+                $attempts[$key] = 0;
+            }
+            $attempts[$key]++;
+            $result['attempt_number'] = $attempts[$key];
+    
+            // Tính tỉ lệ phần trăm
+            $result['correct_answers_percentage'] = $result['blanksNumbers'] > 0 
+                ? round(($result['correct_answers'] / $result['blanksNumbers']) * 100, 2) 
+                : 0;
+            $result['correct_questions_percentage'] = $result['totalQuestions'] > 0 
+                ? round(($result['correctQuestions'] / $result['totalQuestions']) * 100, 2) 
+                : 0;
+        }
+    
         return [
             'history' => $results,
             'totalPages' => $totalPages,
@@ -92,6 +111,9 @@ class HistoryModel extends Model
             'hasPrev' => $hasPrev
         ];
     }
+    
+
+
     public function ownQuizHistory($user_id, $page = 1, $pageSize = 10, $keyword = '')
     {
         $offset = ($page - 1) * $pageSize;
@@ -99,23 +121,36 @@ class HistoryModel extends Model
         $searchCondition = '';
         $searchParams = [];
         if (!empty($keyword)) {
-            $searchCondition = " AND (s.name LIKE ? OR q.question LIKE ?) ";
-            $searchParams = ["%$keyword%", "%$keyword%"];
+            $searchCondition = " AND (s.name LIKE :subject_name OR e.title LIKE :exam_title) ";
+            $searchParams = [
+                ':subject_name' => "%$keyword%",
+                ':exam_title' => "%$keyword%",
+            ];
         }
 
+        // Tính tổng số kết quả phù hợp
         $countSql = "
             SELECT COUNT(*) as total
             FROM quiz_results qr
             JOIN exams e ON qr.exam_id = e.id            
             JOIN subjects s ON e.subject_id = s.id
-            WHERE qr.user_id = ?
+            WHERE qr.user_id = :user_id
             $searchCondition
         ";
-        $totalResults = $this->fetch($countSql, array_merge([$user_id], $searchParams))['total'];
+
+        $stmt = $this->pdo->prepare($countSql);
+        $stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
+        foreach ($searchParams as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
+        $stmt->execute();
+        $totalResults = $stmt->fetch(PDO::FETCH_ASSOC)['total'];
+
         $totalPages = ceil($totalResults / $pageSize);
         $hasNext = $page < $totalPages;
         $hasPrev = $page > 1;
 
+        // Lấy chi tiết lịch sử bài thi
         $sql = "
             SELECT 
                 qr.id AS quiz_result_id,
@@ -137,43 +172,64 @@ class HistoryModel extends Model
             JOIN 
                 subjects s ON e.subject_id = s.id
             WHERE 
-                qr.user_id = ?
+                qr.user_id = :user_id
                 $searchCondition
             ORDER BY 
-                qr.quiz_date DESC
-            LIMIT $pageSize OFFSET $offset
+                e.subject_id, e.id, qr.id ASC
+            LIMIT :pageSize OFFSET :offset
         ";
 
-        $params = array_merge([$user_id], $searchParams);
-        $results = $this->fetchAll($sql, $params);
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':user_id', $user_id, PDO::PARAM_INT);
+        $stmt->bindValue(':pageSize', $pageSize, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        foreach ($searchParams as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
+        $stmt->execute();
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        // Tính toán điểm, câu trả lời đúng và số lần thi cho mỗi bài thi
+        $attempts = [];
         foreach ($results as &$result) {
             $quizResult = json_decode($result['quiz_result'], true);
             $examQuestions = json_decode($result['exam_questions'], true);
+
             $marks = 0;
             $gotMarks = 0;
             $correctAnswers = 0; // Biến đếm số câu trả lời đúng
 
-            // Tính tổng điểm và điểm người dùng đạt được
             foreach ($examQuestions as $quizId) {
                 $quizSql = "SELECT options, mark FROM quizs WHERE id = ?";
                 $quiz = $this->fetch($quizSql, [$quizId]);
-                $options = json_decode($quiz['options'], true);
-                $correctOption = $options['correct_option'];
-                $marks += $quiz['mark'];
+                if ($quiz) {
+                    $options = json_decode($quiz['options'], true);
+                    $correctOption = $options['correct_option'] ?? '';
+                    $marks += $quiz['mark'];
 
-                // Kiểm tra xem người dùng đã chọn đáp án đúng hay chưa
-                foreach ($quizResult as $userAnswer) {
-                    if ($userAnswer['id'] == $quizId && $userAnswer['choice'] == $correctOption) {
-                        $gotMarks += $quiz['mark'];
-                        $correctAnswers++; // Tăng biến đếm nếu người dùng trả lời đúng
-                        break;
+                    // Kiểm tra câu trả lời của người dùng
+                    foreach ($quizResult as $userAnswer) {
+                        if ($userAnswer['id'] == $quizId && $userAnswer['choice'] == $correctOption) {
+                            $gotMarks += $quiz['mark'];
+                            $correctAnswers++;
+                            break;
+                        }
                     }
                 }
             }
+
+            // Gắn kết quả vào từng bài thi
             $result['marks'] = $marks;
             $result['got_marks'] = $gotMarks;
-            $result['fcorrect_answers'] = $correctAnswers; // Thêm số câu trả lời đúng vào kết quả
+            $result['correct_answers'] = $correctAnswers;
+
+            // Tính số lần thi
+            $key = $result['exam_title'] . '|' . $result['subject_name'];
+            if (!isset($attempts[$key])) {
+                $attempts[$key] = 0;
+            }
+            $attempts[$key]++;
+            $result['attempt_number'] = $attempts[$key];
         }
 
         return [
@@ -184,6 +240,7 @@ class HistoryModel extends Model
             'hasPrev' => $hasPrev
         ];
     }
+
 
     private function get_first_name($fullname)
     {

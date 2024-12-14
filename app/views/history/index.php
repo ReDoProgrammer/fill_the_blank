@@ -49,6 +49,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body" style="max-height:550px; overflow-y:auto">
+                
                 <div class="containter p-5" id="modalContent"></div>
             </div>
             <div class="modal-footer">
@@ -182,7 +183,7 @@ function renderExamDetails(data) {
         // Sort answers by position to ensure correct replacement order
         answers.sort(function(a, b) {
             return a.position - b.position;
-        });
+        });       
 
         answers.forEach(function(answer) {
             var userAnswer = answer.user_answer;
