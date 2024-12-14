@@ -1,11 +1,14 @@
 <?php
 require_once 'app/models/UserModel.php';
+require_once 'app/models/HistoryModel.php';
 class UserController extends AdminController
 {
     protected $userModel;
+    protected $historyModel;
     public function __construct()
     {
         $this->userModel = new UserModel();
+        $this->historyModel = new HistoryModel();
     }
     public function detail()
     {
@@ -17,6 +20,21 @@ class UserController extends AdminController
             } else {
                 echo json_encode(['code' => 404, 'msg' => 'Không tìm thấy tài khoản tương ứng']);
             }
+        }
+    }
+
+    public function persionalPractice(){
+        if($_SERVER['REQUEST_METHOD'] === 'GET'){
+            $userId = $_GET['userId'];
+            $page = $_GET['page'];
+            $pageSize = $_GET['pageSize'];
+            $keyword = $_GET['keyword'];
+            $result = $this->historyModel->ownHistory($userId,$page,$pageSize,$keyword);
+            echo json_encode([
+                'code'=>200,
+                'msg'=>'Lấy lịch sử ôn tập của học viên thành công!',
+                'result'=>$result
+            ]);
         }
     }
 }
