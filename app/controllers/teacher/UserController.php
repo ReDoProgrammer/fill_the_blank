@@ -38,6 +38,21 @@ class UserController extends AdminController
         }
     }
 
+    public function persionalQuiz(){
+        if($_SERVER['REQUEST_METHOD'] === 'GET'){
+            $userId = $_GET['userId'];
+            $page = $_GET['page'];
+            $pageSize = $_GET['pageSize'];
+            $keyword = $_GET['keyword'];
+            $result = $this->historyModel->ownQuizHistory($userId,$page,$pageSize,$keyword);
+            echo json_encode([
+                'code'=>200,
+                'msg'=>'Lấy lịch sử thi của học viên thành công!',
+                'result'=>$result
+            ]);
+        }
+    }
+
     public function practiceDetail()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
@@ -51,4 +66,5 @@ class UserController extends AdminController
             echo json_encode(['message' => 'Phương thức không được phép.']);
         }
     }
+
 }
