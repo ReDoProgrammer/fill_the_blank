@@ -1,6 +1,10 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
+    if (!isset($_SESSION['user_logged_in'])) {
+        header("Location: " . BASE_URL . "/userauth/login");
+        exit();
+    }
 }
 ?>
 <!DOCTYPE html>

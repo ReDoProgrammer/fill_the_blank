@@ -1,3 +1,12 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+    if (!isset($_SESSION['admin_logged_in'])) {
+        header("Location: " . BASE_URL . "/admin/auth/login");
+        exit();
+    }
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 
