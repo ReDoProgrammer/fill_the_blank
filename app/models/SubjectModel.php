@@ -89,56 +89,7 @@ class SubjectModel extends Model
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function getSubjectsWithLessions()
-    {
-        // Truy vấn để lấy thông tin các subject có ít nhất một lession và chỉ lấy các lession có câu hỏi
-        $sql = "
-            SELECT s.id AS subject_id, s.name AS subject_name, s.meta AS subject_meta, 
-                   l.id AS lession_id, l.name AS lession_name, l.meta AS lession_meta
-            FROM subjects s
-            INNER JOIN lessions l ON l.subject_id = s.id
-            INNER JOIN questions q ON q.lession_id = l.id
-            GROUP BY s.id, l.id
-            ORDER BY s.id, l.id
-        ";
-
-        $stmt = $this->pdo->prepare($sql);
-        $stmt->execute();
-
-        // Fetch tất cả các kết quả
-        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        if (!$results) {
-            return null; // Nếu không có subject nào có lession
-        }
-
-        $subjects = [];
-        foreach ($results as $result) {
-            $subject_id = $result['subject_id'];
-            if (!isset($subjects[$subject_id])) {
-                // Thêm thông tin subject mới nếu chưa tồn tại trong danh sách
-                $subjects[$subject_id] = [
-                    'id' => $result['subject_id'],
-                    'name' => $result['subject_name'],
-                    'meta' => $result['subject_meta'],
-                    'lessions' => []
-                ];
-            }
-
-            // Thêm lession vào danh sách các lession của subject
-            $subjects[$subject_id]['lessions'][] = [
-                'id' => $result['lession_id'],
-                'name' => $result['lession_name'],
-                'meta' => $result['lession_meta'],
-            ];
-        }
-
-        // Chuyển mảng subjects từ dạng associative array sang dạng indexed array
-        $subjects = array_values($subjects);
-
-        return $subjects;
-    }
-
+   
     // models/SubjectModel.php
 
     public function getSubjectsWithLessionsByTeacherId($teacherId)

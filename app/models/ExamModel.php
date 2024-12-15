@@ -3,6 +3,74 @@ require_once 'app/core/Model.php';
 
 class ExamModel extends Model
 {
+    public function getExamsByUserId($userId)
+    {
+        // SQL truy vấn để lấy thông tin các bài kiểm tra từ userId
+        $sql = "
+            SELECT
+                e.id AS exam_id,
+                e.title AS exam_title,
+                e.description AS exam_description,
+                e.number_of_questions,
+                e.duration,
+                e.begin_date,
+                e.end_date,
+                s.id AS subject_id,
+                s.name AS subject_name,
+                s.meta AS subject_meta
+            FROM users u
+            INNER JOIN teachings t ON t.id = u.teaching_id
+            INNER JOIN exams e ON e.teaching_id = t.id
+            INNER JOIN subjects s ON s.id = e.subject_id
+            WHERE u.id = :userId
+              AND e.end_date < NOW()
+            ORDER BY s.id, e.begin_date DESC
+        ";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindParam(':userId', $userId, PDO::PARAM_INT);
+        $stmt->execute();
+
+        // Fetch tất cả các kết quả
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        if (!$results) {
+            return null; // Nếu không có dữ liệu
+        }
+
+        $subjects = [];
+
+        foreach ($results as $result) {
+            $subjectId = $result['subject_id'];
+
+            if (!isset($subjects[$subjectId])) {
+                $subjects[$subjectId] = [
+                    'subject' => [
+                        'id' => $result['subject_id'],
+                        'name' => $result['subject_name'],
+                        'meta' => $result['subject_meta'],
+                    ],
+                    'exams' => []
+                ];
+            }
+
+            $subjects[$subjectId]['exams'][] = [
+                'exam_id' => $result['exam_id'],
+                'title' => $result['exam_title'],
+                'description' => $result['exam_description'],
+                'number_of_questions' => $result['number_of_questions'],
+                'duration' => $result['duration'],
+                'begin_date' => $result['begin_date'],
+                'end_date' => $result['end_date']
+            ];
+        }
+
+        return array_values($subjects);
+    }
+
+
+
+
     public function createExam($teaching_id, $title, $description, $number_of_questions, $duration, $mode, $thumbnail, $begin_date, $end_date, $subject_id, $created_by)
     {
         try {
@@ -350,16 +418,16 @@ class ExamModel extends Model
 
 
     public function getAllExams($from_date, $to_date, $subject_id, $page = 1, $pageSize = 10, $keyword = '')
-{
-    $offset = ($page - 1) * $pageSize;
-    $keyword = "%$keyword%";
+    {
+        $offset = ($page - 1) * $pageSize;
+        $keyword = "%$keyword%";
 
-    // Convert from_date and to_date to 'Y-m-d' format
-    $from_date = $from_date instanceof DateTime ? $from_date->format('Y-m-d') : $from_date;
-    $to_date = $to_date instanceof DateTime ? $to_date->format('Y-m-d') : $to_date;
+        // Convert from_date and to_date to 'Y-m-d' format
+        $from_date = $from_date instanceof DateTime ? $from_date->format('Y-m-d') : $from_date;
+        $to_date = $to_date instanceof DateTime ? $to_date->format('Y-m-d') : $to_date;
 
-    // Query to fetch exams with pagination, keyword filtering, and subject/teaching info
-    $sql = "SELECT
+        // Query to fetch exams with pagination, keyword filtering, and subject/teaching info
+        $sql = "SELECT
                 e.id AS exam_id,
                 e.title,
                 e.description,
@@ -387,54 +455,54 @@ class ExamModel extends Model
                 e.id
             LIMIT :offset, :pageSize";
 
-    $stmt = $this->pdo->prepare($sql);
-    $stmt->bindParam(':subject_id', $subject_id, PDO::PARAM_INT);
-    $stmt->bindParam(':keyword', $keyword);
-    $stmt->bindParam(':from_date', $from_date);
-    $stmt->bindParam(':to_date', $to_date);
-    $stmt->bindValue(':offset', (int) $offset, PDO::PARAM_INT);
-    $stmt->bindValue(':pageSize', (int) $pageSize, PDO::PARAM_INT);
-    $stmt->execute();
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindParam(':subject_id', $subject_id, PDO::PARAM_INT);
+        $stmt->bindParam(':keyword', $keyword);
+        $stmt->bindParam(':from_date', $from_date);
+        $stmt->bindParam(':to_date', $to_date);
+        $stmt->bindValue(':offset', (int) $offset, PDO::PARAM_INT);
+        $stmt->bindValue(':pageSize', (int) $pageSize, PDO::PARAM_INT);
+        $stmt->execute();
 
-    $exams = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $exams = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Format date and check availability
-    foreach ($exams as &$exam) {
-        // Format date
-        $exam['begin_date'] = DateTime::createFromFormat('Y-m-d H:i:s', $exam['begin_date'])->format('d/m/Y H:i');
-        $exam['end_date'] = DateTime::createFromFormat('Y-m-d H:i:s', $exam['end_date'])->format('d/m/Y H:i');
+        // Format date and check availability
+        foreach ($exams as &$exam) {
+            // Format date
+            $exam['begin_date'] = DateTime::createFromFormat('Y-m-d H:i:s', $exam['begin_date'])->format('d/m/Y H:i');
+            $exam['end_date'] = DateTime::createFromFormat('Y-m-d H:i:s', $exam['end_date'])->format('d/m/Y H:i');
 
-        // Check if the exam is referenced in quiz_results
-        $sqlCheck = "SELECT COUNT(*) as count FROM quiz_results WHERE exam_id = :exam_id";
-        $stmtCheck = $this->pdo->prepare($sqlCheck);
-        $stmtCheck->bindParam(':exam_id', $exam['exam_id']);
-        $stmtCheck->execute();
-        $resultCheck = $stmtCheck->fetch(PDO::FETCH_ASSOC);
+            // Check if the exam is referenced in quiz_results
+            $sqlCheck = "SELECT COUNT(*) as count FROM quiz_results WHERE exam_id = :exam_id";
+            $stmtCheck = $this->pdo->prepare($sqlCheck);
+            $stmtCheck->bindParam(':exam_id', $exam['exam_id']);
+            $stmtCheck->execute();
+            $resultCheck = $stmtCheck->fetch(PDO::FETCH_ASSOC);
 
-        // Set available to true if no references are found, otherwise false
-        $exam['available'] = $resultCheck['count'] == 0;
+            // Set available to true if no references are found, otherwise false
+            $exam['available'] = $resultCheck['count'] == 0;
+        }
+
+        // Query to count total number of exams for pagination
+        $sqlTotal = "SELECT COUNT(*) as total FROM exams WHERE subject_id = :subject_id AND title LIKE :keyword AND DATE(end_date) BETWEEN :from_date AND :to_date";
+        $stmtTotal = $this->pdo->prepare($sqlTotal);
+        $stmtTotal->bindParam(':subject_id', $subject_id, PDO::PARAM_INT);
+        $stmtTotal->bindParam(':keyword', $keyword);
+        $stmtTotal->bindParam(':from_date', $from_date);
+        $stmtTotal->bindParam(':to_date', $to_date);
+        $stmtTotal->execute();
+        $total = $stmtTotal->fetch(PDO::FETCH_ASSOC);
+
+        $totalPages = ceil($total['total'] / $pageSize);
+
+        return [
+            'exams' => $exams,
+            'totalPages' => $totalPages,
+            'currentPage' => $page,
+            'pageSize' => $pageSize,
+            'totalRecords' => $total['total']
+        ];
     }
-
-    // Query to count total number of exams for pagination
-    $sqlTotal = "SELECT COUNT(*) as total FROM exams WHERE subject_id = :subject_id AND title LIKE :keyword AND DATE(end_date) BETWEEN :from_date AND :to_date";
-    $stmtTotal = $this->pdo->prepare($sqlTotal);
-    $stmtTotal->bindParam(':subject_id', $subject_id, PDO::PARAM_INT);
-    $stmtTotal->bindParam(':keyword', $keyword);
-    $stmtTotal->bindParam(':from_date', $from_date);
-    $stmtTotal->bindParam(':to_date', $to_date);
-    $stmtTotal->execute();
-    $total = $stmtTotal->fetch(PDO::FETCH_ASSOC);
-
-    $totalPages = ceil($total['total'] / $pageSize);
-
-    return [
-        'exams' => $exams,
-        'totalPages' => $totalPages,
-        'currentPage' => $page,
-        'pageSize' => $pageSize,
-        'totalRecords' => $total['total']
-    ];
-}
 
 
 

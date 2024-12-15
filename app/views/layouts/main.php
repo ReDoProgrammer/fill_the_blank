@@ -2,7 +2,7 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
     if (!isset($_SESSION['user_logged_in'])) {
-        header("Location: " . BASE_URL . "/userauth/login");
+        header("Location: " . BASE_URL . "/user/auth/login");
         exit();
     }
 }
@@ -13,256 +13,245 @@ if (session_status() === PHP_SESSION_NONE) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $title ?? 'Fill the blank'; ?> - <?php echo $subject ?? 'Môn học'; ?> -
-        <?php echo $lession ?? 'Bài tập'; ?>
-    </title>
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/public/assets/css/styles.css">
+    <title>Fill the blanks - User zone</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="<?php echo BASE_URL; ?>/public/assets/js/jquery.js"></script>
-
-    <link rel="stylesheet" href="<?php echo BASE_URL; ?>/public/assets/plugins/bootstrap/bootstrap.min.css">
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>/public/assets/plugins/font-awesome/font-awesome.min.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+
     <link rel="stylesheet" href="<?php echo BASE_URL; ?>/public/assets/plugins/toast/jquery.toast.css">
-    <script src="<?php echo BASE_URL; ?>/public/assets/plugins/bootstrap/bootstrap.min.js"></script>
     <script src="<?php echo BASE_URL; ?>/public/assets/plugins/sweetalert2/sweetalert2@11.js"></script>
     <script src="<?php echo BASE_URL; ?>/public/assets/plugins/toast/jquery.toast.js"></script>
+    <style>
+        .navbar-custom {
+            background-color: #4CAF50;
+        }
+
+        .navbar-custom .navbar-brand,
+        .navbar-custom .nav-link,
+        .navbar-custom .dropdown-item {
+            color: white;
+        }
+
+        .navbar-custom .nav-link:hover,
+        .navbar-custom .dropdown-item:hover {
+            color: #f1f1f1;
+        }
+
+        .main-content {
+            margin-left: 10px;
+            padding: 20px;
+        }
+
+        .sidebar {
+            width: 350px;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            height: 100vh;
+            padding-top: 20px;
+            position: relative;
+            overflow-y: auto;
+        }
+
+        .sidebar .group {
+            margin-bottom: 20px;
+            padding: 0 10px;
+        }
+
+        .sidebar .group-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            color: #ecf0f1;
+        }
+
+        .sidebar .group-title i {
+            margin-right: 10px;
+        }
+
+        .sidebar ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sidebar ul li {
+            padding: 10px 20px;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.3s;
+        }
+
+        .sidebar ul li:hover {
+            background-color: #34495e;
+        }
+
+        .sidebar ul li i {
+            margin-right: 10px;
+            font-size: 14px;
+        }
+
+        /* Dropdown style */
+        .sidebar ul li .dropdown {
+            display: none;
+            flex-direction: column;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: #34495e;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        .sidebar ul li .dropdown li {
+            padding: 8px 20px;
+        }
+
+        .sidebar ul li .dropdown li:hover {
+            background-color: #3b5998;
+        }
+
+        .sidebar ul li.active .dropdown {
+            display: flex;
+        }
+    </style>
 </head>
 
 <body>
-    <div class="top-navbar">
-        <a href="<?php echo BASE_URL; ?>" class="logo"><img src="<?php echo BASE_URL; ?>/public/assets/images/logo.png"
-                style="height:30px; width:auto;" alt="Logo"></a>
-        <div class="navbar-links">
-            <a href="<?php echo BASE_URL; ?>">Home</a>
-            <?php if (isset($_SESSION['user_logged_in'])) { ?>
-                <a href="<?php echo BASE_URL; ?>/history/index">Lịch sử ôn bài</a>
-                <a href="<?php echo BASE_URL; ?>/history/quiz">Lịch sử thi</a>
-                <a href="<?php echo BASE_URL; ?>/userauth/profile">Tài khoản</a>
-                <a href="<?php echo BASE_URL; ?>/userauth/logout">Đăng xuất</a>
-            <?php } else { ?>
-                <a href="<?php echo BASE_URL; ?>/userauth/login">Đăng nhập</a>
-            <?php } ?>
-        </div>
-        <?php if (isset($_SESSION['user_logged_in'])) { ?>
-            <div class="profile-menu">
-                <span
-                    class="profile-name"><?php echo $_SESSION['user_logged_in']['fullname'] ?? $_SESSION['user_logged_in']['username']; ?></span>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-custom">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <img src="<?php echo BASE_URL; ?>/public/assets/images/logo.png" style="height:30px; width:auto;" alt="Logo">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="ownClasses" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            Danh sách lớp
+                        </a>
+                        <ul class="dropdown-menu" id="mn-Classes">
+                        </ul>
+                    </li>
+
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="https://via.placeholder.com/30" alt="Profile" class="rounded-circle me-2">
+                            <?php echo $_SESSION['user_logged_in']['fullname'] ?? $_SESSION['user_logged_in']['username']; ?>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#">Settings</a></li>
+                            <li><a class="dropdown-item" href="#">Profile</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item text-danger" href="#">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
             </div>
-        <?php } ?>
-        <button class="sidebar-toggle"><i class="fa fa-bars" aria-hidden="true"></i></button>
-    </div>
-
-    <div class="sidebar" id="sidebar">
-        <!-- Section luyện tập -->
-        <h6 class="text-secondary fw-bold p-3">LUYỆN TẬP</h6>
-        <div class="sidebar-section" id="sidebar-practice">
-
-            <!-- Subject and lession will be appended here -->
         </div>
-        <!-- Section thi -->
-        <h6 class="text-secondary fw-bold p-3">THI TRẮC NGHIỆM</h6>
-        <div class="sidebar-section" id="sidebar-exam">
-            <!-- Subject will be appended here -->
+    </nav>
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="group">
+                <div class="group-title">
+                    <i class="fas fa-layer-group"></i> Group 1
+                </div>
+                <ul>
+                    <li onclick="toggleDropdown(this)">
+                        <i class="fas fa-bars"></i> Menu 1
+                        <ul class="dropdown">
+                            <li><i class="fas fa-chevron-right"></i> Submenu 1</li>
+                            <li><i class="fas fa-chevron-right"></i> Submenu 2</li>
+                            <li><i class="fas fa-chevron-right"></i> Submenu 3</li>
+                        </ul>
+                    </li>
+                    <li onclick="toggleDropdown(this)">
+                        <i class="fas fa-cog"></i> Menu 2
+                        <ul class="dropdown">
+                            <li><i class="fas fa-chevron-right"></i> Submenu A</li>
+                            <li><i class="fas fa-chevron-right"></i> Submenu B</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="group">
+                <div class="group-title">
+                    <i class="fas fa-sitemap"></i> Group 2
+                </div>
+                <ul>
+                    <li><i class="fas fa-folder"></i> Menu 3</li>
+                    <li><i class="fas fa-folder"></i> Menu 4</li>
+                </ul>
+            </div>
+
+            <div class="group">
+                <div class="group-title">
+                    <i class="fas fa-th-large"></i> Group 3
+                </div>
+                <ul>
+                    <li onclick="toggleDropdown(this)">
+                        <i class="fas fa-chart-bar"></i> Menu 5
+                        <ul class="dropdown">
+                            <li><i class="fas fa-chevron-right"></i> Submenu X</li>
+                            <li><i class="fas fa-chevron-right"></i> Submenu Y</li>
+                        </ul>
+                    </li>
+                    <li><i class="fas fa-file-alt"></i> Menu 6</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <?php echo $content; ?>
         </div>
     </div>
 
-    <div class="main-content">
-        <?php echo $content; ?>
-    </div>
-
-    <div class="footer">
-        <script src="<?php echo BASE_URL; ?>/public/assets/js/script.js"></script>
-        <div class="container">
-            <p>&copy; <?php echo date('Y'); ?> HuyDao's production. All rights reserved.</p>
-        </div>
-    </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        const $practiceMenu = $('#sidebar-practice');
-        const $examMenu = $('#sidebar-exam');
-       
-        $(document).ready(async function () {
-            try {
-                await RenderFillTheBlank();
-            } catch (error) {
-                console.error('Error during initial loading:', error);
-            }
+        $(document).ready(function() {
+            RenderOwnExams();
         });
 
+        function toggleDropdown(element) {
+            const dropdown = element.querySelector('.dropdown');
+            if (dropdown) {
+                element.classList.toggle('active');
+            }
+        }
 
-
-        const RenderSubjectsHaveExams = function (retries = 3) {
+        function RenderOwnExams() {
             $.ajax({
-                url: '<?php echo BASE_URL; ?>/home/SubjectsHaveExams',
+                url: '<?php echo BASE_URL; ?>/home/OwnExams',
                 type: 'get',
                 dataType: 'json',
-                success: async function (data) {
-                    $examMenu.empty();
-                    const { sidebar } = data;
-                    if (!sidebar || sidebar.length === 0) {
-                        console.warn('No subjects available for exams.');
-                        return;
-                    }
-
-                    const appendExamSubjects = async (subject) => {
-                        const $subjectLink = $(`<a style="padding-left:25px;" href="<?php echo BASE_URL; ?>/exam/index?s=${subject.meta}-${subject.id}">${subject.name}</a>`);
-                        $examMenu.append($subjectLink);
-                    };
-
-                    for (const s of sidebar) {
-                        await appendExamSubjects(s);
+                success: function(response) {
+                    const $exams = $('#mn-Exams');
+                    $exams.empty();
+                    const { code, result } = response;
+                    if (code == 200 && result.exams) {
+                        result.exams.forEach(e => {
+                            $exams.append(`<li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/exam/index?s=${e.subject.meta}-${e.subject.id}">${e.subject.name} - ${e.exam}</a></li>`);
+                        });
                     }
                 },
-                error: function (err) {
-                    console.error('Error loading subjects:', err);
-                    if (retries > 0) {
-                        console.log(`Retrying... (${3 - retries + 1}/3)`);
-                        setTimeout(() => {  // Thêm delay trước khi retry
-                            RenderSubjectsHaveExams(retries - 1);
-                        }, 2000);  // Retry sau 2 giây
-                    } else {
-                        console.error('Failed to load subjects after 3 attempts.');
-                    }
+                error: function(err) {
+                    console.error(err.responseText);
                 }
             });
-        };
-
-        const RenderFillTheBlank = function () {
-            $.ajax({
-                url: '<?php echo BASE_URL; ?>/home/SubjectsHaveQuestions',
-                type: 'get',
-                dataType: 'json',
-                success: async function (data) {
-                    $practiceMenu.empty();
-                    $examMenu.empty();
-                    const { sidebar } = data;
-
-                    const appendPracticeSubjectsAndLessions = async (subject) => {
-                        return new Promise((resolve) => {
-                            const $subjectButton = $(`
-                        <button class="dropdown-btn">${subject.name}
-                            <i class="fa fa-caret-down"></i>
-                        </button>
-                    `);
-                            const $dropdownContainer = $('<div class="dropdown-container"></div>');
-
-                            subject.lessions.forEach((lession) => {
-                                const $lessionLink = $(`<a href="javascript:void(0)" onClick="DoFillTheBlank(${subject.id}, ${lession.id}, '<?php echo BASE_URL; ?>/question/index?s=${subject.meta}-${subject.id}&l=${lession.meta}-${lession.id}')">${lession.name}</a>`);
-                                $dropdownContainer.append($lessionLink);
-                            });
-
-                            $practiceMenu.append($subjectButton);
-                            $practiceMenu.append($dropdownContainer);
-
-                            resolve();
-                        });
-                    };
-
-                    for (const s of sidebar) {
-                        await appendPracticeSubjectsAndLessions(s);
-                    }
-
-                    var sidebarToggle = document.querySelector('.sidebar-toggle');
-                    var sidebarMenu = document.querySelector('.sidebar');
-                    var mainContent = document.querySelector('.main-content');
-                    var dropdowns = document.getElementsByClassName("dropdown-btn");
-
-                    sidebarToggle.addEventListener('click', function () {
-                        sidebarMenu.classList.toggle('collapsed');
-                        if (sidebar.classList.contains('collapsed')) {
-                            sidebarMenu.style.width = '0';
-                            Array.from(dropdowns).forEach(function (dropdown) {
-                                var dropdownContent = dropdown.nextElementSibling;
-                                dropdownContent.style.maxHeight = null;
-                            });
-                            mainContent.style.marginLeft = '0';
-                        } else {
-                            sidebarMenu.style.width = '220px';
-                            mainContent.style.marginLeft = '240px';
-                        }
-                    });
-
-                    // Xử lý mở rộng khi nhấn vào thẻ a
-                    $(document).on('click', '#sidebar-practice a', function () {
-                        var $dropdownContainer = $(this).closest('.dropdown-container');
-                        var $dropdownButton = $dropdownContainer.prev('.dropdown-btn');
-
-                        // Mở rộng phần dropdown container nếu chưa được mở
-                        if ($dropdownContainer.css('max-height') === '0px' || !$dropdownContainer.css('max-height')) {
-                            // Mở rộng container và gán class "active" cho button tương ứng
-                            $dropdownButton.addClass('active');
-                            $dropdownContainer.css('max-height', $dropdownContainer.prop('scrollHeight') + 'px');
-                        }
-                    });
-
-                    for (var i = 0; i < dropdowns.length; i++) {
-                        dropdowns[i].addEventListener("click", function () {
-                            this.classList.toggle("active");
-                            var dropdownContent = this.nextElementSibling;
-                            if (dropdownContent.style.maxHeight) {
-                                dropdownContent.style.maxHeight = null;
-                            } else {
-                                dropdownContent.style.maxHeight = dropdownContent.scrollHeight + "px";
-                            }
-                        });
-                    }
-
-                    await RenderSubjectsHaveExams();
-                },
-                error: function (err) {
-                    console.log(err);
-                }
-            });
-        };
-
-        function DoFillTheBlank(subject_id, lession_id, url) {
-            $.ajax({
-                url: '<?php echo BASE_URL; ?>/question/canTakeTest',
-                type: 'get',
-                dataType: 'json',
-                data: { subject_id, lession_id },
-                success: function (response) {
-                    const { code, msg } = response;
-
-                    if (code == 401) {
-                        Swal.fire({
-                            icon: "error",
-                            title: "Oops...",
-                            html: `<p class = "text-danger fw-bold">${msg}</p>`
-                        }).then(_ => {
-                            window.location.replace(`<?php echo BASE_URL; ?>/userauth/login`);
-                        });
-                    } else {
-                        window.location.replace(url);
-                    }
-
-                },
-                error: function (err) {
-                    console.log(err);
-                }
-            })
         }
     </script>
 </body>
 
 </html>
-
-<style>
-    html,
-    body {
-        height: 100%;
-        margin: 0;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .main-content {
-        flex: 1;
-        /* Chiếm toàn bộ không gian trống */
-    }
-
-    .footer {
-        text-align: center;
-        padding: 10px 0;
-        box-shadow: 0 -1px 5px rgba(0, 0, 0, 0.1);
-    }
-</style>

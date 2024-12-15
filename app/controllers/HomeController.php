@@ -1,30 +1,35 @@
 <?php
 require_once 'app/models/SubjectModel.php';
+require_once 'app/models/ExamModel.php';
 class HomeController extends Controller
 {
     protected $subjectModel;
+    protected $examModel;
     public function __construct()
     {
         $this->subjectModel = new SubjectModel();
+        $this->examModel = new ExamModel();
     }
     public function index()
     {
         $this->view('home/index', [], 'Home Page');
     }
 
-    public function about()
-    {
-    }
+    public function about() {}
     public function contact()
     {
         $this->view('', [], '');
     }
-    public function SubjectsHaveQuestions()
+   
+
+    public function OwnExams()
     {
         header('Content-Type: application/json');
-        $sidebar = $this->subjectModel->getSubjectsWithLessions();
-        echo json_encode(['code' => 200, 'msg' => 'Lấy thông tin môn học và bài học!', 'sidebar' => $sidebar]);
-        // echo json_encode($sidebar);
+        session_start();
+        $userId = $_SESSION['user_logged_in']['id'];
+        $result = $this->examModel->getExamsByUserId($userId);
+        echo json_encode(['code' => 200, 'msg' => 'Lấy danh sách bài thi thành công!', 'result' => $result]);
+      
     }
 
     public function SubjectsHaveExams()
@@ -39,12 +44,9 @@ class HomeController extends Controller
         session_start();
         // Giả sử bạn có một session với tên 'user_logged_in'
         if (isset($_SESSION['user_logged_in']) && $_SESSION['user_logged_in'] == true) {
-            echo json_encode(['code' => 200, 'msg'=> 'Bạn đã đăng nhập thành công!']);
+            echo json_encode(['code' => 200, 'msg' => 'Bạn đã đăng nhập thành công!']);
         } else {
-            echo json_encode(['code' => 401,'msg'=> 'Vui lòng đăng nhập để thực hiện tính năng này!','url'=>BASE_URL.'/auth/login']);
+            echo json_encode(['code' => 401, 'msg' => 'Vui lòng đăng nhập để thực hiện tính năng này!', 'url' => BASE_URL . '/auth/login']);
         }
     }
 }
-
-
-
