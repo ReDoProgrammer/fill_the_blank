@@ -105,6 +105,7 @@ if (session_status() === PHP_SESSION_NONE) {
             background-color: #34495e;
             width: 100%;
             z-index: 1000;
+            padding-left: 15px;
         }
 
         .sidebar ul li .dropdown li {
@@ -117,6 +118,38 @@ if (session_status() === PHP_SESSION_NONE) {
 
         .sidebar ul li.active .dropdown {
             display: flex;
+        }
+
+        .sidebar ul li a {
+            color: #ecf0f1;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s, background-color 0.3s;
+            display: inline-block;
+            width: 100%;
+            padding: 8px 20px;
+            border-radius: 4px;
+        }
+
+        .sidebar ul li a:hover {
+            color: #ffffff;
+            background-color: #3b5998;
+        }
+
+        .sidebar ul li i {
+            font-size: 16px;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        .sidebar ul li .dropdown li a {
+            color: #bdc3c7;
+            padding-left: 30px;
+        }
+
+        .sidebar ul li .dropdown li a:hover {
+            color: #ffffff;
+            background-color: #3b5998;
         }
     </style>
 </head>
@@ -164,42 +197,9 @@ if (session_status() === PHP_SESSION_NONE) {
         <div class="sidebar">
             <div class="group">
                 <div class="group-title">
-                    <i class="fas fa-layer-group"></i> Group 1
+                    <i class="fas fa-th-large"></i> ÔN TẬP
                 </div>
-                <ul>
-                    <li onclick="toggleDropdown(this)">
-                        <i class="fas fa-bars"></i> Menu 1
-                        <ul class="dropdown">
-                            <li><i class="fas fa-chevron-right"></i> Submenu 1</li>
-                            <li><i class="fas fa-chevron-right"></i> Submenu 2</li>
-                            <li><i class="fas fa-chevron-right"></i> Submenu 3</li>
-                        </ul>
-                    </li>
-                    <li onclick="toggleDropdown(this)">
-                        <i class="fas fa-cog"></i> Menu 2
-                        <ul class="dropdown">
-                            <li><i class="fas fa-chevron-right"></i> Submenu A</li>
-                            <li><i class="fas fa-chevron-right"></i> Submenu B</li>
-                        </ul>
-                    </li>
-                </ul>
-            </div>
-
-            <div class="group">
-                <div class="group-title">
-                    <i class="fas fa-sitemap"></i> Group 2
-                </div>
-                <ul>
-                    <li><i class="fas fa-folder"></i> Menu 3</li>
-                    <li><i class="fas fa-folder"></i> Menu 4</li>
-                </ul>
-            </div>
-
-            <div class="group">
-                <div class="group-title">
-                    <i class="fas fa-th-large"></i> Group 3
-                </div>
-                <ul>
+                <ul id="ulPractice">
                     <li onclick="toggleDropdown(this)">
                         <i class="fas fa-chart-bar"></i> Menu 5
                         <ul class="dropdown">
@@ -210,6 +210,24 @@ if (session_status() === PHP_SESSION_NONE) {
                     <li><i class="fas fa-file-alt"></i> Menu 6</li>
                 </ul>
             </div>
+            <div class="group">
+                <div class="group-title">
+                    <i class="fas fa-layer-group"></i> BÀI THI
+                </div>
+                <ul id="ulExams">
+                    <li onclick="toggleDropdown(this)">
+                        <i class="fas fa-bars"></i> Menu 1
+                        <ul class="dropdown">
+                            <li><i class="fas fa-chevron-right"></i> Submenu 1</li>
+                            <li><i class="fas fa-chevron-right"></i> Submenu 2</li>
+                            <li><i class="fas fa-chevron-right"></i> Submenu 3</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+
+
+
         </div>
 
         <!-- Main Content -->
@@ -220,6 +238,8 @@ if (session_status() === PHP_SESSION_NONE) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        const $ulExams = $('#ulExams'),
+            $ulPractice = $('#ulPractice');
         $(document).ready(function() {
             RenderOwnExams();
         });
@@ -232,6 +252,7 @@ if (session_status() === PHP_SESSION_NONE) {
         }
 
         function RenderOwnExams() {
+            $ulExams.empty();
             $.ajax({
                 url: '<?php echo BASE_URL; ?>/home/OwnExams',
                 type: 'get',
@@ -239,11 +260,26 @@ if (session_status() === PHP_SESSION_NONE) {
                 success: function(response) {
                     const $exams = $('#mn-Exams');
                     $exams.empty();
-                    const { code, result } = response;
-                    if (code == 200 && result.exams) {
-                        result.exams.forEach(e => {
-                            $exams.append(`<li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/exam/index?s=${e.subject.meta}-${e.subject.id}">${e.subject.name} - ${e.exam}</a></li>`);
-                        });
+                    const {
+                        code,
+                        result
+                    } = response;
+
+                    if (code == 200 && result != null & result.length > 0) {                        
+
+                        result.forEach(l => {
+                            console.log(l.exams);
+
+                            let li = `<li onclick="toggleDropdown(this)">
+                                        <i class="fas fa-bars"></i> ${l.subject.name}
+                                            <ul class="dropdown">`;
+                            l.exams.forEach(e => {
+                                li += `<li><i class="fas fa-chevron-right"></i> <a href="<?php echo BASE_URL; ?>/exam/index?id=${e.exam_id}&s=${l.subject.meta}-${l.subject.id}">${e.title}</a></li>`;
+                            })
+                            li += `</ul></li>`;
+                            $ulExams.append(li);
+
+                        })
                     }
                 },
                 error: function(err) {
