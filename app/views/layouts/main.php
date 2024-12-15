@@ -197,19 +197,20 @@ if (session_status() === PHP_SESSION_NONE) {
         <div class="sidebar">
             <div class="group">
                 <div class="group-title">
-                    <i class="fas fa-th-large"></i> ÔN TẬP
+                    <i class="fas fa-layer-group"></i> ÔN TẬP
                 </div>
                 <ul id="ulPractice">
                     <li onclick="toggleDropdown(this)">
-                        <i class="fas fa-chart-bar"></i> Menu 5
+                        <i class="fas fa-bars"></i> Menu 1
                         <ul class="dropdown">
-                            <li><i class="fas fa-chevron-right"></i> Submenu X</li>
-                            <li><i class="fas fa-chevron-right"></i> Submenu Y</li>
+                            <li><i class="fas fa-chevron-right"></i> Submenu 1</li>
+                            <li><i class="fas fa-chevron-right"></i> Submenu 2</li>
+                            <li><i class="fas fa-chevron-right"></i> Submenu 3</li>
                         </ul>
                     </li>
-                    <li><i class="fas fa-file-alt"></i> Menu 6</li>
                 </ul>
             </div>
+
             <div class="group">
                 <div class="group-title">
                     <i class="fas fa-layer-group"></i> BÀI THI
@@ -242,13 +243,53 @@ if (session_status() === PHP_SESSION_NONE) {
             $ulPractice = $('#ulPractice');
         $(document).ready(function() {
             RenderOwnExams();
+            RenderOwnSubjects();
         });
+
+
 
         function toggleDropdown(element) {
             const dropdown = element.querySelector('.dropdown');
             if (dropdown) {
                 element.classList.toggle('active');
             }
+        }
+
+        function RenderOwnSubjects() {
+            $ulPractice.empty();
+            $.ajax({
+                url: '<?php echo BASE_URL; ?>/home/OwnSubjects',
+                type: 'get',
+                dataType: 'json',
+                success: function(response) {
+                    const {
+                        code,
+                        msg,
+                        subjects
+                    } = response;
+                    if (code == 200 && subjects != null && subjects.length > 0) {
+                        console.log(subjects);
+
+                        subjects.forEach(s => {
+                            console.log(s);
+
+                            let li = ` <li onclick="toggleDropdown(this)">
+                                            <i class="fas fa-bars"></i> ${s.subject.name}
+                                                    <ul class="dropdown">`;
+                            s.lessions.forEach(l => {
+                                li += ` <li><a href="<?php echo BASE_URL; ?>/question/index?s=${s.subject.meta}-${s.subject.subject_id}&l=${l.lession_meta}-${l.lession_id}')"><i class="fas fa-chevron-right"></i> ${l.lesson_name}</a></li>`;
+                            })
+                            li += `</ul></li>`;
+                            $ulPractice.append(li);
+                        })
+                    }
+
+                },
+                error: function(err) {
+                    console.log(err.responseText);
+
+                }
+            })
         }
 
         function RenderOwnExams() {
@@ -265,11 +306,9 @@ if (session_status() === PHP_SESSION_NONE) {
                         result
                     } = response;
 
-                    if (code == 200 && result != null & result.length > 0) {                        
+                    if (code == 200 && result != null & result.length > 0) {
 
                         result.forEach(l => {
-                            console.log(l.exams);
-
                             let li = `<li onclick="toggleDropdown(this)">
                                         <i class="fas fa-bars"></i> ${l.subject.name}
                                             <ul class="dropdown">`;

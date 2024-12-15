@@ -32,11 +32,13 @@ class HomeController extends Controller
       
     }
 
-    public function SubjectsHaveExams()
+    public function OwnSubjects()
     {
         header('Content-Type: application/json');
-        $sidebar = $this->subjectModel->getSubjectsWithExams();
-        echo json_encode(['code' => 200, 'msg' => 'Lấy thông tin môn học có bài kiểm tra!', 'sidebar' => $sidebar]);
+        session_start();
+        $userId = $_SESSION['user_logged_in']['id'];
+        $subjects = $this->subjectModel->getOwnSubjects($userId);
+        echo json_encode(['code' => 200, 'msg' => 'Lấy danh sách môn học của học viên thành công!', 'subjects' => $subjects]);
         // echo json_encode($sidebar);
     }
     public function check_session()

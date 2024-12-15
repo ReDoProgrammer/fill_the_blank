@@ -89,7 +89,7 @@ class SubjectModel extends Model
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-   
+
     // models/SubjectModel.php
 
     public function getSubjectsWithLessionsByTeacherId($teacherId)
@@ -145,59 +145,100 @@ class SubjectModel extends Model
     }
 
 
-    public function getSubjectsWithExams()
+    // trả về mảng các môn học và bài học tương ứng của học viên
+    public function getOwnSubjects($userId)
     {
-        // Lấy ngày hiện tại
-        $currentDate = date('Y-m-d H:i:s');
-
-        // Truy vấn để lấy thông tin các subjects có ít nhất một bài thi (exam) với điều kiện begin_date và end_date chứa ngày hiện tại
+        // Truy vấn để lấy teaching_id của người dùng
         $sql = "
-            SELECT s.id AS subject_id, s.name AS subject_name, s.meta AS subject_meta, 
-                   e.id AS exam_id, e.title AS exam_title, e.description AS exam_description
-            FROM subjects s
-            INNER JOIN exams e ON e.subject_id = s.id
-            WHERE e.begin_date <= :currentDate AND e.end_date >= :currentDate
-            GROUP BY s.id, e.id
-            ORDER BY s.id, e.id
+            SELECT teaching_id 
+            FROM users 
+            WHERE id = :userId
         ";
 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->bindParam(':currentDate', $currentDate);
+        $stmt->bindParam(':userId', $userId, PDO::PARAM_INT);
         $stmt->execute();
 
-        // Fetch tất cả các kết quả
-        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $teachingId = $stmt->fetchColumn();
 
-        if (!$results) {
-            return null; // Nếu không có subject nào có exams thỏa điều kiện
+        if (!$teachingId) {
+            return null; // Nếu không tìm thấy teaching_id
         }
 
-        $subjects = [];
-        foreach ($results as $result) {
-            $subject_id = $result['subject_id'];
-            if (!isset($subjects[$subject_id])) {
-                // Thêm thông tin subject mới nếu chưa tồn tại trong danh sách
-                $subjects[$subject_id] = [
-                    'id' => $result['subject_id'],
-                    'name' => $result['subject_name'],
-                    'meta' => $result['subject_meta'],
-                    'exams' => []
-                ];
-            }
+        // Truy vấn để lấy subject_ids từ bảng teachings
+        $sql = "
+            SELECT subject_ids
+            FROM teachings
+            WHERE id = :teachingId
+        ";
 
-            // Thêm exam vào danh sách các exam của subject
-            $subjects[$subject_id]['exams'][] = [
-                'id' => $result['exam_id'],
-                'title' => $result['exam_title'],
-                'description' => $result['exam_description'],
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindParam(':teachingId', $teachingId, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $subjectIdsArray = $stmt->fetchColumn();
+
+        if (!$subjectIdsArray) {
+            return null; // Nếu không có subject_ids
+        }
+
+        // Chuyển đổi chuỗi các số nguyên thành mảng
+        $subjectIds = explode(',', $subjectIdsArray);
+
+        if (empty($subjectIds)) {
+            return null; // Nếu không có môn học nào
+        }
+
+        // Truy vấn để lấy thông tin các môn học từ bảng subjects
+        $placeholders = rtrim(str_repeat('?,', count($subjectIds)), ',');
+        $sql = "
+            SELECT id, name, meta
+            FROM subjects
+            WHERE id IN ($placeholders)
+        ";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($subjectIds);
+
+        $subjects = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Tạo mảng kết quả dưới dạng JSON với môn học và bài học tương ứng
+        $result = [];
+
+        foreach ($subjects as $subject) {
+            // Truy vấn để lấy bài học của môn học hiện tại
+            $sql = "
+                SELECT id AS lesson_id, name AS lesson_name, meta AS lesson_meta
+                FROM lessions
+                WHERE subject_id = :subjectId
+            ";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->bindParam(':subjectId', $subject['id'], PDO::PARAM_INT);
+            $stmt->execute();
+
+            $lessons = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            // Thêm môn học và các bài học vào mảng kết quả
+            $result[] = [
+                'subject' => [
+                    'name' => $subject['name'],
+                    'subject_id' => $subject['id'],
+                    'meta' => $subject['meta'],
+                ],
+                'lessions' => $lessons
             ];
         }
 
-        // Chuyển mảng subjects từ dạng associative array sang dạng indexed array
-        $subjects = array_values($subjects);
-
-        return $subjects;
+        // Trả về kết quả dưới dạng mảng JSON
+        return $result;
     }
+
+
+
+
+
+
 
 
 
