@@ -373,12 +373,7 @@
 
     }
 
-    function DeleteTeaching(id, teacher_name, subject_name) {
-        console.log({
-            id,
-            teacher_name,
-            subject_name
-        });
+    function DeleteTeaching(id, teacher_name, subject_name) {        
         Swal.fire({
             title: `Bạn thực sự muốn xoá quá trình giảng dạy môn <span class="text-warning">${subject_name}</span> của giáo viên <span class = "text-info fw-bold">${teacher_name}</span>?`,
             text: "Bạn sẽ không thể khôi phục lại dữ liệu đã bị xoá!",
