@@ -43,9 +43,9 @@ if (session_status() === PHP_SESSION_NONE) {
 
     <div class="sidebar">
         <a href="<?php echo BASE_URL; ?>/admin/teacher"><i class="fa fa-users text-info" aria-hidden="true"></i> Giáo viên</a>
-        <a href="<?php echo BASE_URL; ?>/admin/teaching"><i class="fa fa-book text-warning" aria-hidden="true"></i> Giảng dạy</a>
         <a href="<?php echo BASE_URL; ?>/admin/user"><i class="fa fa-users" aria-hidden="true"></i> Học viên</a>
         <a href="<?php echo BASE_URL; ?>/admin/subject"><i class="fa fa-book text-info" aria-hidden="true"></i> Môn học</a>
+        <a href="<?php echo BASE_URL; ?>/admin/teaching"><i class="fa fa-book text-warning" aria-hidden="true"></i> Lớp học</a>
         <a href="<?php echo BASE_URL; ?>/admin/lession"><i class="fa fa-book text-secondary" aria-hidden="true"></i> Bài học</a>
         <a href="<?php echo BASE_URL; ?>/admin/question"><i class="fa fa-question" aria-hidden="true"></i> Câu hỏi ôn
             tập</a>
