@@ -122,6 +122,8 @@ class TeachingModel extends Model
             ];
         }
 
+
+
         // Chuyển mảng subjects thành chuỗi các số nguyên, ngăn cách nhau bởi dấu phẩy
         $subjectString = implode(',', $subjects);
 
@@ -133,7 +135,7 @@ class TeachingModel extends Model
                 'msg' => "Quá trình giảng dạy môn học đã tồn tại!"
             ];
         }
-
+        
         // Thêm mới nếu không tồn tại
         $sql = "INSERT INTO teachings (name, teacher_id, subject_ids, school_year) 
                 VALUES (:name, :teacherId, :subject_ids, :schoolYear)";
@@ -202,6 +204,19 @@ class TeachingModel extends Model
     // Xóa teaching
     public function deleteTeaching($id)
     {
+        // Kiểm tra xem có người dùng nào đang tham gia quá trình giảng dạy này không
+        $checkUserSql = "SELECT COUNT(*) FROM users WHERE teaching_id = :id";
+        $userCount = $this->fetch($checkUserSql, ['id' => $id]);
+
+        // Nếu có người dùng tham gia, không cho phép xoá
+        if ($userCount > 0) {
+            return [
+                'code' => 400,
+                'msg' => 'Không thể xoá quá trình giảng dạy vì có người dùng đang tham gia!'
+            ];
+        }
+
+        // Tiến hành xoá quá trình giảng dạy nếu không có người dùng tham gia
         $sql = "DELETE FROM teachings WHERE id = :id";
         $result = $this->execute($sql, ['id' => $id]);
 
@@ -218,10 +233,10 @@ class TeachingModel extends Model
         }
     }
 
-    // Kiểm tra sự tồn tại của teaching
+
     public function isTeachingExist($teacherId, $subjectIds, $schoolYear, $id = 0)
     {
-        // Nếu id > 0, chỉ kiểm tra các trường không liên quan đến id
+        // Bắt đầu câu truy vấn cơ bản
         $sql = "
         SELECT * 
         FROM teachings 
@@ -234,12 +249,19 @@ class TeachingModel extends Model
             $sql .= " AND id != :id";
         }
 
-        // Thực thi câu truy vấn
-        return $this->fetch($sql, [
+        // Xây dựng mảng tham số
+        $params = [
             'teacherId' => $teacherId,
             'subjectIds' => $subjectIds,
             'schoolYear' => $schoolYear,
-            'id' => $id // Chỉ truyền id nếu có
-        ]);
+        ];
+
+        // Thêm id vào tham số nếu id > 0
+        if ($id > 0) {
+            $params['id'] = $id;
+        }
+
+        // Thực thi câu truy vấn
+        return $this->fetch($sql, $params);
     }
 }

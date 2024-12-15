@@ -206,7 +206,7 @@
             type: 'POST',
             contentType: 'application/json', // Gửi dữ liệu dạng JSON
             data: JSON.stringify(data), // Chuyển đối tượng thành chuỗi JSON
-            success: function(response) {               
+            success: function(response) {        
                 const {
                     code,
                     msg
