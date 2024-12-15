@@ -326,6 +326,9 @@ if (session_status() === PHP_SESSION_NONE) {
         //hàm kiểm tra khả năng luyện ôn tập hay không?
         function CheckCanDoPractice(subject_id, lession_id, url) {
 
+            // console.log({subject_id,lession_id,url});
+            // return;
+            
             $.ajax({
                 url: '<?php echo BASE_URL; ?>/question/canTakeTest',
                 type: 'get',
@@ -356,7 +359,8 @@ if (session_status() === PHP_SESSION_NONE) {
                                 title: "Oops...",
                                 html: `<p class = "text-danger fw-bold">${msg}</p>`
                             }).then(_=>{
-                                window.location.replace('<?php echo BASE_URL; ?>');
+                                // window.location.replace('<?php echo BASE_URL; ?>');
+                                // return;
                             })
                         }else{
                             window.location.replace(url);

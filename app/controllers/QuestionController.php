@@ -23,21 +23,23 @@ class QuestionController extends Controller
       exit();
     }
 
-    $subject = $_GET['s'];
-    $lession = $_GET['l'];
+    if (isset($_GET['s']) && isset($_GET['l'])) {
+      $subject = $_GET['s'];
+      $lession = $_GET['l'];
 
-    // Cắt chuỗi theo ký tự '-'
-    $subjectParts = explode('-', $subject);
-    $lessionParts = explode('-', $lession);
+      // Cắt chuỗi theo ký tự '-'
+      $subjectParts = explode('-', $subject);
+      $lessionParts = explode('-', $lession);
 
-    // Lấy phần tử cuối cùng của mỗi mảng
-    $subjectId = end($subjectParts);
-    $lessionId = end($lessionParts);
+      // Lấy phần tử cuối cùng của mỗi mảng
+      $subjectId = end($subjectParts);
+      $lessionId = end($lessionParts);
 
-    $subjectName = $this->subjectModel->getSubjectById($subjectId)['name'];
-    $lessionName = $this->lessionModel->getLessionById($lessionId)['name'];
+      $subjectName = $this->subjectModel->getSubjectById($subjectId)['name'];
+      $lessionName = $this->lessionModel->getLessionById($lessionId)['name'];
 
-    $this->view('question/index', ['lessionId' => $lessionId, 'lession' => $lessionName, 'subjectId' => $subjectId, 'subject' => $subjectName], 'Luyện tập');
+      $this->view('question/index', ['lessionId' => $lessionId, 'lession' => $lessionName, 'subjectId' => $subjectId, 'subject' => $subjectName], 'Luyện tập');
+    }
   }
 
   public function getQuestion()
@@ -50,7 +52,6 @@ class QuestionController extends Controller
     } else {
       echo json_encode(['code' => 404, 'msg' => 'Không tìm thấy câu hỏi!'], JSON_UNESCAPED_UNICODE);
     }
-
   }
 
   public function canTakeTest()
@@ -65,9 +66,8 @@ class QuestionController extends Controller
         $result = $this->questionModel->canDoTest($subject_id, $lession_id, $user_id);
         echo json_encode($result);
       } else {
-        echo json_encode(['code'=>401,'msg'=>'Tác vụ này yêu cầu phải có tài khoản. Vui lòng đăng nhập để thực hiện chức năng này!']);
+        echo json_encode(['code' => 401, 'msg' => 'Tác vụ này yêu cầu phải có tài khoản. Vui lòng đăng nhập để thực hiện chức năng này!']);
       }
-
     }
   }
 
@@ -77,7 +77,6 @@ class QuestionController extends Controller
     $id = $_GET['lession_id'];
     $result = $this->questionModel->getMinIdQuestionIdByLessionId($id);
     echo json_encode($result);
-
   }
 
   public function answer()
@@ -117,7 +116,4 @@ class QuestionController extends Controller
       echo json_encode(['message' => 'Phương thức không được phép.']);
     }
   }
-
-
 }
-

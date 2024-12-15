@@ -94,9 +94,9 @@
     var blanks_number = [];
 
     $(document).ready(function() {
-        const lessionId = parseInt($("#question-container").attr('data-lession'));
-        const subjectId = parseInt($("#question-container").attr('data-subject'));
-        CheckCanDoPractice(subjectId, lessionId);
+        // const lessionId = parseInt($("#question-container").attr('data-lession'));
+        // const subjectId = parseInt($("#question-container").attr('data-subject'));
+        // CheckCanDoPractice(subjectId, lessionId);
 
         // Hàm tự động điều chỉnh kích thước input
         function autoResizeInput(input) {
@@ -133,53 +133,56 @@
 
     });
 
-    function CheckCanDoPractice(subject_id, lession_id) {
+    // function CheckCanDoPractice(subject_id, lession_id) {
 
-        $.ajax({
-            url: '<?php echo BASE_URL; ?>/question/canTakeTest',
-            type: 'get',
-            dataType: 'json',
-            data: {
-                subject_id,
-                lession_id
-            },
-            success: function(response) {
-                const {
-                    code,
-                    msg
-                } = response;
+    //     $.ajax({
+    //         url: '<?php echo BASE_URL; ?>/question/canTakeTest',
+    //         type: 'get',
+    //         dataType: 'json',
+    //         data: {
+    //             subject_id,
+    //             lession_id
+    //         },
+    //         success: function(response) {
+    //             const {
+    //                 code,
+    //                 msg
+    //             } = response;
 
-                if (code == 401) {
-                    Swal.fire({
-                        icon: "error",
-                        title: "Oops...",
-                        html: `<p class = "text-danger fw-bold">${msg}</p>`
-                    }).then(_ => {
-                        window.location.replace(`<?php echo BASE_URL; ?>/userauth/login`);
-                    });
-                } else {
-                    if (code != 200) {
-                        console.log(1234);
+    //             if (code == 401) {
+    //                 Swal.fire({
+    //                     icon: "error",
+    //                     title: "Oops...",
+    //                     html: `<p class = "text-danger fw-bold">${msg}</p>`
+    //                 }).then(_ => {
+    //                     window.location.replace(`<?php echo BASE_URL; ?>/userauth/login`);
+    //                 });
+    //             } else {
+    //                 if (code != 200) {
+    //                     console.log(1234);
                         
-                        Swal.fire({
-                            icon: "error",
-                            title: "Oops...",
-                            html: `<p class = "text-danger fw-bold">${msg}</p>`
-                        }).then(_=>{
-                            console.log(`<?php echo BASE_URL; ?>`);
+    //                     // Swal.fire({
+    //                     //     icon: "error",
+    //                     //     title: "Oops...",
+    //                     //     html: `<p class = "text-danger fw-bold">${msg}</p>`
+    //                     // }).then(_=>{
+    //                     //     console.log(`<?php echo BASE_URL; ?>`);
                             
-                            window.location.replace(`<?php echo BASE_URL; ?>`);
-                        })
-                    }
+    //                     //     window.location.replace(`<?php echo BASE_URL; ?>`);
+    //                     // })
+    //                 }else{
+    //                     console.log(1234);
+                        
+    //                 }
 
-                }
+    //             }
 
-            },
-            error: function(err) {
-                console.log(err);
-            }
-        })
-    }
+    //         },
+    //         error: function(err) {
+    //             console.log(err);
+    //         }
+    //     })
+    // }
 
     $check.on("click", function() {
         var idQuestion = parseInt($("#question-container").attr('data-id'));
