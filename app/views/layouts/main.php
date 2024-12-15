@@ -39,8 +39,8 @@ if (session_status() === PHP_SESSION_NONE) {
         }
 
         .main-content {
-            margin-left: 10px;
-            padding: 20px;
+            /* margin-left: 10px; */
+            padding: 10px;
         }
 
         .sidebar {
@@ -158,7 +158,7 @@ if (session_status() === PHP_SESSION_NONE) {
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container-fluid">
-            <a class="navbar-brand" href="#">
+            <a class="navbar-brand" href="<?php echo BASE_URL; ?>">
                 <img src="<?php echo BASE_URL; ?>/public/assets/images/logo.png" style="height:30px; width:auto;" alt="Logo">
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -233,7 +233,10 @@ if (session_status() === PHP_SESSION_NONE) {
 
         <!-- Main Content -->
         <div class="main-content">
-            <?php echo $content; ?>
+            <div style="width:100%;">
+
+                <?php echo $content; ?>
+            </div>
         </div>
     </div>
 
@@ -277,7 +280,7 @@ if (session_status() === PHP_SESSION_NONE) {
                                             <i class="fas fa-bars"></i> ${s.subject.name}
                                                     <ul class="dropdown">`;
                             s.lessions.forEach(l => {
-                                li += ` <li><a href="<?php echo BASE_URL; ?>/question/index?s=${s.subject.meta}-${s.subject.subject_id}&l=${l.lession_meta}-${l.lession_id}')"><i class="fas fa-chevron-right"></i> ${l.lesson_name}</a></li>`;
+                                li += ` <li><a href="<?php echo BASE_URL; ?>/question/index?s=${s.subject.meta}-${s.subject.subject_id}&l=${l.lession_meta}-${l.lession_id}')"><i class="fas fa-chevron-right"></i> ${l.lession_name}</a></li>`;
                             })
                             li += `</ul></li>`;
                             $ulPractice.append(li);

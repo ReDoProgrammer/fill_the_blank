@@ -1,4 +1,4 @@
-<div class="card text-white bg-success mb-3">
+<div class="card text-white bg-success">
     <h5 class="card-header mb-3 d-flex justify-content-between align-items-center">
         <span>
             <i class="fa fa-book text-white" aria-hidden="true"></i>

@@ -208,7 +208,7 @@ class SubjectModel extends Model
         foreach ($subjects as $subject) {
             // Truy vấn để lấy bài học của môn học hiện tại
             $sql = "
-                SELECT id AS lesson_id, name AS lesson_name, meta AS lesson_meta
+                SELECT id AS lession_id, name AS lession_name, meta AS lession_meta
                 FROM lessions
                 WHERE subject_id = :subjectId
             ";
