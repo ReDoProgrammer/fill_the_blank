@@ -1,9 +1,9 @@
 <div class="container">
     <div class="row justify-content-end mb-4 mt-2">
-        <div class="col-md-4">
+        <div class="col-md-5">
             <select name="" id="slTeachingM" class="form-control slTeaching"></select>
         </div>
-        <div class="col col-md-4 align-self-end text-end">
+        <div class="col col-md-3 align-self-end text-end">
             <div class="input-group">
                 <input type="text" id="txtKeyword" class="form-control" placeholder="Search user..." />
                 <button class="btn btn-outline-secondary btn-info text-white" type="button" id="btnSearch">
@@ -40,9 +40,6 @@
                 </div>
             </th>
             <th scope="col">#</th>
-            <th scope="col">Năm học</th>
-            <th scope="col">Môn học</th>
-            <th scope="col">Giảng viên</th>
             <th scope="col">Mã học viên</th>
             <th scope="col">Tài khoản</th>
             <th scope="col">Họ và tên</th>
@@ -331,7 +328,7 @@
             success: function (response) {
                 const { classese } = response;
                 classese.forEach(c => {
-                    $('.slTeaching').append(`<option value = "${c.id}">[${c.subject_name}] ${c.name} (${c.school_year} - ${c.teacher_name})</option>`);
+                    $('.slTeaching').append(`<option value = "${c.id}">[${c.subject_names}] ${c.name} (${c.school_year} - ${c.teacher_name})</option>`);
                 })
                 $slTeaching.trigger('change');
 
@@ -492,6 +489,8 @@
             },
             dataType: 'json',
             success: function (response) {
+                console.log(response);
+                
 
                 // Hiển thị dữ liệu người dùng và thông tin phân trang
                 const { users, totalPages, currentPage, pageSize, totalRecords } = response;
@@ -511,10 +510,7 @@
                             ` : ''}
                         </td>
 
-                        <td>${++idx}</td>
-                        <td class="fw-bold">${u.school_year}</td>
-                        <td class="fw-bold">${u.subject_name}</td>
-                        <td class="fw-bold">${u.teacher_name}</td>
+                        <td>${++idx}</td>                      
                         <td class="fw-bold text-secondary">${u.user_code}</td>
                         <td class="fw-bold">${u.username}</td>
                         <td>${u.fullname}</td>
