@@ -139,6 +139,8 @@
         let schoolyear = $('#slSchoolYears option:selected').val();
         let teacher_id = $slTeachers.val();
         let subjectIds = [];
+
+        // Kiểm tra ràng buộc năm học
         if (!schoolyear) {
             $.toast({
                 heading: 'RÀNG BUỘC DỮ LIỆU',
@@ -150,10 +152,7 @@
             return;
         }
 
-
-
-
-
+        // Lấy các môn học đã chọn
         $("#subjects .form-check-input:checked").each(function() {
             var subjectId = parseInt($(this).attr('id'));
             if (!isNaN(subjectId)) {
@@ -161,7 +160,7 @@
             }
         });
 
-
+        // Kiểm tra ràng buộc giáo viên
         if (!teacher_id) {
             $.toast({
                 heading: 'RÀNG BUỘC DỮ LIỆU',
@@ -173,6 +172,7 @@
             return;
         }
 
+        // Kiểm tra ràng buộc môn học
         if (subjectIds.length === 0) {
             $.toast({
                 heading: 'RÀNG BUỘC DỮ LIỆU',
@@ -184,26 +184,35 @@
             return;
         }
 
+        // Xác định URL cho thao tác thêm mới hoặc cập nhật
+        let url = `<?php echo BASE_URL; ?>/admin/teaching/${id > 0 ? 'update' : 'add'}`;
 
-        let url = `<?php echo BASE_URL; ?>/admin/teaching/${id<0?'add':'update'}`;
+        // Tạo đối tượng dữ liệu
+        let data = {
+            name,
+            teacher_id,
+            schoolyear,
+            subjects: subjectIds
+        };
 
-        if (id > 0) data.id = id;
+        // Thêm id nếu có
+        if (id > 0) {
+            data.id = id;
+        }
+
+        // Gửi yêu cầu AJAX
         $.ajax({
             url: url,
             type: 'POST',
             contentType: 'application/json', // Gửi dữ liệu dạng JSON
-            data: JSON.stringify({
-                name,
-                teacher_id,
-                schoolyear,
-                subjects: subjectIds
-            }),
-            success: function(response) {
+            data: JSON.stringify(data), // Chuyển đối tượng thành chuỗi JSON
+            success: function(response) {               
                 const {
                     code,
                     msg
                 } = response;
 
+                // Hiển thị thông báo thành công hoặc lỗi
                 $.toast({
                     heading: (code == 200 || code == 201) ? 'SUCCESSFULLY' : 'ERROR',
                     text: msg,
@@ -211,8 +220,12 @@
                     loader: true,
                     loaderBg: '#9EC600'
                 });
-                LoadData();
-                $modal.modal('hide');
+
+                // Tải lại dữ liệu và ẩn modal nếu thành công
+                if (code == 200 || code == 201) {
+                    LoadData();
+                    $modal.modal('hide');
+                }
             },
             error: function(err) {
                 console.log(err.responseText);
@@ -224,10 +237,9 @@
                     loaderBg: '#9EC600'
                 });
             }
+        });
+    });
 
-        })
-
-    })
 
     function LoadSubjects() {
         $.ajax({
@@ -284,7 +296,6 @@
                     teachings
                 } = response;
                 let idx = (page - 1) * pageSize;
-                console.log(teachings);
 
                 teachings.forEach(t => {
                     $table.append(`
@@ -296,7 +307,7 @@
                             <td class = "text-center">${t.class_size}</td>                     
                             <td class="text-end">
                                 <a href="javascript:void(0)" onClick="UpdateTeaching(${t.id})"><i class="fa fa-edit text-warning"></i></a>
-                                <a href="javascript:void(0)" onClick="DeleteTeaching(${t.id},'${t.teacher_name}','${t.subject_name}')"><i class="fa fa-trash-o text-danger"></i></a>
+                                <a href="javascript:void(0)" onClick="DeleteTeaching(${t.id},'${t.teacher_name}','${t.subject_names}')"><i class="fa fa-trash-o text-danger"></i></a>
                                 <a href="javascript:void(0)" onClick="ViewUsersList(${t.id})"><i class="fa fa-list text-info" aria-hidden="true"></i></a>
                             </td>                          
                         </tr>
@@ -334,19 +345,25 @@
                 console.log(response);
                 const {
                     code,
-                    msg,
-                    detail
+                    detail,
+                    msg
                 } = response;
-                $modal.modal('show');
-                const {
-                    name,
-                    teacher_id,
-                    subject_id
-                } = detail;
-                $name.val(name);
-                $slSubjects.val(subject_id);
-                $slTeachers.val(teacher_id);
-                $modalTittle.text('Cập nhật thông tin giảng dạy');
+                if (code === 200) {
+                    let arr = detail.subject_ids.split(',').map(Number);
+                    arr.forEach(id => {
+                        $('#' + id).prop('checked', true);
+                    })
+                    $modal.modal('show');
+                    const {
+                        name,
+                        teacher_id
+                    } = detail;
+                    $name.val(name);
+                    $slTeachers.val(teacher_id);
+                    $modalTittle.text('Cập nhật thông tin giảng dạy');
+                }
+
+
             },
             error: function(err) {
                 console.log(err.responseText);

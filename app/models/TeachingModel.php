@@ -8,7 +8,7 @@ class TeachingModel extends Model
     {
         $offset = ($page - 1) * $pageSize;
         $keyword = "%$keyword%";
-    
+
         // Cập nhật SQL để loại bỏ trùng lặp trong tên môn học (subject_names)
         $sql = "
             SELECT t.*, u.fullname AS teacher_name,
@@ -23,14 +23,14 @@ class TeachingModel extends Model
             GROUP BY t.id, u.id  -- Nhóm theo teaching và teacher
             ORDER BY t.school_year DESC, u.fullname
             LIMIT :offset, :pageSize";
-    
+
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindParam(':keyword', $keyword, PDO::PARAM_STR);
         $stmt->bindValue(':offset', (int) $offset, PDO::PARAM_INT);
         $stmt->bindValue(':pageSize', (int) $pageSize, PDO::PARAM_INT);
         $stmt->execute();
         $teachings = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
         // Truy vấn tổng số bản ghi
         $countSql = "
             SELECT COUNT(*) as total 
@@ -38,14 +38,14 @@ class TeachingModel extends Model
             JOIN users u ON t.teacher_id = u.id          
             WHERE u.fullname LIKE :keyword             
                OR t.school_year LIKE :keyword";
-    
+
         $stmtTotal = $this->pdo->prepare($countSql);
         $stmtTotal->bindParam(':keyword', $keyword, PDO::PARAM_STR);
         $stmtTotal->execute();
         $total = $stmtTotal->fetch(PDO::FETCH_ASSOC);
-    
+
         $totalPages = ceil($total['total'] / $pageSize);
-    
+
         return [
             'teachings' => $teachings,
             'totalPages' => $totalPages,
@@ -54,8 +54,8 @@ class TeachingModel extends Model
             'totalRecords' => $total['total']
         ];
     }
-    
-    
+
+
 
     // Lấy một teaching bằng ID
     public function getTeachingById($id)
@@ -121,10 +121,10 @@ class TeachingModel extends Model
                 'msg' => 'Dữ liệu đầu vào không hợp lệ!'
             ];
         }
-    
+
         // Chuyển mảng subjects thành chuỗi các số nguyên, ngăn cách nhau bởi dấu phẩy
         $subjectString = implode(',', $subjects);
-    
+
         // Kiểm tra xem giảng dạy đã tồn tại hay chưa
         $existingTeaching = $this->isTeachingExist($teacherId, $subjectString, $schoolYear);
         if ($existingTeaching) {
@@ -133,7 +133,7 @@ class TeachingModel extends Model
                 'msg' => "Quá trình giảng dạy môn học đã tồn tại!"
             ];
         }
-    
+
         // Thêm mới nếu không tồn tại
         $sql = "INSERT INTO teachings (name, teacher_id, subject_ids, school_year) 
                 VALUES (:name, :teacherId, :subject_ids, :schoolYear)";
@@ -144,19 +144,30 @@ class TeachingModel extends Model
             'schoolYear' => $schoolYear
         ];
         $this->execute($sql, $params);
-    
+
         return [
             'code' => 201, // HTTP Created
             'msg' => 'Quá trình giảng dạy đã được thêm thành công!'
         ];
     }
-    
+
 
 
     public function updateTeaching($id, $name, $teacherId, $subjects, $schoolYear)
     {
-        // Kiểm tra xem đã tồn tại quá trình giảng dạy với thông tin mới hay chưa
-        $existingTeaching = $this->isTeachingExist($teacherId, $subjects, $schoolYear, $id);
+        // Kiểm tra ràng buộc dữ liệu
+        if (empty($name) || empty($teacherId) || empty($subjects) || empty($schoolYear)) {
+            return [
+                'code' => 400, // HTTP Bad Request
+                'msg' => 'Dữ liệu đầu vào không hợp lệ!'
+            ];
+        }
+
+        // Chuyển mảng subjects thành chuỗi các số nguyên, ngăn cách nhau bởi dấu phẩy
+        $subjectString = implode(',', $subjects);
+
+        // Kiểm tra xem giảng dạy đã tồn tại hay chưa với thông tin mới
+        $existingTeaching = $this->isTeachingExist($teacherId, $subjectString, $schoolYear, $id);
         if ($existingTeaching) {
             return [
                 'code' => 409, // HTTP Conflict
@@ -166,17 +177,17 @@ class TeachingModel extends Model
 
         // Cập nhật thông tin nếu không có dữ liệu trùng lặp
         $sql = "UPDATE teachings 
-            SET 
-                name = :name,
-                teacher_id = :teacherId, 
-                subject_ids = :subjects, 
-                school_year = :schoolYear 
-            WHERE id = :id";
+                SET 
+                    name = :name,
+                    teacher_id = :teacherId, 
+                    subject_ids = :subjectString, 
+                    school_year = :schoolYear 
+                WHERE id = :id";
         $params = [
             'id' => $id,
             'name' => $name,
             'teacherId' => $teacherId,
-            'subjects' => $subjects,
+            'subjectString' => $subjectString,
             'schoolYear' => $schoolYear
         ];
         $this->execute($sql, $params);
@@ -208,18 +219,27 @@ class TeachingModel extends Model
     }
 
     // Kiểm tra sự tồn tại của teaching
-    public function isTeachingExist($teacherId, $subjectIds, $schoolYear)
+    public function isTeachingExist($teacherId, $subjectIds, $schoolYear, $id = 0)
     {
+        // Nếu id > 0, chỉ kiểm tra các trường không liên quan đến id
         $sql = "
-            SELECT * 
-            FROM teachings 
-            WHERE teacher_id = :teacherId 
-              AND subject_ids = :subjectIds 
-              AND school_year = :schoolYear";
+        SELECT * 
+        FROM teachings 
+        WHERE teacher_id = :teacherId 
+          AND subject_ids = :subjectIds 
+          AND school_year = :schoolYear";
+
+        // Nếu id > 0, thêm điều kiện loại trừ id
+        if ($id > 0) {
+            $sql .= " AND id != :id";
+        }
+
+        // Thực thi câu truy vấn
         return $this->fetch($sql, [
             'teacherId' => $teacherId,
             'subjectIds' => $subjectIds,
-            'schoolYear' => $schoolYear
+            'schoolYear' => $schoolYear,
+            'id' => $id // Chỉ truyền id nếu có
         ]);
     }
 }

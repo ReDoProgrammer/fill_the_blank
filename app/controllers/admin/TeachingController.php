@@ -47,24 +47,41 @@ class TeachingController extends AdminController
     {
         header('Content-Type: application/json'); // Đặt header cho JSON
 
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            // Lấy dữ liệu từ POST request
-            $id = $_POST['id'] ?? '';
-            $name = $_POST['name'];
-            $teacher_id = $_POST['teacher_id'];
-            $subjects = $_POST['subjects'];
-            $schoolyear = $_POST['schoolyear'];
-
-            $result = $this->teachingModel->updateTeaching($id, $name, $teacher_id, $subjects, $schoolyear);
-            echo json_encode($result);
-        } else {
-            // Nếu không phải POST request, trả về lỗi
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             echo json_encode([
                 'code' => 405,
-                'msg' => 'Phương thức không được phép'
+                'msg' => 'Phương thức truy vấn không hợp lệ!'
             ]);
+            return;
         }
+
+        $input = file_get_contents('php://input'); // Lấy nội dung thô
+        $data = json_decode($input, true); // Chuyển JSON thành mảng
+
+        // Truy cập các giá trị
+        $id = $data['id'] ?? null;
+        $name = $data['name'] ?? null;
+        $teacher_id = $data['teacher_id'] ?? null;
+        $subjects = $data['subjects'] ?? [];
+        $schoolyear = $data['schoolyear'] ?? null;
+      
+
+        // Kiểm tra dữ liệu
+        if (!$id || !$name || !$teacher_id || !$schoolyear || empty($subjects)) {
+            echo json_encode([
+                'code' => 400,
+                'msg' => 'Dữ liệu không hợp lệ!'
+            ]);
+            return;
+        }
+
+        // Gọi hàm updateTeaching từ model để cập nhật
+        $result = $this->teachingModel->updateTeaching($id, $name, $teacher_id, $subjects, $schoolyear);
+
+        // Trả về kết quả dưới dạng JSON
+        echo json_encode($result);
     }
+
 
     public function delete()
     {
