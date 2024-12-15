@@ -80,10 +80,43 @@
     </div>
 </div>
 
+<!-- Modal -->
+<div class="modal fade" id="modalClassSize" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Danh sách học viên</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="containter">
+                    <table class="table table-bordered table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">Mã học viên</th>
+                                <th scope="col">Tài khoản</th>
+                                <th scope="col">Họ tên</th>
+                                <th scope="col">Điện thoại</th>
+                                <th scope="col">Email</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tblUsers"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 <script>
     var keyword = '',
         page = 1,
+        pageIM = 1,
         pageSize = 10,
         id = -1;
     var pageNumber = 1; // Biến toàn cục để theo dõi tổng số trang
@@ -206,7 +239,7 @@
             type: 'POST',
             contentType: 'application/json', // Gửi dữ liệu dạng JSON
             data: JSON.stringify(data), // Chuyển đối tượng thành chuỗi JSON
-            success: function(response) {        
+            success: function(response) {
                 const {
                     code,
                     msg
@@ -306,8 +339,8 @@
                             <td class = "text-info">${t.subject_names}</td>      
                             <td class = "text-center">${t.class_size}</td>                     
                             <td class="text-end">
-                                <a href="javascript:void(0)" onClick="UpdateTeaching(${t.id})"><i class="fa fa-edit text-warning"></i></a>
-                                <a href="javascript:void(0)" onClick="DeleteTeaching(${t.id},'${t.teacher_name}','${t.subject_names}')"><i class="fa fa-trash-o text-danger"></i></a>
+                                <a href="javascript:void(0)" onClick="UpdateTeaching(${t.id})" class = "pl-3"><i class="fa fa-edit text-warning"></i></a>
+                                <a href="javascript:void(0)" onClick="DeleteTeaching(${t.id},'${t.teacher_name}','${t.subject_names}')" class = "pl-3"><i class="fa fa-trash-o text-danger"></i></a>
                                 <a href="javascript:void(0)" onClick="ViewUsersList(${t.id})"><i class="fa fa-list text-info" aria-hidden="true"></i></a>
                             </td>                          
                         </tr>
@@ -373,7 +406,7 @@
 
     }
 
-    function DeleteTeaching(id, teacher_name, subject_name) {        
+    function DeleteTeaching(id, teacher_name, subject_name) {
         Swal.fire({
             title: `Bạn thực sự muốn xoá quá trình giảng dạy môn <span class="text-warning">${subject_name}</span> của giáo viên <span class = "text-info fw-bold">${teacher_name}</span>?`,
             text: "Bạn sẽ không thể khôi phục lại dữ liệu đã bị xoá!",
@@ -450,6 +483,47 @@
         });
     }
 
+    function ViewUsersList(id) {
+        $('#modalClassSize').modal('show');
+        $('#tblUsers').empty();
+
+
+        $.ajax({
+            url: '<?php echo BASE_URL; ?>/admin/teaching/getUsersInClass',
+            type: 'GET',
+            dataType: 'json',
+            data: {
+                id,
+                page: pageIM,
+                pageSize
+            },
+            success: function(response) {
+                const {
+                    code,
+                    msg,
+                    result
+                } = response;
+                if (code == 200 && result.data.length > 0) {
+                    let idx = (pageIM-1)*pageSize;
+                    result.data.forEach(u => {
+                        $('#tblUsers').append(`
+                            <tr>
+                                <td>${++idx}</td>
+                                <td class = "text-warning fw-bold">${u.user_code}</td>
+                                <td>${u.username}</td>
+                                <td class = "fw-bold">${u.fullname}</td>
+                                <td>${u.phone}</td>
+                                <td>${u.email}</td>
+                            </tr>
+                        `);
+                    })
+                }
+            },
+            error: function(err) {
+                console.log(err.responseText);
+            }
+        })
+    }
 
     $modal.on('hide.bs.modal', function(e) {
         $modalTittle.text('Thêm mới quá trình giảng dạy');

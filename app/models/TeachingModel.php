@@ -214,7 +214,7 @@ class TeachingModel extends Model
                 'msg' => 'Không thể xoá quá trình giảng dạy vì có người dùng đang tham gia!'
             ];
         }
-     
+
 
         // Tiến hành xoá quá trình giảng dạy nếu không có dữ liệu liên quan
         $sql = "DELETE FROM teachings WHERE id = :id";
@@ -265,4 +265,52 @@ class TeachingModel extends Model
         // Thực thi câu truy vấn
         return $this->fetch($sql, $params);
     }
+
+    public function getUsers($teachingId, $page = 1, $pageSize = 10)
+    {
+        // Tính toán offset dựa trên trang và pageSize
+        $offset = ($page - 1) * $pageSize;
+    
+        // Cập nhật câu truy vấn SQL để lấy danh sách học viên từ bảng users với teaching_id
+        $sql = "
+            SELECT id,user_code,username,fullname,phone,email
+            FROM users 
+            WHERE teaching_id = :teachingId
+            ORDER BY fullname  -- Sắp xếp theo tên học viên
+            LIMIT :offset, :pageSize";  // Phân trang
+    
+        // Chuẩn bị và thực thi câu truy vấn
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindParam(':teachingId', $teachingId, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int) $offset, PDO::PARAM_INT);
+        $stmt->bindValue(':pageSize', (int) $pageSize, PDO::PARAM_INT);
+        $stmt->execute();
+        $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+        // Truy vấn tổng số học viên có teaching_id = $teachingId
+        $countSql = "
+            SELECT COUNT(*) as total 
+            FROM users
+            WHERE teaching_id = :teachingId";
+    
+        $stmtTotal = $this->pdo->prepare($countSql);
+        $stmtTotal->bindParam(':teachingId', $teachingId, PDO::PARAM_INT);
+        $stmtTotal->execute();
+        $total = $stmtTotal->fetch(PDO::FETCH_ASSOC);
+    
+        // Tính tổng số trang
+        $totalPages = ceil($total['total'] / $pageSize);
+    
+        // Trả về kết quả phân trang
+        return [
+            'data' => $users,           // Danh sách học viên
+            'pagination' => [
+                'total' => $total['total'],  // Tổng số học viên
+                'totalPages' => $totalPages, // Tổng số trang
+                'currentPage' => $page,      // Trang hiện tại
+                'pageSize' => $pageSize      // Số lượng bản ghi mỗi trang
+            ]
+        ];
+    }
+    
 }

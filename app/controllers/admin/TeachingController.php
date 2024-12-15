@@ -64,7 +64,7 @@ class TeachingController extends AdminController
         $teacher_id = $data['teacher_id'] ?? null;
         $subjects = $data['subjects'] ?? [];
         $schoolyear = $data['schoolyear'] ?? null;
-      
+
 
         // Kiểm tra dữ liệu
         if (!$id || !$name || !$teacher_id || !$schoolyear || empty($subjects)) {
@@ -145,4 +145,33 @@ class TeachingController extends AdminController
         $result = $this->teachingModel->createTeaching($name, $teacher_id, $subjects, $schoolyear);
         echo json_encode($result);
     }
+
+    public function getUsersInClass()
+    {
+        header('Content-Type: application/json'); // Đặt header JSON
+    
+        if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+            // Lấy tham số từ URL
+            $id = (int) $_GET['id']; // ID lớp học
+            $page = (int) $_GET['page']; // Trang hiện tại
+            $pageSize = (int) $_GET['pageSize']; // Số lượng người dùng mỗi trang
+    
+            // Kiểm tra nếu pageSize không hợp lệ (ví dụ <= 0)
+            if ($pageSize <= 0) {
+                $pageSize = 10;  // Mặc định pageSize là 10 nếu không hợp lệ
+            }
+    
+            // Gọi hàm getUsers từ model
+            $result = $this->teachingModel->getUsers($id, $page, $pageSize);
+    
+            // Trả về kết quả
+            echo json_encode([
+                'code' => 200,
+                'msg' => 'Lấy danh sách học viên của lớp học thành công!',
+                'result' => $result
+            ]);
+        }
+    }
+    
+    
 }
