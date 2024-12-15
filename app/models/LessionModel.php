@@ -180,7 +180,7 @@ class LessionModel extends Model
     {
         // Tính toán giá trị offset cho phân trang
         $offset = ($page - 1) * $pageSize;
-
+    
         // Câu lệnh SQL để lấy thống kê kết quả bài làm
         $sql = "
         SELECT 
@@ -196,7 +196,9 @@ class LessionModel extends Model
             MAX(total_blanks) AS total_blanks,
             MAX(correct_blanks) AS correct_blanks,
             ROUND((MAX(correct_blanks) / MAX(total_blanks)) * 100, 2) AS correct_blanks_percent,
-            COUNT(result_id) AS attempts_count  -- Số lần làm bài của từng tài khoản
+            COUNT(result_id) AS attempts_count,  -- Số lần làm bài của từng tài khoản
+            SUM(total_blanks) AS total_blanks_filled,  -- Tổng số chỗ trống cần điền
+            SUM(correct_blanks) AS correct_blanks_filled  -- Tổng số đáp án đúng đã điền
         FROM (
             SELECT 
                 exam_results.id AS result_id,
@@ -240,16 +242,17 @@ class LessionModel extends Model
             GROUP BY exam_results.id, exam_results.user_id
         ) AS subquery
         GROUP BY user_id
-        ORDER BY highest_score_percentage DESC";
-        // LIMIT $offset, $pageSize";
-
+        ORDER BY highest_score_percentage DESC
+        LIMIT $offset, $pageSize";
+    
         // Các tham số truyền vào truy vấn SQL
         $params = [
             ':lessionId' => $lessionId,
             ':keyword' => '%' . $keyword . '%'
         ];
-
+    
         // Thực thi truy vấn và trả về kết quả
         return $this->fetchAll($sql, $params);
     }
+    
 }

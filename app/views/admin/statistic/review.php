@@ -189,6 +189,8 @@
                     pageSize
                 },
                 success: function(response) {
+                    console.log(response);
+                    
                     const {
                         code,
                         msg,
@@ -384,7 +386,7 @@
 
         // Tạo workbook từ bảng HTML
         var wb = XLSX.utils.table_to_book(table, {
-            sheet: $("#slLessions option:selected").val()?$("#slLessions option:selected").text():'Thống kê tổng quát'
+            sheet: 'Thống kê ôn tập'
         });
 
         // Xuất file Excel
