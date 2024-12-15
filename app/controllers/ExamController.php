@@ -26,17 +26,20 @@ class ExamController extends Controller
       exit();
     }
 
-    $subject = $_GET['s'];
+    if (isset($_GET['s']) && isset($_GET['id'])) {
+      $examId = $_GET['id'];
+      $subject = $_GET['s'];
 
-    // Cắt chuỗi theo ký tự '-'
-    $subjectParts = explode('-', $subject);
+      // Cắt chuỗi theo ký tự '-'
+      $subjectParts = explode('-', $subject);
 
-    // Lấy phần tử cuối cùng của mỗi mảng
-    $subjectId = end($subjectParts);
+      // Lấy phần tử cuối cùng của mỗi mảng
+      $subjectId = end($subjectParts);
 
-    $subjectName = $this->subjectModel->getSubjectById($subjectId)['name'];
-
-    $this->view('exam/index', ['subject' => $subjectName], 'Danh sách bài thi trắc nghiệm');
+      $subjectName = $this->subjectModel->getSubjectById($subjectId)['name'];
+      $exam = $this->examModel->getExamById($examId);
+      $this->view('exam/index', ['subject' => $subjectName,'exam'=>$exam], 'Danh sách bài thi trắc nghiệm');
+    }
   }
 
   public function doing()
@@ -97,11 +100,8 @@ class ExamController extends Controller
       session_start();
       $user_id = $_SESSION['user_logged_in']['id'];
       header('Content-Type: application/json');
-      $rs = $this->examModel->saveResult($user_id,$exam_id,$result,$spent_time);
+      $rs = $this->examModel->saveResult($user_id, $exam_id, $result, $spent_time);
       echo json_encode($rs);
     }
   }
-
-
 }
-
