@@ -228,18 +228,18 @@ if (session_status() === PHP_SESSION_NONE) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        $(document).ready(function () {
+        $(document).ready(function() {
             RenderOwnClasses();
         })
 
-        
+
 
         function RenderOwnClasses() {
             $.ajax({
                 url: '<?php echo BASE_URL; ?>/teacher/teaching/ownclasses',
                 type: 'get',
                 dataType: 'json',
-                success: function (response) {
+                success: function(response) {
                     const $classes = $('#mn-Classes');
                     const $questions = $('#mn-Questions');
                     const $exams = $('#mn-Exams');
@@ -247,41 +247,38 @@ if (session_status() === PHP_SESSION_NONE) {
                     $questions.empty();
                     $exams.empty();
                     const {
-                        classes
+                        classese
                     } = response;
+                    // Mảng để lưu các môn học đã được thêm vào $questions
+                    let addedSubjects = [];
+                    classese.forEach(c => {
+                        let subjects = JSON.parse(c.subjects);
+                        // Nối tất cả subject_name lại với nhau, cách nhau bằng dấu phẩy
+                        var subjectNames = subjects.map(function(item) {
+                            return item.subject_name;
+                        }).join(', ');
 
-                    classes.forEach(c => {
-                        $classes.append(`<li id="${c.teaching_id}"><a class="dropdown-item" href="<?php echo BASE_URL; ?>/teacher/classroom/index?s=${c.subject_meta}-${c.teaching_id}" target="_self">${c.class_name} - ${c.subject_name} - ${c.school_year}</a></li>`);
-                        $questions.append(`<li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/teacher/quiz/index?s=${c.subject_meta}-${c.subject_id}" target="_self">${c.subject_name}</a></li>`);
-                        $exams.append(`<li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/teacher/exam/index?s=${c.subject_meta}-${c.subject_id}" target="_self">${c.subject_name}</a></li>`);
-                    })
+                        // Thêm class vào $classes
+                        $classes.append(`<li id="${c.teaching_id}"><a class="dropdown-item" href="<?php echo BASE_URL; ?>/teacher/classroom/index?r=${c.teaching_id}" target="_self">${c.class_name} - ${subjectNames} - ${c.school_year}</a></li>`);
+
+                        // Thêm exam vào $exams
+                        $exams.append(`<li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/teacher/exam/index?r=${c.teaching_id}" target="_self">${c.class_name} - ${subjectNames} - ${c.school_year}</a></li>`);
+
+                        // Kiểm tra và thêm mỗi môn học vào $questions chỉ một lần
+                        subjects.forEach(function(subject) {
+                            if (!addedSubjects.includes(subject.subject_name)) {
+                                // Thêm môn học vào $questions nếu chưa có trong addedSubjects
+                                $questions.append(`<li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/teacher/quiz/index?s=${subject.subject_id}&meta=${subject.meta}" target="_self">${subject.subject_name}</a></li>`);
+                                // Đánh dấu môn học này là đã thêm
+                                addedSubjects.push(subject.subject_name);
+                            }
+                        });
+                    });
 
                     $(document).trigger('menuRendered'); // Kích hoạt sự kiện tùy chỉnh sau khi render xong
 
                 },
-                error: function (err) {
-                    console.log(err.responseText);
-
-                }
-            })
-        }
-        const RenderExams = function () {
-            $.ajax({
-                url: '<?php echo BASE_URL; ?>/teacher/teaching/ownclasses',
-                type: 'get',
-                dataType: 'json',
-                success: function (response) {
-                    const $exams = $('#sidebar-exams');
-                    $exams.empty();
-                    const {
-                        classes
-                    } = response;
-                    classes.forEach(c => {
-                        $exams.append(`<a href="<?php echo BASE_URL; ?>/teacher/exam/index?s=${c.subject_meta}-${c.subject_id}" target="_self">${c.subject_name} (${c.school_year})</a>`);
-                    })
-
-                },
-                error: function (err) {
+                error: function(err) {
                     console.log(err.responseText);
 
                 }

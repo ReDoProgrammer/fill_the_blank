@@ -16,7 +16,7 @@ class TeachingController extends Controller{
         echo json_encode([
             'code'=>200,
             'msg'=>'Lấy danh sách lớp giảng dạy thành công!',
-            'classes'=>$result
+            'classese'=>$result
         ]);
     }
 }

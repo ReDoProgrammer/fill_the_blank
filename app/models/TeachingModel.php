@@ -97,13 +97,20 @@ class TeachingModel extends Model
     }
 
 
-
     public function getClassesByTeacherId($teacherId)
     {
         $sql = "
-            SELECT t.id AS teaching_id,t.name AS class_name, t.school_year AS school_year,
-            FROM teachings t         
-            WHERE t.teacher_id = :teacherId            
+            SELECT t.id AS teaching_id, 
+                   t.name AS class_name, 
+                   t.school_year AS school_year,
+                   t.subject_ids,
+                   GROUP_CONCAT(s.id ORDER BY s.name SEPARATOR ',') AS subject_ids_concat,
+                   GROUP_CONCAT(s.name ORDER BY s.name SEPARATOR ',') AS subjects_name_concat,
+                   GROUP_CONCAT(s.meta ORDER BY s.name SEPARATOR ',') AS subjects_meta_concat
+            FROM teachings t
+            LEFT JOIN subjects s ON FIND_IN_SET(s.id, t.subject_ids) > 0
+            WHERE t.teacher_id = :teacherId
+            GROUP BY t.id
             ORDER BY t.school_year DESC";
 
         $stmt = $this->pdo->prepare($sql);
@@ -111,8 +118,36 @@ class TeachingModel extends Model
         $stmt->execute();
         $classes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        // Chuyển đổi chuỗi subject_ids_concat, subjects_name_concat, subjects_meta_concat thành mảng JSON
+        foreach ($classes as &$class) {
+            // Lấy danh sách subject_ids, subjects_name và subjects_meta từ chuỗi concat
+            $subjectIds = explode(',', $class['subject_ids_concat']);
+            $subjectNames = explode(',', $class['subjects_name_concat']);
+            $subjectMetas = explode(',', $class['subjects_meta_concat']);
+
+            // Tạo mảng JSON cho môn học
+            $subjects = [];
+            foreach ($subjectIds as $index => $subjectId) {
+                $subjects[] = [
+                    'subject_id' => $subjectId,
+                    'subject_name' => $subjectNames[$index],
+                    'meta' => $subjectMetas[$index] // Thêm trường meta vào mảng môn học
+                ];
+            }
+
+            // Thêm trường subjects_name dưới dạng mảng JSON
+            $class['subjects'] = json_encode($subjects);
+
+            // Xóa các trường tạm thời
+            unset($class['subject_ids_concat']);
+            unset($class['subjects_name_concat']);
+            unset($class['subjects_meta_concat']);
+        }
+
         return $classes;
     }
+
+
 
 
     // thêm mới quá lớp (quá trình) giảng dạy
