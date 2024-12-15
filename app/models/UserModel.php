@@ -10,7 +10,7 @@ class UserModel extends Model
         // Tính toán OFFSET, đảm bảo page >= 1
         $page = max(1, (int) $page);
         $offset = ($page - 1) * $pageSize;
-    
+
         // Câu lệnh SQL cơ bản
         $sql = "SELECT u.*, 
                        gv.fullname AS teacher_name
@@ -20,16 +20,16 @@ class UserModel extends Model
                 WHERE 
                     (u.username LIKE :keyword OR u.phone LIKE :keyword OR u.email LIKE :keyword OR u.fullname LIKE :keyword)
                     AND u.role = :role";
-    
+
         // Chỉ thêm điều kiện teaching_id nếu teaching_id khác 0
         if ($teaching_id != 0) {
             $sql .= " AND u.teaching_id = :teaching_id";
         }
-    
+
         // Thêm phần sắp xếp và giới hạn
         $sql .= " ORDER BY u.username, u.fullname
                   LIMIT :offset, :pageSize";
-    
+
         // Chuẩn bị và thực thi câu lệnh SQL
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindValue(':keyword', "%$keyword%", PDO::PARAM_STR);
@@ -41,19 +41,19 @@ class UserModel extends Model
         $stmt->bindValue(':pageSize', (int) $pageSize, PDO::PARAM_INT);
         $stmt->execute();
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
         // Câu lệnh SQL để lấy tổng số bản ghi
         $countSql = "SELECT COUNT(*) as total
                      FROM users u
                      LEFT JOIN teachings t ON u.teaching_id = t.id
                      WHERE (u.username LIKE :keyword OR u.phone LIKE :keyword OR u.email LIKE :keyword OR u.fullname LIKE :keyword)
                        AND u.role = :role";
-    
+
         // Chỉ thêm điều kiện teaching_id nếu teaching_id khác 0
         if ($teaching_id != 0) {
             $countSql .= " AND u.teaching_id = :teaching_id";
         }
-    
+
         // Lấy tổng số bản ghi
         $stmtCount = $this->pdo->prepare($countSql);
         $stmtCount->bindValue(':keyword', "%$keyword%", PDO::PARAM_STR);
@@ -63,10 +63,10 @@ class UserModel extends Model
         }
         $stmtCount->execute();
         $totalRecords = $stmtCount->fetch(PDO::FETCH_ASSOC)['total'];
-    
+
         // Tính toán số trang
         $totalPages = ceil($totalRecords / $pageSize);
-    
+
         // Trả về dữ liệu cùng với thông tin phân trang
         return [
             'users' => $users,
@@ -76,7 +76,7 @@ class UserModel extends Model
             'totalRecords' => $totalRecords
         ];
     }
-    
+
 
 
 
@@ -206,13 +206,33 @@ class UserModel extends Model
 
     public function deleteUser($id, $role = 'user')
     {
+        // Nếu role là 'teacher', kiểm tra xem người dùng có giảng dạy nào không
+        if ($role === 'teacher') {
+            // Kiểm tra xem giáo viên có tham gia giảng dạy nào không
+            $checkTeachingSql = "SELECT COUNT(*) FROM teachings WHERE teacher_id = :id";
+            $teachingCount = $this->fetch($checkTeachingSql, ['id' => $id]);
+
+            // Nếu giáo viên có giảng dạy, không cho phép xóa
+            if ($teachingCount['COUNT(*)'] > 0) {
+                return [
+                    'code' => 400,
+                    'msg' => "Không thể xóa tài khoản giáo viên vì người này đang tham gia giảng dạy!"
+                ];
+            }
+        }
+
+        // Nếu không có giảng dạy hoặc role là 'user', tiến hành xóa
         $sql = "DELETE FROM users WHERE id = :id";
         $result = $this->execute($sql, ['id' => $id]);
+
+        // Tạo thông báo dựa trên role
         $msg = $role === 'user' ? 'người dùng' : 'giáo viên';
+
         return $result > 0
             ? ['code' => 200, 'msg' => "Xóa tài khoản $msg thành công!"]
             : ['code' => 400, 'msg' => "Xóa tài khoản $msg không thành công!"];
     }
+
 
     public function importUsers($users, $teaching_id)
     {
