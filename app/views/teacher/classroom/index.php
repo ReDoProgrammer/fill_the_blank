@@ -1,3 +1,15 @@
+<div class="container">
+    <div class="row justify-content-end mb-4 mt-2">
+        <div class="col col-md-12 align-self-end text-end">
+            <div class="input-group">
+                <input type="text" id="txtKeyword" class="form-control" placeholder="Tìm kiếm học viên..." />
+                <button class="btn btn-outline-secondary btn-info text-white" type="button" id="btnSearch">
+                    <i class="fa fa-search fw-bold"></i> Search
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 <table class="table table-bordered table-striped table-hover">
     <thead>
         <tr>
@@ -24,35 +36,66 @@
 <script>
     const $table = $('#tblData'),
         $pagination = $('.pagination');
-    $(document).ready(function () {
-        // Lấy URL hiện tại
+        var teachingId = 0;
+        let currentPage =1 ;
+    $(document).ready(function() {
         var url = window.location.href;
-
-        // Tạo đối tượng URLSearchParams
         var urlParams = new URLSearchParams(window.location.search);
+        teachingId = parseInt(urlParams.get('r'));
+        if (typeof teachingId !== 'undefined' && Number.isInteger(teachingId)) {
+            ListStudents(teachingId);
+        }
 
-        // Lấy giá trị của tham số "s" và "l"
-        var s = urlParams.get('s'); // "html-25"
+        $('.pagination').on('click', '.page-link', function(e) {
 
-        // Tách số từ tham số "s" và "l"
-        teachingId = s.split('-')[1]; // 25
-        ListStudents(teachingId);
+            e.preventDefault(); // Ngăn chặn hành động mặc định của thẻ <a>
+            currentPage = $(this).data('page'); // Lấy giá trị data-page
+            if (currentPage !== undefined) {
+                if (currentPage !== 0 && currentPage !== pageNumber) {
+                    page = currentPage;
+                    ListStudents(teachingId);
+                } else {
+
+                    if (currentPage === 0 && page > 1) {
+                        page--;
+                        ListStudents(teachingId);
+                    } else if (currentPage == pageNumber && page < pageNumber) {
+                        page++;                       
+                        ListStudents(teachingId);
+                    }
+                }
+            }
+
+        });
+
     })
-    var page = 1, pageSize = 10, keyword = '';
+    var page = 1,
+        pageSize = 10,
+        keyword = '';
+
+$('#btnSearch').click(function(){
+    ListStudents(teachingId);
+})
+
     function ListStudents(teachingId) {
         $.ajax({
             url: `<?php echo BASE_URL; ?>/teacher/classroom/getStudentsByClassId`,
             type: 'GET',
             dataType: 'json',
             data: {
-                page,
+                page:currentPage,
                 pageSize,
-                keyword,
+                keyword:$('#txtKeyword').val().trim(),
                 teachingId
             },
-            success: function (response) {
-                console.log(response);
-                const { users, totalPages, currentPage, pageSize, totalRecords } = response.data;
+            success: function(response) {
+                const {
+                    users,
+                    totalPages,
+                    currentPage,
+                    pageSize,
+                    totalRecords
+                } = response.data;
                 let idx = (page - 1) * pageSize;
                 pageNumber = totalPages;
                 $table.empty(); // Đảm bảo bảng được làm mới trước khi thêm dữ liệu
@@ -80,7 +123,7 @@
                 `);
                 });
 
-                $pagination.append(`<li class="page-item ${currentPage === 1 ? "disabled" : ""}">
+                $pagination.append(`<li class="page-item ${page === 1 ? "disabled" : ""}">
                                 <a class="page-link" href="#" tabindex="-1" aria-disabled="true" data-page="0">Previous</a>
                             </li>`);
                 for (let i = 1; i <= totalPages; i++) {
@@ -93,7 +136,7 @@
                 </li>`);
 
             },
-            error: function (err) {
+            error: function(err) {
                 console.log(err.responseText);
 
             }
