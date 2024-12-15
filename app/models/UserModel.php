@@ -7,29 +7,29 @@ class UserModel extends Model
 {
     public function getAllUsers($keyword, $page, $pageSize, $role = 'user', $teaching_id = 0)
     {
-        // Tính toán OFFSET
+        // Tính toán OFFSET, đảm bảo page >= 1
+        $page = max(1, (int) $page);
         $offset = ($page - 1) * $pageSize;
-
+    
         // Câu lệnh SQL cơ bản
-        $sql = "SELECT u.*, t.name AS class_name, t.school_year,
-                   gv.fullname AS teacher_name, s.name AS subject_name
-            FROM users u
-            JOIN teachings t ON u.teaching_id = t.id
-            JOIN users gv ON t.teacher_id = gv.id
-            JOIN subjects s ON t.subject_id = s.id
-            WHERE 
-                (u.username LIKE :keyword OR u.phone LIKE :keyword OR u.email LIKE :keyword OR u.fullname LIKE :keyword)
-                AND u.role = :role";
-
+        $sql = "SELECT u.*, 
+                       gv.fullname AS teacher_name
+                FROM users u
+                LEFT JOIN teachings t ON u.teaching_id = t.id
+                LEFT JOIN users gv ON t.teacher_id = gv.id
+                WHERE 
+                    (u.username LIKE :keyword OR u.phone LIKE :keyword OR u.email LIKE :keyword OR u.fullname LIKE :keyword)
+                    AND u.role = :role";
+    
         // Chỉ thêm điều kiện teaching_id nếu teaching_id khác 0
         if ($teaching_id != 0) {
             $sql .= " AND u.teaching_id = :teaching_id";
         }
-
+    
         // Thêm phần sắp xếp và giới hạn
-        $sql .= " ORDER BY t.name, t.school_year, u.username, u.fullname
-              LIMIT :offset, :pageSize";
-
+        $sql .= " ORDER BY u.username, u.fullname
+                  LIMIT :offset, :pageSize";
+    
         // Chuẩn bị và thực thi câu lệnh SQL
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindValue(':keyword', "%$keyword%", PDO::PARAM_STR);
@@ -41,18 +41,19 @@ class UserModel extends Model
         $stmt->bindValue(':pageSize', (int) $pageSize, PDO::PARAM_INT);
         $stmt->execute();
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+    
         // Câu lệnh SQL để lấy tổng số bản ghi
         $countSql = "SELECT COUNT(*) as total
-                 FROM users
-                 WHERE (username LIKE :keyword OR phone LIKE :keyword OR email LIKE :keyword OR fullname LIKE :keyword)
-                   AND role = :role";
-
+                     FROM users u
+                     LEFT JOIN teachings t ON u.teaching_id = t.id
+                     WHERE (u.username LIKE :keyword OR u.phone LIKE :keyword OR u.email LIKE :keyword OR u.fullname LIKE :keyword)
+                       AND u.role = :role";
+    
         // Chỉ thêm điều kiện teaching_id nếu teaching_id khác 0
         if ($teaching_id != 0) {
-            $countSql .= " AND teaching_id = :teaching_id";
+            $countSql .= " AND u.teaching_id = :teaching_id";
         }
-
+    
         // Lấy tổng số bản ghi
         $stmtCount = $this->pdo->prepare($countSql);
         $stmtCount->bindValue(':keyword', "%$keyword%", PDO::PARAM_STR);
@@ -62,10 +63,10 @@ class UserModel extends Model
         }
         $stmtCount->execute();
         $totalRecords = $stmtCount->fetch(PDO::FETCH_ASSOC)['total'];
-
+    
         // Tính toán số trang
         $totalPages = ceil($totalRecords / $pageSize);
-
+    
         // Trả về dữ liệu cùng với thông tin phân trang
         return [
             'users' => $users,
@@ -75,6 +76,7 @@ class UserModel extends Model
             'totalRecords' => $totalRecords
         ];
     }
+    
 
 
 
@@ -146,7 +148,7 @@ class UserModel extends Model
         return $this->fetch($sql, ['username' => $username]);
     }
 
-    public function createUser($username, $usercode, $fullname, $phone, $email, $password, $role, $teaching_id)
+    public function createUser($username, $usercode, $fullname, $phone, $email, $password, $role)
     {
         if ($this->getUserByUsername($username)) {
             return ['code' => 409, 'msg' => 'Username này đã tồn tại trong hệ thống!'];
@@ -162,8 +164,8 @@ class UserModel extends Model
 
         $hashedPassword = password_hash($password, PASSWORD_BCRYPT);
 
-        $sql = "INSERT INTO users (username, user_code, fullname, phone, email, password, role,teaching_id) 
-                VALUES (:username, :user_code, :fullname, :phone, :email, :password, :role,:teaching_id)";
+        $sql = "INSERT INTO users (username, user_code, fullname, phone, email, password, role) 
+                VALUES (:username, :user_code, :fullname, :phone, :email, :password, :role)";
 
         $data = [
             ':username' => $username,
@@ -172,8 +174,7 @@ class UserModel extends Model
             ':phone' => $phone,
             ':email' => $email,
             ':password' => $hashedPassword,
-            ':role' => $role,
-            ':teaching_id' => $teaching_id
+            ':role' => $role
         ];
 
         $this->execute($sql, $data);

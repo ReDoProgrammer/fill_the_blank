@@ -128,10 +128,9 @@ class UserController extends AdminController
             $email = $_POST['email'];
             $phone = $_POST['phone'];
             $role = $_POST['role'] ?? 'user';
-            $teaching_id = $_POST['teaching_id'];
-
+         
             // Gọi hàm tạo người dùng từ model và trả về kết quả dưới dạng JSON
-            $result = $this->userModel->createUser($username, $usercode, $fullname, $phone, $email, $password, $role,$teaching_id);
+            $result = $this->userModel->createUser($username, $usercode, $fullname, $phone, $email, $password, $role);
 
             echo json_encode($result);
         } else {

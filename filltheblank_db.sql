@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Máy chủ: 127.0.0.1
--- Thời gian đã tạo: Th12 14, 2024 lúc 05:03 PM
+-- Thời gian đã tạo: Th12 15, 2024 lúc 07:58 AM
 -- Phiên bản máy phục vụ: 10.4.27-MariaDB
 -- Phiên bản PHP: 8.2.0
 
@@ -958,18 +958,16 @@ CREATE TABLE `teachings` (
   `id` bigint(20) NOT NULL,
   `name` varchar(150) NOT NULL,
   `teacher_id` int(11) NOT NULL,
-  `subject_id` int(11) NOT NULL,
-  `school_year` varchar(9) NOT NULL,
-  `subject_ids` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT 'Mảng json chứa id các môn học' CHECK (json_valid(`subject_ids`))
+  `school_year` varchar(10) NOT NULL,
+  `subject_ids` text DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Đang đổ dữ liệu cho bảng `teachings`
 --
 
-INSERT INTO `teachings` (`id`, `name`, `teacher_id`, `subject_id`, `school_year`, `subject_ids`) VALUES
-(7, 'Lớp thử nghiệm - 7', 66, 26, '2024-2025', ''),
-(8, 'Lớp thử nghiệm - 8', 66, 25, '2024-2025', '');
+INSERT INTO `teachings` (`id`, `name`, `teacher_id`, `school_year`, `subject_ids`) VALUES
+(1, 'test css html', 68, '2024-2025', '26,25');
 
 -- --------------------------------------------------------
 
@@ -986,7 +984,7 @@ CREATE TABLE `users` (
   `phone` varchar(250) NOT NULL,
   `email` varchar(250) NOT NULL,
   `role` varchar(7) NOT NULL DEFAULT 'user',
-  `teaching_id` bigint(11) NOT NULL
+  `teaching_id` bigint(11) DEFAULT NULL COMMENT 'Khoá ngoại tham chiếu tới lớp học. Chỉ áp dụng cho học viên'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -994,19 +992,20 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `username`, `user_code`, `password`, `fullname`, `phone`, `email`, `role`, `teaching_id`) VALUES
-(2, 'admin', 'FTB-2', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Administrator', '0911397764', 'redoprogrammer@gmail.com', 'admin', 7),
-(50, 'dungdt', '2220700042', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'ĐIểU Thị Dung', '922343222', 'daothituoi@gmail.com', 'user', 7),
-(51, 'duongttt', '2220700044', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Trịnh Thị Thùy Dương', '933222123', 'duongqua@gmail.com', 'user', 8),
-(52, 'hantng', '2220700046', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Trịnh Ngọc Gia Hân', '911234543', 'tieulongnu@gmail.com', 'user', 7),
-(53, 'hienttt', '22207000471', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'TrươNg Thị Thu HiềN', '942234932', 'doanchibinh@gmail.com', 'user', 8),
-(54, 'hongnt', '2220700049', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Nông Thị Hồng', '953219832', 'vuongtrungduong@gmail.com', 'user', 7),
-(55, 'huongttt', '2220700051', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Thạch Thị Thu Hương', '943218381', 'chaubathong@gmail.com', 'user', 8),
-(56, 'linhbtk', '2220700053', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Bùi Thị Khánh Linh', '936839019', 'quachtinh@gmail.com', 'user', 7),
-(57, 'loanltt', '2220700054', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Lê Thị Thu Loan', '912433999', 'hoangdung@gmail.com', 'user', 8),
-(58, 'maintt', '2220700057', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Nguyễn Thị Tuyết Mai', '912433999', 'hoangdung@gmail.com', 'user', 7),
-(64, 'fdsafdasfdsa', 'fdasfdasf', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Fdsafdasfdsa', '0911397764', 'fdsafjasdlkf@gmail.com', 'user', 7),
-(65, 'hungtd', 'FTB2024', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Trần Duy Hưng', '988333222', 'tranduyhung@gmail.com', 'user', 8),
-(66, 'truongnh', '06049287', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'NguyễN HữU TrườNg', '0911397764', 'redoprogrammer1@gmail.com', 'teacher', 7);
+(2, 'admin', 'FTB-2', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Administrator', '0911397764', 'redoprogrammer@gmail.com', 'admin', NULL),
+(50, 'dungdt', '2220700042', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'ĐIểU Thị Dung', '922343222', 'daothituoi@gmail.com', 'user', 1),
+(51, 'duongttt', '2220700044', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Trịnh Thị Thùy Dương', '933222123', 'duongqua@gmail.com', 'user', NULL),
+(52, 'hantng', '2220700046', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Trịnh Ngọc Gia Hân', '911234543', 'tieulongnu@gmail.com', 'user', 1),
+(53, 'hienttt', '22207000471', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'TrươNg Thị Thu HiềN', '942234932', 'doanchibinh@gmail.com', 'user', NULL),
+(54, 'hongnt', '2220700049', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Nông Thị Hồng', '953219832', 'vuongtrungduong@gmail.com', 'user', 1),
+(55, 'huongttt', '2220700051', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Thạch Thị Thu Hương', '943218381', 'chaubathong@gmail.com', 'user', NULL),
+(56, 'linhbtk', '2220700053', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Bùi Thị Khánh Linh', '936839019', 'quachtinh@gmail.com', 'user', 1),
+(57, 'loanltt', '2220700054', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Lê Thị Thu Loan', '912433999', 'hoangdung@gmail.com', 'user', NULL),
+(58, 'maintt', '2220700057', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Nguyễn Thị Tuyết Mai', '912433999', 'hoangdung@gmail.com', 'user', 1),
+(64, 'fdsafdasfdsa', 'fdasfdasf', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Fdsafdasfdsa', '0911397764', 'fdsafjasdlkf@gmail.com', 'user', 1),
+(65, 'hungtd', 'FTB2024', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'Trần Duy Hưng', '988333222', 'tranduyhung@gmail.com', 'user', NULL),
+(66, 'truongnh', '06049287', '$2y$10$RROejVtV4LqjJUgMnaWzfOBBKsE4EiuZ9HpKACW9OXou4MK9Sw61q', 'NguyễN HữU TrườNg', '0911397764', 'redoprogrammer1@gmail.com', 'teacher', NULL),
+(68, 'zozo', 'zozo64', '$2y$10$TorlEDzLgqs7OwzjsK2RPOtlo8gIDELQUfD/uGp9bzHYF459PUwHi', 'ZoZo', '02121212', 'zozo64@gmail.com', 'teacher', NULL);
 
 --
 -- Chỉ mục cho các bảng đã đổ
@@ -1094,15 +1093,14 @@ ALTER TABLE `subjects`
 --
 ALTER TABLE `teachings`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `unique_teacher_subject_year` (`teacher_id`,`subject_id`,`school_year`),
-  ADD KEY `subject_id` (`subject_id`);
+  ADD UNIQUE KEY `unique_teacher_subject_year` (`school_year`,`teacher_id`,`subject_ids`) USING HASH,
+  ADD KEY `teacher_id` (`teacher_id`);
 
 --
 -- Chỉ mục cho bảng `users`
 --
 ALTER TABLE `users`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `teaching_id` (`teaching_id`);
+  ADD PRIMARY KEY (`id`);
 
 --
 -- AUTO_INCREMENT cho các bảng đã đổ
@@ -1172,13 +1170,13 @@ ALTER TABLE `subjects`
 -- AUTO_INCREMENT cho bảng `teachings`
 --
 ALTER TABLE `teachings`
-  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT cho bảng `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=67;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=69;
 
 --
 -- Các ràng buộc cho các bảng đã đổ
@@ -1250,16 +1248,7 @@ ALTER TABLE `quiz_results`
 -- Các ràng buộc cho bảng `teachings`
 --
 ALTER TABLE `teachings`
-  ADD CONSTRAINT `teaching_subject_fk` FOREIGN KEY (`subject_id`) REFERENCES `subjects` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `teaching_teacher_fk` FOREIGN KEY (`teacher_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  ADD CONSTRAINT `teachings_ibfk_1` FOREIGN KEY (`subject_id`) REFERENCES `subjects` (`id`),
-  ADD CONSTRAINT `teachings_ibfk_2` FOREIGN KEY (`teacher_id`) REFERENCES `users` (`id`);
-
---
--- Các ràng buộc cho bảng `users`
---
-ALTER TABLE `users`
-  ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`teaching_id`) REFERENCES `teachings` (`id`);
+  ADD CONSTRAINT `teachings_ibfk_1` FOREIGN KEY (`teacher_id`) REFERENCES `users` (`id`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

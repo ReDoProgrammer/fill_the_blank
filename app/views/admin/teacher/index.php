@@ -13,7 +13,7 @@
                 <i class="fa fa-plus text-white" data-bs-toggle="modal" data-bs-target="#modal"></i> Thêm
                 mới
             </button>
-            
+
             <button class="btn btn-danger text-white" id="deleteMany">
                 <i class="fa fa-times" aria-hidden="true"></i> Delete (<span id="deleteCount" class="fw-bold">0</span>)
             </button>
@@ -100,7 +100,7 @@
                             <label for="">Email:</label>
                             <input type="text" placeholder="Địa chỉ hòm thư điện tử" id="txtEmail" class="form-control">
                         </div>
-                    </div>
+                    </div>                   
                 </div>
             </div>
             <div class="modal-footer">
@@ -133,7 +133,7 @@
         $phone = $('#txtPhone'),
         $email = $('#txtEmail');
     const $deleteMany = $('#deleteMany');
-    $(document).ready(function () {
+    $(document).ready(function() {
         LoadData();
 
         // Hàm tạo username từ fullname
@@ -148,10 +148,10 @@
             return lastName + initials;
         }
 
-        
+
         $deleteMany.prop('disabled', true);
         // Khi checkAll được chọn hoặc bỏ chọn
-        $('#checkAll').on('change', function () {
+        $('#checkAll').on('change', function() {
             // Lấy trạng thái của checkbox checkAll
             var isChecked = $(this).prop('checked');
 
@@ -163,7 +163,7 @@
         });
 
         // Khi bất kỳ checkbox nào trong bảng được chọn hoặc bỏ chọn
-        $('#tblData').on('change', 'input.form-check-input', function () {
+        $('#tblData').on('change', 'input.form-check-input', function() {
             // Kiểm tra xem tất cả các checkbox trong bảng có được chọn không
             var allChecked = $('#tblData input.form-check-input').length === $('#tblData input.form-check-input:checked').length;
 
@@ -175,7 +175,7 @@
         });
 
 
-        $('.pagination').on('click', '.page-link', function (e) {
+        $('.pagination').on('click', '.page-link', function(e) {
 
             e.preventDefault(); // Ngăn chặn hành động mặc định của thẻ <a>
             currentPage = $(this).data('page'); // Lấy giá trị data-page
@@ -207,9 +207,9 @@
 
 
 
-    $deleteMany.on('click', function () {
+    $deleteMany.on('click', function() {
         // Lấy mảng các ID của các hàng có checkbox được chọn
-        var selectedIds = $('#tblData input.form-check-input:checked').map(function () {
+        var selectedIds = $('#tblData input.form-check-input:checked').map(function() {
             return parseInt($(this).closest('tr').attr('id'));
         }).get();
 
@@ -233,7 +233,7 @@
     });
 
 
-    $btnSearch.click(function () {
+    $btnSearch.click(function() {
         page = 1;
         keyword = $keyword.val().trim();
         console.log({
@@ -243,7 +243,7 @@
     })
 
 
-    $btnSubmit.click(function () {
+    $btnSubmit.click(function() {
         const username = $username.val().trim();
         const usercode = $usercode.val().trim();
         const password = $password.val().trim();
@@ -312,7 +312,7 @@
             type: 'POST',
             data: data,
             dataType: 'json', // Chỉ định rằng bạn mong đợi JSON
-            success: function (response) {
+            success: function(response) {
 
                 // Nếu response không phải là đối tượng JSON, hãy thử parse nó
                 // response = JSON.parse(response); // Sử dụng nếu dữ liệu không tự động parse
@@ -333,7 +333,7 @@
                     LoadData();
                 }
             },
-            error: function (err) {
+            error: function(err) {
                 console.log(err);
             }
         });
@@ -350,7 +350,7 @@
                 pageSize
             },
             dataType: 'json',
-            success: function (response) {
+            success: function(response) {
 
                 // Hiển thị dữ liệu người dùng và thông tin phân trang
                 const {
@@ -405,7 +405,7 @@
                 </li>`);
 
             },
-            error: function (err) {
+            error: function(err) {
                 console.log(err.responseText);
             }
         });
@@ -420,7 +420,7 @@
                 id
             },
             dataType: 'json',
-            success: function (response) {
+            success: function(response) {
                 const {
                     code,
                     msg,
@@ -441,14 +441,17 @@
                     $email.val(user.email);
                 }
             },
-            error: function (err) {
+            error: function(err) {
                 console.log(err);
             }
         })
     }
 
     function DeleteUser(id, username) {
-        console.log({ id, username });
+        console.log({
+            id,
+            username
+        });
 
         Swal.fire({
             title: `Bạn thực sự muốn xoá tài khoản giáo viên <span class="text-warning">${username}</span>?`,
@@ -466,7 +469,7 @@
     }
 
 
-    $modal.on('hide.bs.modal', function (e) {
+    $modal.on('hide.bs.modal', function(e) {
         $modalTittle.text('Thêm mới tài khoản');
         $username.prop('readonly', false);
         $usercode.val('');
@@ -480,7 +483,7 @@
     });
 
 
-    const DeleteSingle = function (id) {
+    const DeleteSingle = function(id) {
         $.ajax({
             url: '<?php echo BASE_URL; ?>/admin/user/delete', // URL của phương thức delete trong UserController
             type: 'POST',
@@ -489,7 +492,7 @@
                 role: 'teacher'
             },
             dataType: 'json',
-            success: function (response) {
+            success: function(response) {
                 const {
                     code,
                     msg
@@ -505,7 +508,7 @@
                     LoadData(); // Tải lại dữ liệu sau khi xóa thành công
                 }
             },
-            error: function (err) {
+            error: function(err) {
                 console.log(err.responseText);
             }
         });
@@ -531,7 +534,7 @@
     }
 
     function checkPropertyInArray(array, property) {
-        return array.every(function (item) {
+        return array.every(function(item) {
             return item.hasOwnProperty(property);
         });
     }

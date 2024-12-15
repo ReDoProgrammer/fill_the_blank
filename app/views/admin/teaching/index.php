@@ -1,4 +1,5 @@
 <div class="container">
+
     <div class="row mb-4 mt-2">
         <div class="col col-md-2 offset-md-4">
             <select name="" id="slSchoolYears" class="form-control"></select>
@@ -46,7 +47,7 @@
 
 <!-- Modal -->
 <div class="modal fade" id="modal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-md">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="modalTittle">Quá trình giảng dạy</h5>
@@ -58,13 +59,15 @@
                         <Label>Tên lớp (<span class="text-danger">*</span>)</Label>
                         <input type="text" name="" id="txtName" class="form-control" placeholder="Tên lớp giảng dạy">
                     </div>
-                    <div class="form-group mt-2">
+                    <div class="form-group mt-2 mb-2">
                         <Label>Giáo viên</Label>
                         <select name="" id="slTeachers" class="form-control"></select>
                     </div>
-                    <div class="form-group mt-2">
-                        <label for="">Môn học</label>
-                        <select name="" id="slSubjects" class="form-control"></select>
+                    <div class="card">
+                        <div class="card-header fw-bold">Danh sách môn học</div>
+                        <div class="card-body" id="subjects">
+
+                        </div>
                     </div>
 
                 </div>
@@ -91,7 +94,7 @@
         $pagination = $('.pagination'),
         $modal = $('#modal'),
         $name = $('#txtName');
-    $slSubjects = $('#slSubjects'),
+    $subjects = $('#subjects'),
         $slTeachers = $('#slTeachers'),
         $slSchoolYears = $('#slSchoolYears'),
         $modalTittle = $('#modalTittle');
@@ -133,32 +136,68 @@
 
     $btnSubmit.click(function() {
         let name = $('#txtName').val().trim();
-        if (name.length == 0) {
+        let schoolyear = $('#slSchoolYears option:selected').val();
+        let teacher_id = $slTeachers.val();
+        let subjectIds = [];
+        if (!schoolyear) {
             $.toast({
                 heading: 'RÀNG BUỘC DỮ LIỆU',
-                text: `Vui lòng nhập tên lớp giảng dạy`,
+                text: 'Vui lòng chọn năm học',
                 icon: 'error',
                 loader: true,
                 loaderBg: '#9EC600'
             });
             return;
         }
-        let schoolyear = $('#slSchoolYears option:selected').val();
-        let teacher_id = $slTeachers.val();
-        let subject_id = $slSubjects.val();
+
+
+
+
+
+        $("#subjects .form-check-input:checked").each(function() {
+            var subjectId = parseInt($(this).attr('id'));
+            if (!isNaN(subjectId)) {
+                subjectIds.push(subjectId);
+            }
+        });
+
+
+        if (!teacher_id) {
+            $.toast({
+                heading: 'RÀNG BUỘC DỮ LIỆU',
+                text: 'Vui lòng chọn giáo viên',
+                icon: 'error',
+                loader: true,
+                loaderBg: '#9EC600'
+            });
+            return;
+        }
+
+        if (subjectIds.length === 0) {
+            $.toast({
+                heading: 'RÀNG BUỘC DỮ LIỆU',
+                text: 'Vui lòng chọn ít nhất một môn học',
+                icon: 'error',
+                loader: true,
+                loaderBg: '#9EC600'
+            });
+            return;
+        }
+
+
         let url = `<?php echo BASE_URL; ?>/admin/teaching/${id<0?'add':'update'}`;
-        let data = {
-            name,
-            teacher_id,
-            schoolyear,
-            subject_id
-        };
+
         if (id > 0) data.id = id;
         $.ajax({
             url: url,
             type: 'POST',
-            data: data,
-            dataType: 'json',
+            contentType: 'application/json', // Gửi dữ liệu dạng JSON
+            data: JSON.stringify({
+                name,
+                teacher_id,
+                schoolyear,
+                subjects: subjectIds
+            }),
             success: function(response) {
                 const {
                     code,
@@ -177,7 +216,15 @@
             },
             error: function(err) {
                 console.log(err.responseText);
+                $.toast({
+                    heading: 'LỖI KẾT NỐI',
+                    text: 'Đã xảy ra lỗi trong quá trình xử lý, vui lòng thử lại!',
+                    icon: 'error',
+                    loader: true,
+                    loaderBg: '#9EC600'
+                });
             }
+
         })
 
     })
@@ -188,9 +235,19 @@
             method: 'GET',
             dataType: 'json',
             success: function(response) {
-                console.log(response);
                 response.subjects.forEach(s => {
-                    $slSubjects.append(`<option value="${s.id}">${s.name}</option>`);
+                    $subjects.append(`
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-check mb-2">
+                                        <input class="form-check-input" type="checkbox" id="${s.id}">
+                                        <label class="form-check-label" for="${s.id}">
+                                            ${s.name}
+                                        </label>
+                                    </div>                                   
+                                </div>
+                            </div>
+                    `);
                 })
             },
             error: function(err) {
@@ -227,6 +284,7 @@
                     teachings
                 } = response;
                 let idx = (page - 1) * pageSize;
+                console.log(teachings);
 
                 teachings.forEach(t => {
                     $table.append(`
@@ -234,11 +292,12 @@
                             <td>${++idx}</td>
                             <td class = "text-warning fw-bold">${t.name}</td>
                             <td class = "fw-bold text-info">${t.teacher_name}</td>
-                            <td class = "text-info">${t.subject_name}</td>      
-                            <td></td>                     
+                            <td class = "text-info">${t.subject_names}</td>      
+                            <td class = "text-center">${t.class_size}</td>                     
                             <td class="text-end">
                                 <a href="javascript:void(0)" onClick="UpdateTeaching(${t.id})"><i class="fa fa-edit text-warning"></i></a>
                                 <a href="javascript:void(0)" onClick="DeleteTeaching(${t.id},'${t.teacher_name}','${t.subject_name}')"><i class="fa fa-trash-o text-danger"></i></a>
+                                <a href="javascript:void(0)" onClick="ViewUsersList(${t.id})"><i class="fa fa-list text-info" aria-hidden="true"></i></a>
                             </td>                          
                         </tr>
                     `);

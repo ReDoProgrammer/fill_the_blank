@@ -23,13 +23,14 @@ class TeachingController extends AdminController
     }
 
     //trả về danh sách các lớp giảng dạy của năm học hiện tại
-    public function listCurretCLassese(){
+    public function listCurretCLassese()
+    {
         if ($_SERVER["REQUEST_METHOD"] === "GET") {
             $result = $this->teachingModel->listCurrentClasses();
             echo json_encode([
-                'code'=>200,
-                'msg'=>'Lấy danh sách lớp giảng dạy của năm học hiện tại thành công!',
-                'classese'=>$result
+                'code' => 200,
+                'msg' => 'Lấy danh sách lớp giảng dạy của năm học hiện tại thành công!',
+                'classese' => $result
             ]);
         }
     }
@@ -38,7 +39,7 @@ class TeachingController extends AdminController
         if ($_SERVER["REQUEST_METHOD"] === "GET") {
             $id = isset($_GET["id"]) ? (int) $_GET["id"] : -1;
             $result = $this->teachingModel->getTeachingById($id);
-            echo json_encode(['code'=>200,'msg'=>'Lấy thông tin giảng dạy thành công!','detail'=>$result]);
+            echo json_encode(['code' => 200, 'msg' => 'Lấy thông tin giảng dạy thành công!', 'detail' => $result]);
         }
     }
 
@@ -51,10 +52,10 @@ class TeachingController extends AdminController
             $id = $_POST['id'] ?? '';
             $name = $_POST['name'];
             $teacher_id = $_POST['teacher_id'];
-            $subject_id = $_POST['subject_id'];
+            $subjects = $_POST['subjects'];
             $schoolyear = $_POST['schoolyear'];
 
-            $result = $this->teachingModel->updateTeaching($id,$name,$teacher_id,$subject_id,$schoolyear);
+            $result = $this->teachingModel->updateTeaching($id, $name, $teacher_id, $subjects, $schoolyear);
             echo json_encode($result);
         } else {
             // Nếu không phải POST request, trả về lỗi
@@ -95,21 +96,36 @@ class TeachingController extends AdminController
 
     public function add()
     {
-        header('Content-Type: application/json'); // Thiết lập header đúng cho JSON
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $name = $_POST['name'];
-            $teacher_id = $_POST['teacher_id'];
-            $subject_id = $_POST['subject_id'];
-            $schoolyear = $_POST['schoolyear'];
+        header('Content-Type: application/json'); // Đặt header JSON
 
-            $result = $this->teachingModel->createTeaching($name,$teacher_id, $subject_id, $schoolyear);
-            echo json_encode($result);
-        } else {
-            // Nếu không phải POST request, trả về lỗi
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             echo json_encode([
                 'code' => 405,
                 'msg' => 'Phương thức truy vấn không hợp lệ!'
             ]);
+            return;
         }
+
+        $input = file_get_contents('php://input'); // Lấy nội dung thô
+        $data = json_decode($input, true); // Chuyển JSON thành mảng
+
+        // Truy cập các giá trị
+        $name = $data['name'] ?? null;
+        $teacher_id = $data['teacher_id'] ?? null;
+        $subjects = $data['subjects'] ?? [];
+        $schoolyear = $data['schoolyear'] ?? null;
+
+        // Kiểm tra dữ liệu
+        if (!$name || !$teacher_id || !$schoolyear || empty($subjects)) {
+            echo json_encode([
+                'code' => 400,
+                'msg' => 'Dữ liệu không hợp lệ!'
+            ]);
+            return;
+        }
+
+
+        $result = $this->teachingModel->createTeaching($name, $teacher_id, $subjects, $schoolyear);
+        echo json_encode($result);
     }
 }
