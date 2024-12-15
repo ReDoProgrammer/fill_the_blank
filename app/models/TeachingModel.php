@@ -75,13 +75,16 @@ class TeachingModel extends Model
         // Lấy năm hiện tại
         $currentYear = date('Y');
 
-        // Câu truy vấn SQL để lấy danh sách theo điều kiện school_year chứa năm hiện tại
+        // Câu truy vấn SQL để lấy danh sách các lớp giảng dạy của năm học hiện tại, nối với bảng subjects
         $sql = "
         SELECT t.*, 
-               u.fullname AS teacher_name              
+               u.fullname AS teacher_name,
+               GROUP_CONCAT(DISTINCT s.name ORDER BY s.name) AS subject_names  -- Nối tên các môn học
         FROM teachings t
         JOIN users u ON t.teacher_id = u.id       
+        LEFT JOIN subjects s ON FIND_IN_SET(s.id, t.subject_ids) > 0  -- Nối với bảng subjects dựa trên subject_ids
         WHERE t.school_year LIKE :currentYear
+        GROUP BY t.id  -- Nhóm theo lớp giảng dạy (teaching)
         ORDER BY t.school_year DESC, u.fullname";
 
         $stmt = $this->pdo->prepare($sql);
@@ -92,6 +95,7 @@ class TeachingModel extends Model
 
         return $currentClasses;
     }
+
 
 
     public function getClassesByTeacherId($teacherId)
@@ -270,7 +274,7 @@ class TeachingModel extends Model
     {
         // Tính toán offset dựa trên trang và pageSize
         $offset = ($page - 1) * $pageSize;
-    
+
         // Cập nhật câu truy vấn SQL để lấy danh sách học viên từ bảng users với teaching_id
         $sql = "
             SELECT id,user_code,username,fullname,phone,email
@@ -278,7 +282,7 @@ class TeachingModel extends Model
             WHERE teaching_id = :teachingId
             ORDER BY fullname  -- Sắp xếp theo tên học viên
             LIMIT :offset, :pageSize";  // Phân trang
-    
+
         // Chuẩn bị và thực thi câu truy vấn
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindParam(':teachingId', $teachingId, PDO::PARAM_INT);
@@ -286,21 +290,21 @@ class TeachingModel extends Model
         $stmt->bindValue(':pageSize', (int) $pageSize, PDO::PARAM_INT);
         $stmt->execute();
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
         // Truy vấn tổng số học viên có teaching_id = $teachingId
         $countSql = "
             SELECT COUNT(*) as total 
             FROM users
             WHERE teaching_id = :teachingId";
-    
+
         $stmtTotal = $this->pdo->prepare($countSql);
         $stmtTotal->bindParam(':teachingId', $teachingId, PDO::PARAM_INT);
         $stmtTotal->execute();
         $total = $stmtTotal->fetch(PDO::FETCH_ASSOC);
-    
+
         // Tính tổng số trang
         $totalPages = ceil($total['total'] / $pageSize);
-    
+
         // Trả về kết quả phân trang
         return [
             'data' => $users,           // Danh sách học viên
@@ -312,5 +316,4 @@ class TeachingModel extends Model
             ]
         ];
     }
-    
 }

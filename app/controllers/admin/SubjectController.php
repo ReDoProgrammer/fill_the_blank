@@ -14,7 +14,17 @@ class SubjectController extends AdminController
     {
         $this->view('admin/subject/index', [], 'Quản lý môn học', 'admin');
     }
-
+public function listByTeaching(){
+    if ($_SERVER["REQUEST_METHOD"] === "GET") {
+        $teachingId = (int)$_GET['teachingId'];
+        $result = $this->subjectModel->listByTeaching($teachingId);
+        echo json_encode([
+            'code'=>200,
+            'msg'=>'Lấy danh sách môn học của lớp thành công!',
+            'result'=>$result
+        ]);
+    }
+}
     public function search()
     {
         if ($_SERVER["REQUEST_METHOD"] === "GET") {

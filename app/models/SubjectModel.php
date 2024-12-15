@@ -41,6 +41,46 @@ class SubjectModel extends Model
     }
 
 
+    public function listByTeaching($teachingId)
+    {
+        // Truy vấn để lấy subject_ids từ bảng teachings dựa trên teachingId
+        $sql = "SELECT subject_ids FROM teachings WHERE id = :teachingId";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindValue(':teachingId', $teachingId, PDO::PARAM_INT);
+        $stmt->execute();
+
+        // Lấy subject_ids (có thể là một chuỗi, ví dụ '1,2,3')
+        $teaching = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($teaching) {
+            // Lấy subject_ids từ kết quả
+            $subjectIds = $teaching['subject_ids'];
+
+            // Chuyển chuỗi subject_ids thành mảng (nếu có nhiều môn học, chuỗi sẽ phân cách bởi dấu phẩy)
+            $subjectIdsArray = explode(',', $subjectIds);
+
+            // Truy vấn bảng subjects để lấy thông tin các môn học
+            $placeholders = implode(',', array_fill(0, count($subjectIdsArray), '?')); // Tạo chuỗi "?, ?, ?" cho IN
+            $sqlSubjects = "SELECT * FROM subjects WHERE id IN ($placeholders)";
+            $stmtSubjects = $this->pdo->prepare($sqlSubjects);
+
+            // Liên kết các ID môn học vào câu truy vấn
+            foreach ($subjectIdsArray as $key => $subjectId) {
+                $stmtSubjects->bindValue(($key + 1), $subjectId, PDO::PARAM_INT);
+            }
+
+            // Thực thi truy vấn để lấy các môn học
+            $stmtSubjects->execute();
+
+            // Trả về danh sách các môn học
+            return $stmtSubjects->fetchAll(PDO::FETCH_ASSOC);
+        }
+
+        // Nếu không tìm thấy teachingId hoặc không có subject_ids, trả về mảng rỗng
+        return [];
+    }
+
+
     public function allSubjects()
     {
         $sql = "SELECT * FROM subjects ORDER BY name";
