@@ -353,8 +353,8 @@ class ExamModel extends Model
     {
         $offset = ($page - 1) * $pageSize;
         $keyword = "%$keyword%";
-
-        // Query to fetch exams with pagination and keyword filtering
+    
+        // Query to fetch exams with pagination, keyword filtering, and subject/teaching info
         $sql = "SELECT
                     e.id AS exam_id,
                     e.title,
@@ -366,42 +366,47 @@ class ExamModel extends Model
                     e.begin_date,
                     e.end_date,
                     e.subject_id,
+                    e.teaching_id,
+                    s.name AS subject_name,  -- Added subject name
+                    t.name AS teaching_name,  -- Added teaching name
                     SUM(q.mark) AS total_marks
                 FROM
                     exams e
                 LEFT JOIN quizs q ON e.questions LIKE CONCAT('%', q.id, '%')
+                LEFT JOIN subjects s ON e.subject_id = s.id  -- Join with subjects to get subject name
+                LEFT JOIN teachings t ON e.teaching_id = t.id  -- Join with teachings to get teaching name
                 WHERE 
                     e.subject_id = :subject_id AND e.title LIKE :keyword
                 GROUP BY
                     e.id
                 LIMIT :offset, :pageSize";
-
+    
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindParam(':subject_id', $subject_id, PDO::PARAM_INT);
         $stmt->bindParam(':keyword', $keyword);
         $stmt->bindValue(':offset', (int) $offset, PDO::PARAM_INT);
         $stmt->bindValue(':pageSize', (int) $pageSize, PDO::PARAM_INT);
         $stmt->execute();
-
+    
         $exams = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        // Chuyển đổi định dạng ngày tháng và kiểm tra thuộc tính available
+    
+        // Format date and check availability
         foreach ($exams as &$exam) {
             // Format date
             $exam['begin_date'] = DateTime::createFromFormat('Y-m-d H:i:s', $exam['begin_date'])->format('d/m/Y H:i');
             $exam['end_date'] = DateTime::createFromFormat('Y-m-d H:i:s', $exam['end_date'])->format('d/m/Y H:i');
-
+    
             // Check if the exam is referenced in quiz_results
             $sqlCheck = "SELECT COUNT(*) as count FROM quiz_results WHERE exam_id = :exam_id";
             $stmtCheck = $this->pdo->prepare($sqlCheck);
             $stmtCheck->bindParam(':exam_id', $exam['exam_id']);
             $stmtCheck->execute();
             $resultCheck = $stmtCheck->fetch(PDO::FETCH_ASSOC);
-
+    
             // Set available to true if no references are found, otherwise false
             $exam['available'] = $resultCheck['count'] == 0;
         }
-
+    
         // Query to count total number of exams for pagination
         $sqlTotal = "SELECT COUNT(*) as total FROM exams WHERE subject_id = :subject_id AND title LIKE :keyword";
         $stmtTotal = $this->pdo->prepare($sqlTotal);
@@ -409,9 +414,9 @@ class ExamModel extends Model
         $stmtTotal->bindParam(':keyword', $keyword);
         $stmtTotal->execute();
         $total = $stmtTotal->fetch(PDO::FETCH_ASSOC);
-
+    
         $totalPages = ceil($total['total'] / $pageSize);
-
+    
         return [
             'exams' => $exams,
             'totalPages' => $totalPages,
@@ -420,6 +425,7 @@ class ExamModel extends Model
             'totalRecords' => $total['total']
         ];
     }
+    
     public function getOwnExams($subject_id, $from_date = null, $to_date = null, $page = 1, $pageSize = 10, $keyword = '', $created_by)
     {
         $offset = ($page - 1) * $pageSize;
