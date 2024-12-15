@@ -629,28 +629,28 @@
         function LoadData() {
             $table.empty();
             $pagination.empty();
-
+            from_date = $('#from_date input').val();
+            to_date = $('#to_date input').val();           
+            
 
             $.ajax({
                 url: '<?php echo BASE_URL; ?>/admin/exam/search',
                 type: 'get',
                 dataType: 'json',
                 data: {
+                    from_date,
+                    to_date,
                     page,
                     pageSize,
                     subject_id: $subjects.val(),
                     keyword: $keyword.val().trim()
                 },
                 success: function(response) {
-                    console.log(response);
-                    
                     const {
                         exams,
                         currentPage,
                         totalPages
                     } = response;
-                    console.log(exams);
-
                     let idx = (page - 1) * pageSize;
                     for (i = 1; i <= totalPages; i++) {
                         if (i == currentPage) {

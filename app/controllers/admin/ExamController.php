@@ -75,7 +75,7 @@ class ExamController extends AdminController
             header('Content-Type: application/json');
             session_start();
             $created_by = $_SESSION['admin_logged_in']['id'];
-            $result = $this->examModel->createExam($teaching_id,$title, $description, $number_of_questions, $duration, $mode, $imagePath, $begin_date, $end_date, $subject_id,$created_by);
+            $result = $this->examModel->createExam($teaching_id, $title, $description, $number_of_questions, $duration, $mode, $imagePath, $begin_date, $end_date, $subject_id, $created_by);
             echo json_encode($result);
         }
     }
@@ -137,7 +137,7 @@ class ExamController extends AdminController
             header('Content-Type: application/json');
             session_start();
             $updated_by = $_SESSION['admin_logged_in']['id'];
-            $result = $this->examModel->updateExam($id, $teaching_id,$title, $description, $number_of_questions, $duration, $mode, $imagePath, $begin_date, $end_date, $subject_id,$updated_by);
+            $result = $this->examModel->updateExam($id, $teaching_id, $title, $description, $number_of_questions, $duration, $mode, $imagePath, $begin_date, $end_date, $subject_id, $updated_by);
             echo json_encode($result);
         }
     }
@@ -147,13 +147,17 @@ class ExamController extends AdminController
     public function search()
     {
         if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+            $from_date = $_GET['from_date'];
+            $to_date = $_GET['to_date'];
+            $fromDateObj = DateTime::createFromFormat('d/m/Y', $from_date);
+            $toDateObj = DateTime::createFromFormat('d/m/Y', $to_date);
             $page = (int) $_GET['page'];
             $pageSize = (int) $_GET['pageSize'];
             $subject_id = $_GET['subject_id'];
             $keyword = $_GET['keyword'];
 
             header('Content-Type: application/json');
-            $result = $this->examModel->getAllExams($subject_id, $page, $pageSize, $keyword);
+            $result = $this->examModel->getAllExams($fromDateObj,$toDateObj,$subject_id, $page, $pageSize, $keyword);
             echo json_encode($result);
         }
     }
@@ -186,7 +190,6 @@ class ExamController extends AdminController
             $result = $this->examModel->deleteExam($id);
             echo json_encode($result);
         }
-
     }
 
     public function getQuestionsList()
@@ -198,5 +201,4 @@ class ExamController extends AdminController
             echo json_encode($result);
         }
     }
-
 }
