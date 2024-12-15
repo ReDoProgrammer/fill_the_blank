@@ -355,10 +355,12 @@ if (session_status() === PHP_SESSION_NONE) {
                                 icon: "error",
                                 title: "Oops...",
                                 html: `<p class = "text-danger fw-bold">${msg}</p>`
+                            }).then(_=>{
+                                window.location.replace('<?php echo BASE_URL; ?>');
                             })
-                            return;
+                        }else{
+                            window.location.replace(url);
                         }
-                        window.location.replace(url);
                     }
 
                 },
