@@ -39,7 +39,7 @@ if (session_status() === PHP_SESSION_NONE) {
         }
 
         .main-content {
-            /* margin-left: 10px; */
+            width: 100%;
             padding: 10px;
         }
 
@@ -233,10 +233,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
         <!-- Main Content -->
         <div class="main-content">
-            <div style="width:100%;">
-
-                <?php echo $content; ?>
-            </div>
+            <?php echo $content; ?>
         </div>
     </div>
 
@@ -271,16 +268,12 @@ if (session_status() === PHP_SESSION_NONE) {
                         subjects
                     } = response;
                     if (code == 200 && subjects != null && subjects.length > 0) {
-                        console.log(subjects);
-
                         subjects.forEach(s => {
-                            console.log(s);
-
                             let li = ` <li onclick="toggleDropdown(this)">
                                             <i class="fas fa-bars"></i> ${s.subject.name}
                                                     <ul class="dropdown">`;
                             s.lessions.forEach(l => {
-                                li += ` <li><a href="<?php echo BASE_URL; ?>/question/index?s=${s.subject.meta}-${s.subject.subject_id}&l=${l.lession_meta}-${l.lession_id}')"><i class="fas fa-chevron-right"></i> ${l.lession_name}</a></li>`;
+                                li += ` <li><a href="javascript:void(0)" onClick="CheckCanDoPractice(${s.subject.subject_id}, ${l.lession_id}, '<?php echo BASE_URL; ?>/question/index?s=${s.subject.meta}-${s.subject.subject_id}&l=${l.lession_meta}-${l.lession_id}')" ><i class="fas fa-chevron-right"></i> ${l.lession_name}</a></li>`;
                             })
                             li += `</ul></li>`;
                             $ulPractice.append(li);
@@ -328,6 +321,51 @@ if (session_status() === PHP_SESSION_NONE) {
                     console.error(err.responseText);
                 }
             });
+        }
+
+        //hàm kiểm tra khả năng luyện ôn tập hay không?
+        function CheckCanDoPractice(subject_id, lession_id, url) {
+
+            $.ajax({
+                url: '<?php echo BASE_URL; ?>/question/canTakeTest',
+                type: 'get',
+                dataType: 'json',
+                data: {
+                    subject_id,
+                    lession_id
+                },
+                success: function(response) {
+                    const {
+                        code,
+                        msg
+                    } = response;
+                    // console.log(response);
+
+                    if (code == 401) {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Oops...",
+                            html: `<p class = "text-danger fw-bold">${msg}</p>`
+                        }).then(_ => {
+                            window.location.replace(`<?php echo BASE_URL; ?>/userauth/login`);
+                        });
+                    } else {
+                        if (code != 200) {
+                            Swal.fire({
+                                icon: "error",
+                                title: "Oops...",
+                                html: `<p class = "text-danger fw-bold">${msg}</p>`
+                            })
+                            return;
+                        }
+                        window.location.replace(url);
+                    }
+
+                },
+                error: function(err) {
+                    console.log(err);
+                }
+            })
         }
     </script>
 </body>
