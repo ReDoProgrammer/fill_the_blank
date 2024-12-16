@@ -131,6 +131,7 @@ if (session_status() === PHP_SESSION_NONE) {
             border-radius: 4px;
         }
 
+       
         .sidebar ul li a:hover {
             color: #ffffff;
             background-color: #3b5998;
@@ -151,6 +152,25 @@ if (session_status() === PHP_SESSION_NONE) {
             color: #ffffff;
             background-color: #3b5998;
         }
+
+        .footer {
+            background-color: #2c3e50;
+            color: #ddd;
+            padding: 15px 5px;
+            text-align: right;
+            font-weight: bold;
+
+        }
+        .dropdown-menu{
+            background-color: #2c3e50;
+        }
+
+        .dropdown-menu li a:hover{
+            color:red !important;
+        }
+       
+
+        
     </style>
 </head>
 
@@ -159,23 +179,33 @@ if (session_status() === PHP_SESSION_NONE) {
     <nav class="navbar navbar-expand-lg navbar-custom">
         <div class="container-fluid">
             <a class="navbar-brand" href="<?php echo BASE_URL; ?>">
-                <img src="<?php echo BASE_URL; ?>/public/assets/images/logo.png" style="height:30px; width:auto;" alt="Logo">
+                <img src="<?php echo BASE_URL; ?>/public/assets/images/logo.png" style="height:30px; width:auto;"
+                    alt="Logo">
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="ownClasses" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            Danh sách lớp
+                        <a class="nav-link dropdown-toggle" href="#" id="ownClasses" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Lịch sử
                         </a>
-                        <ul class="dropdown-menu" id="mn-Classes">
+                        <ul class="dropdown-menu">
+                            <li>
+                                <a class ="dropdown-item" href="<?php echo BASE_URL; ?>/history/index">Lịch sử ôn bài</a>
+                            </li>
+                            <li>
+                                <a class ="dropdown-item" href="<?php echo BASE_URL; ?>/history/quiz">Lịch sử thi</a>
+                            </li>
                         </ul>
                     </li>
 
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
                             <img src="https://via.placeholder.com/30" alt="Profile" class="rounded-circle me-2">
                             <?php echo $_SESSION['user_logged_in']['fullname'] ?? $_SESSION['user_logged_in']['username']; ?>
                         </a>
@@ -241,7 +271,7 @@ if (session_status() === PHP_SESSION_NONE) {
     <script>
         const $ulExams = $('#ulExams'),
             $ulPractice = $('#ulPractice');
-        $(document).ready(function() {
+        $(document).ready(function () {
             RenderOwnExams();
             RenderOwnSubjects();
         });
@@ -261,7 +291,7 @@ if (session_status() === PHP_SESSION_NONE) {
                 url: '<?php echo BASE_URL; ?>/home/OwnSubjects',
                 type: 'get',
                 dataType: 'json',
-                success: function(response) {
+                success: function (response) {
                     const {
                         code,
                         msg,
@@ -281,7 +311,7 @@ if (session_status() === PHP_SESSION_NONE) {
                     }
 
                 },
-                error: function(err) {
+                error: function (err) {
                     console.log(err.responseText);
 
                 }
@@ -294,11 +324,11 @@ if (session_status() === PHP_SESSION_NONE) {
                 url: '<?php echo BASE_URL; ?>/home/OwnExams',
                 type: 'get',
                 dataType: 'json',
-                success: function(response) {
+                success: function (response) {
                     const $exams = $('#mn-Exams');
                     $exams.empty();
                     console.log(response);
-                    
+
                     const {
                         code,
                         result
@@ -319,7 +349,7 @@ if (session_status() === PHP_SESSION_NONE) {
                         })
                     }
                 },
-                error: function(err) {
+                error: function (err) {
                     console.error(err.responseText);
                 }
             });
@@ -330,7 +360,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
             // console.log({subject_id,lession_id,url});
             // return;
-            
+
             $.ajax({
                 url: '<?php echo BASE_URL; ?>/question/canTakeTest',
                 type: 'get',
@@ -339,7 +369,7 @@ if (session_status() === PHP_SESSION_NONE) {
                     subject_id,
                     lession_id
                 },
-                success: function(response) {
+                success: function (response) {
                     const {
                         code,
                         msg
@@ -360,22 +390,28 @@ if (session_status() === PHP_SESSION_NONE) {
                                 icon: "error",
                                 title: "Oops...",
                                 html: `<p class = "text-danger fw-bold">${msg}</p>`
-                            }).then(_=>{
+                            }).then(_ => {
                                 // window.location.replace('<?php echo BASE_URL; ?>');
                                 // return;
                             })
-                        }else{
+                        } else {
                             window.location.replace(url);
                         }
                     }
 
                 },
-                error: function(err) {
+                error: function (err) {
                     console.log(err);
                 }
             })
         }
     </script>
 </body>
+<div class="footer">
+    <script src="<?php echo BASE_URL; ?>/public/assets/js/script.js"></script>
+    <div class="container">
+        <p>&copy; <?php echo date('Y'); ?> HuyDao's production. All rights reserved.</p>
+    </div>
+</div>
 
 </html>
