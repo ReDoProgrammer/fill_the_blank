@@ -297,12 +297,14 @@ if (session_status() === PHP_SESSION_NONE) {
                 success: function(response) {
                     const $exams = $('#mn-Exams');
                     $exams.empty();
+                    console.log(response);
+                    
                     const {
                         code,
                         result
                     } = response;
 
-                    if (code == 200 && result != null & result.length > 0) {
+                    if (code == 200 && result != null && result.length > 0) {
 
                         result.forEach(l => {
                             let li = `<li onclick="toggleDropdown(this)">

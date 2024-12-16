@@ -23,7 +23,8 @@ class ExamModel extends Model
             INNER JOIN exams e ON e.teaching_id = t.id
             INNER JOIN subjects s ON s.id = e.subject_id
             WHERE u.id = :userId
-              AND e.end_date < NOW()
+                AND e.begin_date <= NOW()
+                AND e.end_date >= NOW()
             ORDER BY s.id, e.begin_date DESC
         ";
 
