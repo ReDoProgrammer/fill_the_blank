@@ -30,16 +30,16 @@ class UserAuthController extends AuthController
             $fullname = $_POST["fullname"];
             $phone = $_POST["phone"];
             $email = $_POST["email"];
+            $hashedPassword = password_hash($new_password, PASSWORD_BCRYPT);
             $data = [
                 'fullname' => $fullname,
                 'phone' => $phone,
                 'email' => $email,
-                'password' => $password,
-                'new_password' => $new_password
+                'password' => $hashedPassword
             ];
             // Trả về kết quả dưới dạng JSON
             header('Content-Type: application/json');
-            $result = $this->userModel->updateProfile($id, $data);
+            $result = $this->userModel->updateUser($id, $data);
             echo json_encode($result);
         } else {
             // Nếu không phải phương thức POST, trả về lỗi

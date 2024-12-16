@@ -210,12 +210,12 @@ if (session_status() === PHP_SESSION_NONE) {
                             <?php echo $_SESSION['user_logged_in']['fullname'] ?? $_SESSION['user_logged_in']['username']; ?>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="#">Settings</a></li>
-                            <li><a class="dropdown-item" href="#">Profile</a></li>
+                            <!-- <li><a class="dropdown-item" href="#">Settings</a></li> -->
+                            <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/userauth/profile">Profile</a></li>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
-                            <li><a class="dropdown-item text-danger" href="#">Logout</a></li>
+                            <li><a class="dropdown-item text-danger" href="<?php echo BASE_URL; ?>/userauth/logout">Logout</a></li>
                         </ul>
                     </li>
                 </ul>
