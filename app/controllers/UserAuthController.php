@@ -24,18 +24,28 @@ class UserAuthController extends AuthController
     public function update()
     {
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
+        //     $sql = "UPDATE users 
+        //         SET user_code = :user_code, fullname = :fullname, phone = :phone, 
+        //         email = :email, password = :password, role = :role,teaching_id=:teaching_id 
+        //         WHERE id = :id";
+
+        // $data['id'] = $id;
             $id = (int) $_POST["id"];
-            $password = $_POST["password"];
             $new_password = $_POST["new_password"];
             $fullname = $_POST["fullname"];
             $phone = $_POST["phone"];
             $email = $_POST["email"];
+            $user_code = $_POST['user_code'];
+            $teaching_id = $_POST['teaching_id'];
             $hashedPassword = password_hash($new_password, PASSWORD_BCRYPT);
             $data = [
                 'fullname' => $fullname,
                 'phone' => $phone,
                 'email' => $email,
-                'password' => $hashedPassword
+                'password' => $hashedPassword,
+                'role'=>'user',
+                'user_code'=>$user_code,
+                'teaching_id'=>$teaching_id
             ];
             // Trả về kết quả dưới dạng JSON
             header('Content-Type: application/json');

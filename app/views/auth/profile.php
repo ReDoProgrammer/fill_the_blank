@@ -3,7 +3,7 @@
         Thông tin tài khoản
     </div>
     <div class="card-body">
-        <div class="containter" id="profile" data-id="<?php echo $profile['id']; ?>">
+        <div class="containter" id="profile" data-id="<?php echo $profile['id']; ?>" data-teaching="<?php echo $profile['teaching_id'];?>">
             <div class="row mb-3">
                 <div class="col-md-3 form-group">
                     <label for="">Username:</label>
@@ -27,6 +27,10 @@
             </div>
             <div class="row mb-3">
                 <div class="col-md-3 form-group">
+                    <label for="">Mã học viên</label>
+                    <input type="text" class="form-control" readonly id="txtUserCode" value="<?php echo $profile['user_code']; ?>">
+                </div>
+                <div class="col-md-3 form-group">
                     <label for="">Họ tên:</label>
                     <input type="text" name="fullname" id="fullname" value="<?php echo $profile['fullname']; ?>"
                         placeholder="Họ và tên" class="form-control">
@@ -36,7 +40,7 @@
                     <input type="text" name="phone" id="phone" value="<?php echo $profile['phone']; ?>"
                         placeholder="Số điện thoại" class="form-control">
                 </div>
-                <div class="col-md-6 form-group">
+                <div class="col-md-3 form-group">
                     <label for="">Email:</label>
                     <input type="email" name="email" id="email" value="<?php echo $profile['email']; ?>"
                         placeholder="Địa chỉ email" class="form-control">
@@ -94,7 +98,8 @@
                 type: 'POST',
                 dataType: 'json',
                 data: {
-                    id, username, fullname, password, new_password, confirm_new_password, phone, email
+                    id, username, fullname, password, new_password, confirm_new_password, phone, email,
+                    user_code: $('#txtUserCode').val(),teaching_id:parseInt($('#profile').attr('data-teaching'))
                 },
                 success: function (response) {
                     const { code, msg } = response;

@@ -188,7 +188,8 @@ class UserModel extends Model
     public function updateUser($id, $data)
     {
         $sql = "UPDATE users 
-                SET user_code = :user_code, fullname = :fullname, phone = :phone, email = :email, password = :password, role = :role, teaching_id=:teaching_id 
+                SET user_code = :user_code, fullname = :fullname, phone = :phone, 
+                email = :email, password = :password, role = :role,teaching_id=:teaching_id 
                 WHERE id = :id";
 
         $data['id'] = $id;
