@@ -1,7 +1,7 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
-    if (!isset($_SESSION['teacher_logged_in'])) {
+    if (!isset($_SESSION['teacher_logged_in']) || $_SESSION['teacher_logged_in'] == null) {
         header("Location: " . BASE_URL . "/teacher/auth/login");
         exit();
     }
@@ -159,17 +159,7 @@ if (session_status() === PHP_SESSION_NONE) {
                         <ul class="dropdown-menu" id="mn-Classes">
                         </ul>
                     </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="resourcesDropdown" role="button"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            Resources
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#">Documentation</a></li>
-                            <li><a class="dropdown-item" href="#">API</a></li>
-                            <li><a class="dropdown-item" href="#">Tutorials</a></li>
-                        </ul>
-                    </li>
+                    
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button"
                             data-bs-toggle="dropdown" aria-expanded="false">
@@ -177,12 +167,11 @@ if (session_status() === PHP_SESSION_NONE) {
                             <?php echo $_SESSION['teacher_logged_in']['fullname'] ?? $_SESSION['teacher_logged_in']['username']; ?>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="#">Settings</a></li>
-                            <li><a class="dropdown-item" href="#">Profile</a></li>
+                            <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/teacher/teacherauth/profile">Profile</a></li>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
-                            <li><a class="dropdown-item text-danger" href="#">Logout</a></li>
+                            <li><a class="dropdown-item text-danger" href="<?php echo BASE_URL; ?>/teacher/teacherauth/logout">Logout</a></li>
                         </ul>
                     </li>
                 </ul>
