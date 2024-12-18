@@ -11,8 +11,8 @@
                         readonly class="form-control">
                 </div>
                 <div class="col-md-3 form-group">
-                    <label for="">Mật khẩu hiện tại:</label>
-                    <input type="password" name="password" id="password" class="form-control">
+                    <label for="">Mã học viên</label>
+                    <input type="text" class="form-control" readonly id="txtUserCode" value="<?php echo $profile['user_code']; ?>">
                 </div>
                 <div class="col-md-3 form-group">
                     <label for="">Mật khẩu mới:</label>
@@ -26,10 +26,7 @@
                 </div>
             </div>
             <div class="row mb-3">
-                <div class="col-md-3 form-group">
-                    <label for="">Mã học viên</label>
-                    <input type="text" class="form-control" readonly id="txtUserCode" value="<?php echo $profile['user_code']; ?>">
-                </div>
+                
                 <div class="col-md-3 form-group">
                     <label for="">Họ tên:</label>
                     <input type="text" name="fullname" id="fullname" value="<?php echo $profile['fullname']; ?>"
@@ -40,7 +37,7 @@
                     <input type="text" name="phone" id="phone" value="<?php echo $profile['phone']; ?>"
                         placeholder="Số điện thoại" class="form-control">
                 </div>
-                <div class="col-md-3 form-group">
+                <div class="col-md-6 form-group">
                     <label for="">Email:</label>
                     <input type="email" name="email" id="email" value="<?php echo $profile['email']; ?>"
                         placeholder="Địa chỉ email" class="form-control">
@@ -61,21 +58,12 @@
         $('#btnSubmit').click(function () {
             let id = parseInt($('#profile').attr('data-id'));
             let username = $('#username').val();
-            let password = $('#password').val();
             let new_password = $('#new_password').val();
             let confirm_new_password = $('#confirm_new_password').val();
             let fullname = $('#fullname').val();
             let phone = $('#phone').val();
             let email = $('#email').val();
-            console.log({ username, password, new_password, confirm_new_password, fullname, phone, email });
-            if (password.trim().length === 0) {
-                Swal.fire({
-                    title: "Ràng buộc dữ liệu",
-                    text: "Vui lòng nhập mật khẩu hiện tại",
-                    icon: "error"
-                })
-                return;
-            }
+            
             if (new_password.trim().lenth === 0 || confirm_new_password.trim().length === 0) {
                 Swal.fire({
                     title: "Ràng buộc dữ liệu",
@@ -92,16 +80,19 @@
                 })
                 return;
             }
+            // console.log({ username, password, new_password, confirm_new_password, fullname, phone, email });
 
             $.ajax({
                 url: '<?php echo BASE_URL; ?>/userauth/update',
                 type: 'POST',
                 dataType: 'json',
                 data: {
-                    id, username, fullname, password, new_password, confirm_new_password, phone, email,
+                    id, username, fullname, new_password, phone, email,
                     user_code: $('#txtUserCode').val(),teaching_id:parseInt($('#profile').attr('data-teaching'))
                 },
                 success: function (response) {
+                    console.log(response);
+                    
                     const { code, msg } = response;
                     if (code === 200) {
                         Swal.fire({
