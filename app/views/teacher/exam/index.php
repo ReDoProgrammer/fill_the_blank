@@ -272,6 +272,7 @@
             $to_date = $('#to_date');
 
         var subject_id;
+        var roomId;
 
         $(document).ready(function () {
 
@@ -281,11 +282,12 @@
             // Tạo đối tượng URLSearchParams
             var urlParams = new URLSearchParams(window.location.search);
 
-            // Lấy giá trị của tham số "s" và "l"
-            var s = urlParams.get('s'); // "html-25"
+            // Kiểm tra sự tồn tại của tham số "r"
+            if (urlParams.has('r')) {
+                // Lấy giá trị của tham số "r"
+                roomId = parseInt(urlParams.get('r'));
 
-            // Tách số từ tham số "s" và "l"
-            subject_id = s.split('-')[1]; // 25
+            }
 
 
 
@@ -600,7 +602,7 @@
                 data: {
                     page,
                     pageSize,
-                    subject_id,
+                    roomId,
                     keyword: $keyword.val().trim()
                 },
                 success: function (response) {

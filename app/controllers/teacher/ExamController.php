@@ -149,13 +149,13 @@ class ExamController extends Controller{
         if ($_SERVER['REQUEST_METHOD'] == 'GET') {
             $page = (int) $_GET['page'];
             $pageSize = (int) $_GET['pageSize'];
-            $subject_id = $_GET['subject_id'];
+            $roomId = $_GET['roomId'];
             $keyword = $_GET['keyword'];
             session_start();
             $created_by = $_SESSION['teacher_logged_in']['id'];
             // echo $created_by;
             header('Content-Type: application/json');
-            $result = $this->examModel->getOwnExams($subject_id, null,null, $page, $pageSize, $keyword, $created_by);
+            $result = $this->examModel->getOwnExams($roomId, null,null, $page, $pageSize, $keyword, $created_by);
             echo json_encode($result);
         }
     }

@@ -507,7 +507,7 @@ class ExamModel extends Model
 
 
 
-    public function getOwnExams($subject_id, $from_date = null, $to_date = null, $page = 1, $pageSize = 10, $keyword = '', $created_by)
+    public function getOwnExams($roomId, $from_date = null, $to_date = null, $page = 1, $pageSize = 10, $keyword = '', $created_by)
     {
         $offset = ($page - 1) * $pageSize;
         $keyword = "%$keyword%";
@@ -529,7 +529,7 @@ class ExamModel extends Model
                     exams e
                 LEFT JOIN quizs q ON e.questions LIKE CONCAT('%', q.id, '%')
                 WHERE 
-                    e.subject_id = :subject_id 
+                    e.teaching_id = :roomId 
                     AND e.title LIKE :keyword 
                     AND e.created_by = :created_by";
 
@@ -546,7 +546,7 @@ class ExamModel extends Model
                   LIMIT :offset, :pageSize";
 
         $stmt = $this->pdo->prepare($sql);
-        $stmt->bindParam(':subject_id', $subject_id, PDO::PARAM_INT);
+        $stmt->bindParam(':roomId', $roomId, PDO::PARAM_INT);
         $stmt->bindParam(':keyword', $keyword, PDO::PARAM_STR);
         $stmt->bindParam(':created_by', $created_by, PDO::PARAM_INT);
 
