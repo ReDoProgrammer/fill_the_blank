@@ -258,10 +258,11 @@ if (session_status() === PHP_SESSION_NONE) {
                         }).join(', ');
 
                         // Thêm class vào $classes
-                        $classes.append(`<li id="${c.teaching_id}"><a class="dropdown-item" href="<?php echo BASE_URL; ?>/teacher/classroom/index?r=${c.teaching_id}" target="_self">${c.class_name} - ${subjectNames} - ${c.school_year}</a></li>`);
+                       
+                        $classes.append(`<li id="${c.teaching_id}"><a class="dropdown-item" href="<?php echo BASE_URL; ?>/teacher/classroom/index?r=${c.teaching_id}&y=${c.school_year}" target="_self">${c.class_name} - ${subjectNames} - ${c.school_year}</a></li>`);
 
                         // Thêm exam vào $exams
-                        $exams.append(`<li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/teacher/exam/index?r=${c.teaching_id}" target="_self">${c.class_name} - ${subjectNames} - ${c.school_year}</a></li>`);
+                        $exams.append(`<li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/teacher/exam/index?r=${c.teaching_id}&y=${c.school_year}" target="_self">${c.class_name} - ${subjectNames} - ${c.school_year}</a></li>`);
 
                         // Kiểm tra và thêm mỗi môn học vào $questions chỉ một lần
                         subjects.forEach(function (subject) {
