@@ -159,7 +159,7 @@ if (session_status() === PHP_SESSION_NONE) {
                         <ul class="dropdown-menu" id="mn-Classes">
                         </ul>
                     </li>
-                    
+
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="profileDropdown" role="button"
                             data-bs-toggle="dropdown" aria-expanded="false">
@@ -167,11 +167,13 @@ if (session_status() === PHP_SESSION_NONE) {
                             <?php echo $_SESSION['teacher_logged_in']['fullname'] ?? $_SESSION['teacher_logged_in']['username']; ?>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/teacher/teacherauth/profile">Profile</a></li>
+                            <li><a class="dropdown-item"
+                                    href="<?php echo BASE_URL; ?>/teacher/teacherauth/profile">Profile</a></li>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
-                            <li><a class="dropdown-item text-danger" href="<?php echo BASE_URL; ?>/teacher/teacherauth/logout">Logout</a></li>
+                            <li><a class="dropdown-item text-danger"
+                                    href="<?php echo BASE_URL; ?>/teacher/teacherauth/logout">Logout</a></li>
                         </ul>
                     </li>
                 </ul>
@@ -204,8 +206,16 @@ if (session_status() === PHP_SESSION_NONE) {
                     <li><a class="dropdown-item" href="#">Exam 3</a></li>
                 </ul>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">Statistics</a>
+
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" id="statisticDropdown" role="button" data-bs-toggle="dropdown"
+                    aria-expanded="false">
+                    Thống kê
+                </a>
+                <ul class="dropdown-menu" id="mn-Statistic">
+                    <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/teacher/statistic/index">Thống kê ôn tập</a></li>
+                    <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/teacher/statistic/exam">Thống kê thi</a></li>
+                </ul>
             </li>
         </ul>
     </div>
@@ -217,7 +227,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             RenderOwnClasses();
         })
 
@@ -228,7 +238,7 @@ if (session_status() === PHP_SESSION_NONE) {
                 url: '<?php echo BASE_URL; ?>/teacher/teaching/ownclasses',
                 type: 'get',
                 dataType: 'json',
-                success: function(response) {
+                success: function (response) {
                     const $classes = $('#mn-Classes');
                     const $questions = $('#mn-Questions');
                     const $exams = $('#mn-Exams');
@@ -243,7 +253,7 @@ if (session_status() === PHP_SESSION_NONE) {
                     classese.forEach(c => {
                         let subjects = JSON.parse(c.subjects);
                         // Nối tất cả subject_name lại với nhau, cách nhau bằng dấu phẩy
-                        var subjectNames = subjects.map(function(item) {
+                        var subjectNames = subjects.map(function (item) {
                             return item.subject_name;
                         }).join(', ');
 
@@ -254,7 +264,7 @@ if (session_status() === PHP_SESSION_NONE) {
                         $exams.append(`<li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/teacher/exam/index?r=${c.teaching_id}" target="_self">${c.class_name} - ${subjectNames} - ${c.school_year}</a></li>`);
 
                         // Kiểm tra và thêm mỗi môn học vào $questions chỉ một lần
-                        subjects.forEach(function(subject) {
+                        subjects.forEach(function (subject) {
                             if (!addedSubjects.includes(subject.subject_name)) {
                                 // Thêm môn học vào $questions nếu chưa có trong addedSubjects
                                 $questions.append(`<li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/teacher/quiz/index?s=${subject.subject_id}&meta=${subject.meta}" target="_self">${subject.subject_name}</a></li>`);
@@ -267,7 +277,7 @@ if (session_status() === PHP_SESSION_NONE) {
                     $(document).trigger('menuRendered'); // Kích hoạt sự kiện tùy chỉnh sau khi render xong
 
                 },
-                error: function(err) {
+                error: function (err) {
                     console.log(err.responseText);
 
                 }
