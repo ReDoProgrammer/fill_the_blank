@@ -143,7 +143,7 @@ class ExamController extends Controller{
     }
 
 
-
+// hàm trả về danh sách các bài thi liên quan tới môn giảng dạy của giáo viên
     public function search()
     {
         if ($_SERVER['REQUEST_METHOD'] == 'GET') {

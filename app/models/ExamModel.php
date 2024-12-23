@@ -507,7 +507,7 @@ class ExamModel extends Model
 
 
 
-    public function getOwnExams($roomId, $from_date = null, $to_date = null, $page = 1, $pageSize = 10, $keyword = '', $created_by)
+    public function getOwnExams($roomId, $from_date = null, $to_date = null, $page = 1, $pageSize = 10, $keyword = '')
     {
         $offset = ($page - 1) * $pageSize;
         $keyword = "%$keyword%";
@@ -524,14 +524,13 @@ class ExamModel extends Model
                     e.begin_date,
                     e.end_date,
                     e.subject_id,
-                    SUM(q.mark) AS total_marks
+                    COALESCE(SUM(q.mark), 0) AS total_marks
                 FROM
                     exams e
-                LEFT JOIN quizs q ON e.questions LIKE CONCAT('%', q.id, '%')
+                LEFT JOIN quizs q ON JSON_CONTAINS(e.questions, JSON_QUOTE(CAST(q.id AS CHAR)), '$')
                 WHERE 
                     e.teaching_id = :roomId 
-                    AND e.title LIKE :keyword 
-                    AND e.created_by = :created_by";
+                    AND e.title LIKE :keyword";
 
         // Add date filters if provided
         if (!empty($from_date)) {
@@ -543,12 +542,11 @@ class ExamModel extends Model
 
         $sql .= " GROUP BY e.id 
                   ORDER BY e.begin_date DESC
-                  LIMIT :offset, :pageSize";
+                  LIMIT $offset, $pageSize";
 
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindParam(':roomId', $roomId, PDO::PARAM_INT);
         $stmt->bindParam(':keyword', $keyword, PDO::PARAM_STR);
-        $stmt->bindParam(':created_by', $created_by, PDO::PARAM_INT);
 
         if (!empty($from_date)) {
             $stmt->bindParam(':from_date', $from_date);
@@ -557,22 +555,19 @@ class ExamModel extends Model
             $stmt->bindParam(':to_date', $to_date);
         }
 
-        $stmt->bindValue(':offset', (int) $offset, PDO::PARAM_INT);
-        $stmt->bindValue(':pageSize', (int) $pageSize, PDO::PARAM_INT);
-
         $stmt->execute();
         $exams = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         // Format and check availability
         foreach ($exams as &$exam) {
             // Format date
-            $exam['begin_date'] = DateTime::createFromFormat('Y-m-d H:i:s', $exam['begin_date'])->format('d/m/Y H:i');
-            $exam['end_date'] = DateTime::createFromFormat('Y-m-d H:i:s', $exam['end_date'])->format('d/m/Y H:i');
+            $exam['begin_date'] = !empty($exam['begin_date']) ? DateTime::createFromFormat('Y-m-d H:i:s', $exam['begin_date'])->format('d/m/Y H:i') : null;
+            $exam['end_date'] = !empty($exam['end_date']) ? DateTime::createFromFormat('Y-m-d H:i:s', $exam['end_date'])->format('d/m/Y H:i') : null;
 
             // Check availability
             $sqlCheck = "SELECT COUNT(*) as count FROM quiz_results WHERE exam_id = :exam_id";
             $stmtCheck = $this->pdo->prepare($sqlCheck);
-            $stmtCheck->bindParam(':exam_id', $exam['exam_id']);
+            $stmtCheck->bindParam(':exam_id', $exam['exam_id'], PDO::PARAM_INT);
             $stmtCheck->execute();
             $resultCheck = $stmtCheck->fetch(PDO::FETCH_ASSOC);
 
@@ -580,7 +575,10 @@ class ExamModel extends Model
         }
 
         // Total count query
-        $sqlTotal = "SELECT COUNT(*) as total FROM exams WHERE subject_id = :subject_id AND title LIKE :keyword AND created_by = :created_by";
+        $sqlTotal = "SELECT COUNT(*) as total FROM exams 
+                     WHERE teaching_id = :roomId 
+                     AND title LIKE :keyword 
+                     AND created_by = :created_by";
 
         if (!empty($from_date)) {
             $sqlTotal .= " AND begin_date >= :from_date";
@@ -590,7 +588,7 @@ class ExamModel extends Model
         }
 
         $stmtTotal = $this->pdo->prepare($sqlTotal);
-        $stmtTotal->bindParam(':subject_id', $subject_id, PDO::PARAM_INT);
+        $stmtTotal->bindParam(':roomId', $roomId, PDO::PARAM_INT);
         $stmtTotal->bindParam(':keyword', $keyword, PDO::PARAM_STR);
         $stmtTotal->bindParam(':created_by', $created_by, PDO::PARAM_INT);
 

@@ -606,6 +606,9 @@
                     keyword: $keyword.val().trim()
                 },
                 success: function (response) {
+                    console.log(response);
+                    return;
+                    
                     const {
                         exams,
                         currentPage,
