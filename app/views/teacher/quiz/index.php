@@ -216,16 +216,8 @@
     $(document).ready(function () {
         // Lấy URL hiện tại
         var url = window.location.href;
-
-        // Tạo đối tượng URLSearchParams
         var urlParams = new URLSearchParams(window.location.search);
-
-        // Lấy giá trị của tham số "s" và "l"
-        var s = urlParams.get('s'); // "html-25"
-
-        // Tách số từ tham số "s" và "l"
-        subject_id = s.split('-')[1]; // 25
-
+        subject_id = urlParams.get('s');        
         LoadData();
 
         // RenderQuestionsBankList();

@@ -121,6 +121,7 @@ Controller
             $pageSize = (int) $_GET['pageSize'];
             $keyword = $_GET['keyword'];
             header('Content-Type: application/json');
+            // echo json_encode(["subject"=>$subject_id]);
             $result = $this->quizModel->getAllQuizzes($subject_id, $page, $pageSize, $keyword);
             echo json_encode($result);
         }
