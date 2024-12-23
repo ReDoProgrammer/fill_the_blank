@@ -63,6 +63,7 @@
                 <th scope="col">#</th>
                 <th scope="col">Banner</th>
                 <th scope="col">Đề thi</th>
+                <th scope="col">Môn thi</th>
                 <th scope="col">Chế độ đề</th>
                 <th scope="col">Thời gian</th>
                 <th scope="col">Số câu hỏi</th>
@@ -671,6 +672,7 @@
                                 <img src = "<?php echo BASE_URL; ?>${e.thumbnail.trim().length > 0 ? e.thumbnail : '/public/assets/images/no_image.jpg'}" class = "img-thumbnail" width="200" height="100"/>
                             </td>
                             <td class="text-info fw-bold">${e.title}</td>
+                            <td class="text-warning fw-bold">${e.subject_name}</td>
                             <td class="text-center">${e.mode > 0 ? 'Sử dụng cấu hình' : 'Ngẫu nhiên'}</td>
                             <td>${e.duration}</td>
                             <td class="text-center">${e.number_of_questions}</td>

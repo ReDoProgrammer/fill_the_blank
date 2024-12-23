@@ -515,6 +515,7 @@ class ExamModel extends Model
         // Base query
         $sql = "SELECT
                     e.id AS exam_id,
+                    s.name AS subject_name,
                     e.title,
                     e.description,
                     e.number_of_questions,
@@ -528,6 +529,7 @@ class ExamModel extends Model
                 FROM
                     exams e
                 LEFT JOIN quizs q ON JSON_CONTAINS(e.questions, JSON_QUOTE(CAST(q.id AS CHAR)), '$')
+                JOIN subjects s ON e.subject_id = s.id 
                 WHERE 
                     e.teaching_id = :roomId 
                     AND e.title LIKE :keyword";
