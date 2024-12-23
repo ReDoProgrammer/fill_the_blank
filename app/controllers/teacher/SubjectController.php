@@ -19,5 +19,15 @@ class SubjectController extends Controller
             'subjects'=>$resulst
         ]);
     }
-   
+
+    //hàm trả về danh sách môn học theo lớp học
+    public function ListByRoom(){
+        $roomId = $_GET['roomId'];
+       $result = $this->subjectModel->listByTeaching($roomId);
+       echo json_encode([
+        'code'=> 200,
+        'msg'=> 'Lấy danh sách môn giảng dạy theo lớp học thành công!',
+        'subjects'=>$result
+       ]);
+    }
 }

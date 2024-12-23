@@ -89,11 +89,11 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body" style="height:550px; overflow-y:auto;">
-                    <form class="container">
+                    <form class="container">                        
                         <div class="row mb-3">
                             <div class="col-md-12 form-group">
-                                <label for="">Lớp giảng dạy</label>
-                                <select name="" id="slOwnClasses" class="form-control"></select>
+                                <label for="">Môn học</label>
+                                <select name="" id="slSubjects" class="form-control"></select>
                             </div>
                         </div>
                         <div class="row mb-3">
@@ -260,7 +260,8 @@
             $slOwnClasses = $('#slOwnClasses');
         const $subjects = $('#selSubject'),
             $slConfigs = $('#slConfigs'),
-            $slQuestions = $('#slQuestions');
+            $slQuestions = $('#slQuestions'),
+            $slSubjects = $('#slSubjects');
 
         var modeValue;
         var quill = new Quill('#editor', {
@@ -286,7 +287,7 @@
             if (urlParams.has('r')) {
                 // Lấy giá trị của tham số "r"
                 roomId = parseInt(urlParams.get('r'));
-
+                LoadSubjectsByClass(roomId);
             }
 
 
@@ -371,12 +372,44 @@
         });
 
         // menuRendered đảm bảo sự kiện này được chạy sau khi menu đã được render trong layout xong
-        $(document).on('menuRendered', function () {
-            $slOwnClasses.empty();
-            $('#mn-Classes li').each(function (index, element) {
-                // Lấy nội dung của từng phần tử <li>
-                $slOwnClasses.append(`<option value = "${$(this).attr('id')}">${$(this).text()}</option>`);
-            });
+        // $(document).on('menuRendered', function () {
+        //     $slOwnClasses.empty();
+        //     $('#mn-Classes li').each(function (index, element) {
+        //         // Lấy nội dung của từng phần tử <li>
+        //         $slOwnClasses.append(`<option value = "${$(this).attr('id')}">${$(this).text()}</option>`);
+        //     });
+        //     $slOwnClasses.trigger('change');
+        // })
+
+      
+
+        function LoadSubjectsByClass(roomId){
+            $slSubjects.empty();
+            $.ajax({
+                url:'<?php echo BASE_URL; ?>/teacher/subject/listbyroom',
+                type:'get',
+                dataType:'json',
+                data:{roomId},
+                success:function(response){
+                    const {code,msg,subjects} = response;
+                  
+                    if(code == 200){
+                        subjects.forEach(s=>{
+                            $slSubjects.append(`<option value = "${s.id}">${s.name}</option>`)
+                        })
+                        $slSubjects.trigger('change');
+                    }
+                    
+                },
+                error:function(err){
+                    console.log(err.responseText);
+                    
+                }
+            })
+        }
+
+        $slSubjects.on('change',function(){
+            subject_id = parseInt($(this).val());
         })
 
         $('#btnUsingConfig').click(function () {
@@ -525,7 +558,7 @@
             // Tạo FormData để gửi dữ liệu
             var formData = new FormData();
             if (id > 0) formData.append('id', id);
-            formData.append('teaching_id', teaching_id);
+            formData.append('teaching_id', roomId);
             formData.append('subject_id', subject_id);
             formData.append('title', title);
             formData.append('description', description);
@@ -607,7 +640,7 @@
                 },
                 success: function (response) {
                     console.log(response);
-                    return;
+                    // return;
                     
                     const {
                         exams,
