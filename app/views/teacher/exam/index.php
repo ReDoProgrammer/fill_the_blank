@@ -372,16 +372,7 @@
 
         });
 
-        // menuRendered đảm bảo sự kiện này được chạy sau khi menu đã được render trong layout xong
-        // $(document).on('menuRendered', function () {
-        //     $slOwnClasses.empty();
-        //     $('#mn-Classes li').each(function (index, element) {
-        //         // Lấy nội dung của từng phần tử <li>
-        //         $slOwnClasses.append(`<option value = "${$(this).attr('id')}">${$(this).text()}</option>`);
-        //     });
-        //     $slOwnClasses.trigger('change');
-        // })
-
+        
       
 
         function LoadSubjectsByClass(roomId){
