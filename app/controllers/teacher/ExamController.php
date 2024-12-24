@@ -169,6 +169,15 @@ class ExamController extends Controller{
             echo json_encode($result);
         }
     }
+//hàm trả về danh sách cuộc thi theo lớp và môn học
+    public function ListByClassAndSubject(){
+        if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+            $classId = (int)$_GET['classId'];
+            $subjectId = (int)$_GET['subjectId'];
+            $result = $this->examModel->getByClassAndSubject($classId,$subjectId);
+            echo json_encode(['code'=> 200,'msg'=>'Lấy danh sách cuộc thi theo lớp và môn học thành công!','exams'=> $result]);
+        }
+    }
 
     public function detail()
     {

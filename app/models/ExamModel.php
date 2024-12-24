@@ -511,7 +511,7 @@ class ExamModel extends Model
     {
         $offset = ($page - 1) * $pageSize;
         $keyword = "%$keyword%";
-    
+
         // Truy vấn chính
         $sql = "SELECT
             e.id AS exam_id,
@@ -533,7 +533,7 @@ class ExamModel extends Model
         WHERE 
             e.teaching_id = :roomId 
             AND e.title LIKE :keyword";
-    
+
         // Thêm điều kiện lọc ngày nếu có
         if (!empty($from_date)) {
             $sql .= " AND e.end_date >= :from_date";
@@ -541,16 +541,16 @@ class ExamModel extends Model
         if (!empty($to_date)) {
             $sql .= " AND e.end_date <= :to_date";
         }
-    
+
         $sql .= " GROUP BY e.id, s.name, e.title, e.description, e.number_of_questions, e.duration, 
                  e.mode, e.thumbnail, e.begin_date, e.end_date, e.subject_id
                  ORDER BY e.begin_date DESC
                  LIMIT $offset, $pageSize";
-    
+
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindParam(':roomId', $roomId, PDO::PARAM_INT);
         $stmt->bindParam(':keyword', $keyword, PDO::PARAM_STR);
-    
+
         // Gán các tham số ngày nếu có
         if (!empty($from_date)) {
             $stmt->bindParam(':from_date', $from_date);
@@ -558,31 +558,31 @@ class ExamModel extends Model
         if (!empty($to_date)) {
             $stmt->bindParam(':to_date', $to_date);
         }
-    
+
         $stmt->execute();
         $exams = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
         // Định dạng và kiểm tra tính khả dụng
         foreach ($exams as &$exam) {
             // Định dạng ngày
             $exam['begin_date'] = !empty($exam['begin_date']) ? DateTime::createFromFormat('Y-m-d H:i:s', $exam['begin_date'])->format('d/m/Y H:i') : null;
             $exam['end_date'] = !empty($exam['end_date']) ? DateTime::createFromFormat('Y-m-d H:i:s', $exam['end_date'])->format('d/m/Y H:i') : null;
-    
+
             // Kiểm tra tính khả dụng
             $sqlCheck = "SELECT COUNT(*) as count FROM quiz_results WHERE exam_id = :exam_id";
             $stmtCheck = $this->pdo->prepare($sqlCheck);
             $stmtCheck->bindParam(':exam_id', $exam['exam_id'], PDO::PARAM_INT);
             $stmtCheck->execute();
             $resultCheck = $stmtCheck->fetch(PDO::FETCH_ASSOC);
-    
+
             $exam['available'] = $resultCheck['count'] == 0;
         }
-    
+
         // Truy vấn tổng số bản ghi
         $sqlTotal = "SELECT COUNT(*) as total FROM exams 
                      WHERE teaching_id = :roomId 
                      AND title LIKE :keyword";
-    
+
         // Thêm điều kiện lọc ngày nếu có
         if (!empty($from_date)) {
             $sqlTotal .= " AND begin_date >= :from_date";
@@ -590,11 +590,11 @@ class ExamModel extends Model
         if (!empty($to_date)) {
             $sqlTotal .= " AND end_date <= :to_date";
         }
-    
+
         $stmtTotal = $this->pdo->prepare($sqlTotal);
         $stmtTotal->bindParam(':roomId', $roomId, PDO::PARAM_INT);
         $stmtTotal->bindParam(':keyword', $keyword, PDO::PARAM_STR);
-    
+
         // Gán các tham số ngày nếu có
         if (!empty($from_date)) {
             $stmtTotal->bindParam(':from_date', $from_date);
@@ -602,12 +602,12 @@ class ExamModel extends Model
         if (!empty($to_date)) {
             $stmtTotal->bindParam(':to_date', $to_date);
         }
-    
+
         $stmtTotal->execute();
         $total = $stmtTotal->fetch(PDO::FETCH_ASSOC);
-    
+
         $totalPages = ceil($total['total'] / $pageSize);
-    
+
         return [
             'exams' => $exams,
             'totalPages' => $totalPages,
@@ -616,10 +616,45 @@ class ExamModel extends Model
             'totalRecords' => $total['total']
         ];
     }
-    
 
 
 
+    //hàm trả về danh sách cuộc thi theo lớp và môn học
+    public function getByClassAndSubject($classId, $subjectId)
+    {
+        // Lấy ngày hiện tại
+        $currentDate = date('Y-m-d H:i:s');
+
+        // Câu truy vấn để lấy các exams theo subject_id và thỏa mãn điều kiện ngày
+        $sql = "SELECT e.id AS exam_id, e.title AS exam_title, t.school_year,
+                    DATE_FORMAT(e.begin_date, '%d/%m/%Y %H:%i') AS begin_date,
+                    DATE_FORMAT(e.end_date, '%d/%m/%Y %H:%i') AS end_date
+            FROM exams e
+            JOIN teachings t ON e.teaching_id = t.id
+            WHERE e.teaching_id = :classId
+            AND e.subject_id = :subject_id 
+            -- AND begin_date <= :currentDate 
+            -- AND end_date >= :currentDate
+            ORDER BY e.begin_date";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->bindParam(':classId', $classId, PDO::PARAM_INT);
+        $stmt->bindParam(':subject_id', $subjectId, PDO::PARAM_INT);
+        // $stmt->bindParam(':currentDate', $currentDate, PDO::PARAM_STR);
+        $stmt->execute();
+
+        $exams = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // Chuyển đổi định dạng ngày tháng nếu có kết quả
+        // if ($exams) {
+        //     foreach ($exams as &$exam) {
+        //         $exam['begin_date'] = DateTime::createFromFormat('Y-m-d H:i:s', $exam['begin_date'])->format('d/m/Y H:i');
+        //         $exam['end_date'] = DateTime::createFromFormat('Y-m-d H:i:s', $exam['end_date'])->format('d/m/Y H:i');
+        //     }
+        // }
+
+        return $exams;
+    }
 
     public function getBySubject($subject_id)
     {

@@ -2,12 +2,8 @@
     <div class="col-md-3 form-group">
         <select name="" id="slOwnClassese" class="form-control"></select>
     </div>
-    <div class="col-md-2 form-group">
+    <div class="col-md-5 form-group">
         <select name="" id="slSubjects" class="form-control"></select>
-    </div>
-
-    <div class="col-md-3">
-        <select name="" id="slLessions" class="form-control"></select>
     </div>
     <div class="col-md-4">
         <div class="input-group">
@@ -22,10 +18,74 @@
     </div>
 </div>
 
-<!-- statistic Table -->
-<table class="table table-bordered table-striped table-hover mt-3" id="table">
+<div class="card">
+    <div class="card-body">
 
-</table>
+        <div class="card">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-md-3 pt-1">
+                        Thống kê ôn tập
+                    </div>
+                    <div class="col-md-9">
+                        <select name="" id="slLessions" class="form-control"></select>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+
+                <!-- statistic Table -->
+                <table class="table table-bordered table-striped table-hover mt-3" id="table">
+
+                </table>
+            </div>
+        </div>
+
+        <hr>
+        <div class="card">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col-md-3 pt-1">
+                        Thống kê thi
+                    </div>
+                    <div class="col-md-9">
+                        <select name="" id="slExams" class="form-control"></select>
+                    </div>
+                </div>
+
+            </div>
+            <div class="card-body">
+                <!-- statistic Table -->
+                <table class="table table-bordered table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Mã học viên</th>
+                            <th scope="col">Tài khoản</th>
+                            <th scope="col">Họ tên</th>
+                            <th scope="col">Ngày tham gia thi</th>
+                            <th scope="col" class="text-center">Thời gian thi</th>
+                            <th scope="col" class="text-center">Trả lời đúng (câu)</th>
+                            <th scope="col" class="text-center">Điểm</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tblStatistic"></tbody>
+                </table>
+            </div>
+            <div class="card-footer">
+                <!-- Pagination -->
+                <nav aria-label="Page navigation example">
+                    <ul class="pagination pagination-sm">
+                        <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+                        <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+    </div>
+</div>
+
 
 <div class="modal" tabindex="-1" id="modal">
     <div class="modal-dialog modal-xl">
@@ -50,6 +110,7 @@
     const $slOwnClasses = $('#slOwnClassese'),
         $slSubjects = $('#slSubjects'),
         $slLessions = $('#slLessions'),
+        $slExams = $('#slExams'),
         $keyword = $('#txtKeyword'),
         $search = $('#btnSearch'),
         $modal = $('#modal'),
@@ -72,9 +133,37 @@
 
     // Xử lý khi chọn môn học
     $slSubjects.change(function () {
-        Loadlessions(parseInt($slSubjects.val()));
-        LoadSubjectStatistic(parseInt($slSubjects.val()));
+        if ($slOwnClasses.val() && $slSubjects.val()) {
+            Loadlessions(parseInt($slSubjects.val()));
+            LoadSubjectStatistic(parseInt($slSubjects.val()));
+            LoadExamsBaseonClassAndSubject(parseInt($slOwnClasses.val()), parseInt($slSubjects.val()));
+        }
+
     });
+
+    function LoadExamsBaseonClassAndSubject(classId, subjectId) {
+        $slExams.empty();
+        $.ajax({
+            url:'<?php echo BASE_URL;?>/teacher/exam/ListByClassAndSubject',
+            type:'GET',
+            dataType:'json',
+            data:{classId,subjectId},
+            success:function(response){
+                const {code,msg,exams} = response;
+                console.log(exams);
+                
+                if(code === 200){
+                    exams.forEach(e=>{
+                        $slExams.append(`<option value = "${e.exam_id}">${e.exam_title} - Diễn ra từ: ${e.begin_date} tới ${e.end_date}</option>`);
+                    })
+                }                
+            },
+            error:function(err){
+                console.log(err.responseText);
+                
+            }
+        })
+    }
 
     // Tải danh sách bài học dựa trên môn học đã chọn
     function Loadlessions(subject_id) {
@@ -107,7 +196,7 @@
                 dataType: 'json',
                 data: {
                     classId: parseInt($slOwnClasses.val()),
-                    subjectId:parseInt($slSubjects.val()),
+                    subjectId: parseInt($slSubjects.val()),
                     keyword: $keyword.val().trim(),
                     page,
                     pageSize
