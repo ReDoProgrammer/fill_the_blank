@@ -474,6 +474,8 @@
         // Xuất file Excel
         XLSX.writeFile(workbook, `${data[0].exam_title}.xlsx`);
     }
+
+
 </script>
 
 <style>

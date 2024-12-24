@@ -69,7 +69,7 @@
                             <th scope="col" class="text-center">Điểm</th>
                         </tr>
                     </thead>
-                    <tbody id="tblStatistic"></tbody>
+                    <tbody id="tblExamStatistic"></tbody>
                 </table>
             </div>
             <div class="card-footer">
@@ -111,13 +111,15 @@
         $slSubjects = $('#slSubjects'),
         $slLessions = $('#slLessions'),
         $slExams = $('#slExams'),
-        $keyword = $('#txtKeyword'),
+        $txtKeyword = $('#txtKeyword'),
         $search = $('#btnSearch'),
         $modal = $('#modal'),
         $content = $('#modalContent'),
         $table = $('#table'),
         $export = $('#btnExport'),
-        pageSize = 10;
+        pageSize = 10,
+        $tblExamStatistic = $('#tblExamStatistic'),
+        $pagination = $('.pagination');
 
     let page = 1;
 
@@ -134,8 +136,66 @@
 
 
     function StatisticByExam(examId) {
-        console.log({ examId });
+        $tblExamStatistic.empty();
+        $pagination.empty();
+        $.ajax({
+            url: '<?php echo BASE_URL; ?>/teacher/statistic/get_quiz_statistic',
+            type: 'get',
+            dataType: 'json',
+            data: {
+                page,
+                pageSize,
+                exam_id: examId,
+                keyword: $txtKeyword.val().trim()
+            },
+            success: function (response) {
 
+                console.log(response);
+                
+                const {
+                    currentPage,
+                    totalPages,
+                    history,
+                    hasNext,
+                    hasPrev
+                } = response;
+                let idx = (page - 1) * pageSize;
+
+                history.forEach(h => {
+                    $tblExamStatistic.append(`
+                        <tr>
+                            <td>${++idx}</td>
+                            <td class = "text-secondary">${h.username}</td>
+                             <td class = "fw-bold text-secondary">${h.user_code}</td>
+                            <td class = "fw-bold">${h.fullname}</td>
+                            <td>${h.quiz_date}</td>
+                            <td class = "text-center">${convertSecondsToHMS(h.spent_time)}</td>
+                            <td class = "text-center"><span class = "fw-bold text-success">${h.correct_answers}</span>/${h.number_of_questions}</td>
+                            <td class = "text-center"><span class = "fw-bold text-danger">${h.got_marks}</span>/${h.marks}</td>
+                            <td class = "text-center"><a href="javascript:void(0)" onClick="ViewResult(${h.quiz_result_id},'${h.username}','${h.fullname}')"><i class="fa fa-eye text-info"></i></a></td>
+                        </tr>
+                    `)
+                })
+
+                $pagination.append(
+                    `<li class="page-item ${page === 1 ? 'disabled' : ''}"><a class="page-link" href="#">Previous</a></li>`
+                );
+                for (i = 1; i <= totalPages; i++) {
+                    $pagination.append(
+                        ` <li class="page-item ${i == page ? 'active' : ''}"><a class="page-link " href="#">${i}</a></li>`
+                    )
+                }
+                $pagination.append(
+                    `<li class="page-item  ${page === totalPages ? 'disabled' : ''}"><a class="page-link" href="#">Next</a></li>`
+                );
+
+
+            },
+            error: function (err) {
+                console.log(err);
+
+            }
+        })
     }
 
     function StatisticByLession(lessionId) {
@@ -200,7 +260,7 @@
                 data: {
                     classId: parseInt($slOwnClasses.val()),
                     subjectId: parseInt($slSubjects.val()),
-                    keyword: $keyword.val().trim(),
+                    keyword: $txtKeyword.val().trim(),
                     page,
                     pageSize
                 },
@@ -293,5 +353,107 @@
         }
     })
 
+    const convertSecondsToHMS = function(seconds) {
+        // Tính toán giờ, phút và giây
+        var hours = Math.floor(seconds / 3600);
+        var minutes = Math.floor((seconds % 3600) / 60);
+        var secs = seconds % 60;
+
+        // Định dạng theo định dạng giờ:phút:giây
+        return (
+            (hours < 10 ? "0" : "") + hours + ":" +
+            (minutes < 10 ? "0" : "") + minutes + ":" +
+            (secs < 10 ? "0" : "") + secs
+        );
+    }
+
+
+    function exportToExcel(data) {
+        // Nếu không có dữ liệu, không làm gì cả
+        if (data.length === 0) return;
+
+        // Hàm chuyển đổi giây thành định dạng hh:mm:ss
+        const formatTime = (seconds) => {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        };
+
+        // Lấy thông tin tổng quan từ phần tử đầu tiên (giả sử tất cả đều giống nhau)
+        const overview = [{
+                "Bài thi": data[0].exam_title
+            },
+            {
+                "Thời gian": `${data[0].duration} phút`
+            },
+            {
+                "Ngày bắt đầu": data[0].begin_date
+            },
+            {
+                "Ngày kết thúc": data[0].end_date
+            },
+            {
+                "Số câu hỏi": data[0].number_of_questions
+            },
+            {
+                "Điểm": data[0].marks
+            },
+        ];
+
+        // Chuyển đổi dữ liệu chi tiết thành mảng và thêm cột "STT"
+        const detailedData = data.map((item, index) => ({
+            "STT": index + 1, // Tạo cột STT bắt đầu từ 1
+            "Tài khoản": item.username,
+            "Mã học viên": item.user_code,
+            "Họ và tên": item.fullname,
+            "Ngày làm bài": item.quiz_date,
+            "Thời gian làm bài": formatTime(item.spent_time), // Chuyển đổi số giây thành hh:mm:ss
+            "Điểm": item.got_marks,
+            "Trả lời đúng": item.correct_answers
+        }));
+
+        // Tạo workbook và worksheet
+        const workbook = XLSX.utils.book_new();
+
+        // Tạo worksheet cho thông tin tổng quan
+        const overviewWorksheet = XLSX.utils.aoa_to_sheet([
+            ["Bài thi", data[0].exam_title],
+            ["Thời gian", `${data[0].duration} phút`],
+            ["Ngày bắt đầu", data[0].begin_date],
+            ["Ngày kết thúc", data[0].end_date],
+            ["Số câu hỏi", data[0].number_of_questions],
+            ["Điểm", data[0].marks],
+        ]);
+
+        // Định dạng cho phần "Bài thi"
+        const cellAddress = 'B2'; // Ô chứa giá trị "Bài thi"
+
+        // Kiểm tra và tạo định dạng cho ô "Bài thi"
+        if (overviewWorksheet[cellAddress]) {
+            overviewWorksheet[cellAddress].s = {
+                font: {
+                    bold: true,
+                    sz: 14, // Kích thước chữ lớn hơn
+                    color: {
+                        rgb: "FF0000"
+                    } // Thay đổi màu sắc nếu cần
+                },
+                alignment: {
+                    horizontal: "center"
+                }, // Căn giữa nếu cần
+            };
+        }
+
+        // Thêm worksheet thông tin tổng quan
+        XLSX.utils.book_append_sheet(workbook, overviewWorksheet, "Thông tin tổng quan");
+
+        // Thêm worksheet cho thông tin chi tiết
+        const detailWorksheet = XLSX.utils.json_to_sheet(detailedData);
+        XLSX.utils.book_append_sheet(workbook, detailWorksheet, "Chi tiết kết quả");
+
+        // Xuất file Excel
+        XLSX.writeFile(workbook, `${data[0].exam_title}.xlsx`);
+    }
 
 </script>
