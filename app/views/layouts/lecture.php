@@ -207,15 +207,10 @@ if (session_status() === PHP_SESSION_NONE) {
                 </ul>
             </li>
 
-            <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle" href="#" id="statisticDropdown" role="button" data-bs-toggle="dropdown"
-                    aria-expanded="false">
+            <li>
+                <a class="nav-link" href="<?php echo BASE_URL; ?>/teacher/statistic/index" id="statisticDropdown">
                     Thống kê
-                </a>
-                <ul class="dropdown-menu" id="mn-Statistic">
-                    <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/teacher/statistic/index">Thống kê ôn tập</a></li>
-                    <li><a class="dropdown-item" href="<?php echo BASE_URL; ?>/teacher/statistic/exam">Thống kê thi</a></li>
-                </ul>
+                </a>                
             </li>
         </ul>
     </div>

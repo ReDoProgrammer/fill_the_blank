@@ -102,45 +102,46 @@
         $table.empty();
         if (subjectId !== undefined) { // kiểm tra biến lessionId đã có giá trị chưa
             $.ajax({
-                url: `<?php echo BASE_URL; ?>/admin/statistic/get_review_statistic_by_subject`,
+                url: `<?php echo BASE_URL; ?>/teacher/statistic/StatisticByClassAndSubject`,
                 method: 'get',
                 dataType: 'json',
                 data: {
-                    subjectId,
+                    classId: parseInt($slOwnClasses.val()),
+                    subjectId:parseInt($slSubjects.val()),
                     keyword: $keyword.val().trim(),
                     page,
                     pageSize
                 },
                 success: function (response) {
-                    const {
-                        code,
-                        msg,
-                        result
-                    } = response;
+                    // const {
+                    //     code,
+                    //     msg,
+                    //     result
+                    // } = response;
                     console.log(response);
 
-                    if (code == 200) {
-                        console.log(result);
+                    // if (code == 200) {
+                    //     console.log(result);
 
-                        let idx = (page - 1) * pageSize;
-                        result.forEach(l => {
-                            let row = `
-                    <tr>
-                        <td>${++idx < 10 ? '0' + idx : idx}</td>
-                        <td class = "fw-bold text-warning">${l.user_code}</td>
-                        <td class = "text-info">${l.username}</td>
-                        <td class = "fw-bold">${l.fullname}</td>
-                        <td class = "text-center fw-bold text-danger">${l.total_attempts}</td>
-                        <td class = "text-center">${l.avg_correct_percentage} %</td>
-                        <td class = "text-warning fw-bold">${l.most_attempted_lession_name}</td>
-                        <td class = "text-center">${l.most_attempted_lession_attempts}</td>
-                        <td class = "text-end">${l.most_attempted_lession_correct_percentage} %</td>                                                              
-                    </tr>
-                `;
-                            $table.find('tbody').append(row);
-                        })
+                    //     let idx = (page - 1) * pageSize;
+                    //     result.forEach(l => {
+                    //         let row = `
+                    //                     <tr>
+                    //                         <td>${++idx < 10 ? '0' + idx : idx}</td>
+                    //                         <td class = "fw-bold text-warning">${l.user_code}</td>
+                    //                         <td class = "text-info">${l.username}</td>
+                    //                         <td class = "fw-bold">${l.fullname}</td>
+                    //                         <td class = "text-center fw-bold text-danger">${l.total_attempts}</td>
+                    //                         <td class = "text-center">${l.avg_correct_percentage} %</td>
+                    //                         <td class = "text-warning fw-bold">${l.most_attempted_lession_name}</td>
+                    //                         <td class = "text-center">${l.most_attempted_lession_attempts}</td>
+                    //                         <td class = "text-end">${l.most_attempted_lession_correct_percentage} %</td>                                                              
+                    //                     </tr>
+                    //                 `;
+                    //         $table.find('tbody').append(row);
+                    //     })
 
-                    }
+                    // }
                 },
                 error: function (err) {
                     console.log(err);
