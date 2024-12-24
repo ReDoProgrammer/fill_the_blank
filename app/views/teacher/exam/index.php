@@ -640,9 +640,7 @@
                     keyword: $keyword.val().trim()
                 },
                 success: function (response) {
-                    console.log(response);
-                    // return;
-                    
+                  
                     const {
                         exams,
                         currentPage,
@@ -709,7 +707,9 @@
                     const {
                         exam
                     } = detail;
-
+                   
+                    $slSubjects.val(exam.subject_id);
+                    
                     $('#txtTitle').val(exam.title);
                     quill.clipboard.dangerouslyPasteHTML(exam.description);
                     $('#begin_date_input').val(exam.begin_date);
@@ -782,6 +782,7 @@
                     const {
                         exam
                     } = detail;
+                   $slSubjects.val(exam.subject_id);
                     $('#txtTitle').val(exam.title);
                     quill.clipboard.dangerouslyPasteHTML(exam.description);
                     $('#begin_date_input').val(exam.begin_date);
@@ -797,7 +798,7 @@
                     } else {
                         $('#rbtRandom').attr('checked', true);
                     }
-                    $modalTittle.text('Cập nhật thông tin cuộc thi');
+                    $modalTittle.text('Thông tin cuộc thi');
                     $modal.modal('show');
                     $btnSubmit.hide();
                 })
