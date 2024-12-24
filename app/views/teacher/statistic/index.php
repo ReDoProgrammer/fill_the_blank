@@ -131,36 +131,39 @@
         $slOwnClasses.trigger('change');
     })
 
-    // Xử lý khi chọn môn học
-    $slSubjects.change(function () {
-        if ($slOwnClasses.val() && $slSubjects.val()) {
-            Loadlessions(parseInt($slSubjects.val()));
-            LoadSubjectStatistic(parseInt($slSubjects.val()));
-            LoadExamsBaseonClassAndSubject(parseInt($slOwnClasses.val()), parseInt($slSubjects.val()));
-        }
 
-    });
+
+    function StatisticByExam(examId) {
+        console.log({ examId });
+
+    }
+
+    function StatisticByLession(lessionId) {
+        console.log({ lessionId });
+
+    }
 
     function LoadExamsBaseonClassAndSubject(classId, subjectId) {
         $slExams.empty();
         $.ajax({
-            url:'<?php echo BASE_URL;?>/teacher/exam/ListByClassAndSubject',
-            type:'GET',
-            dataType:'json',
-            data:{classId,subjectId},
-            success:function(response){
-                const {code,msg,exams} = response;
+            url: '<?php echo BASE_URL; ?>/teacher/exam/ListByClassAndSubject',
+            type: 'GET',
+            dataType: 'json',
+            data: { classId, subjectId },
+            success: function (response) {
+                const { code, msg, exams } = response;
                 console.log(exams);
-                
-                if(code === 200){
-                    exams.forEach(e=>{
+
+                if (code === 200) {
+                    exams.forEach(e => {
                         $slExams.append(`<option value = "${e.exam_id}">${e.exam_title} - Diễn ra từ: ${e.begin_date} tới ${e.end_date}</option>`);
                     })
-                }                
+                    $slExams.trigger('change');
+                }
             },
-            error:function(err){
+            error: function (err) {
                 console.log(err.responseText);
-                
+
             }
         })
     }
@@ -240,11 +243,6 @@
             console.log("Lession ID is not defined.");
         }
     }
-
-    $slOwnClasses.on('change', function () {
-        LoadSubjectsByClass($(this).val());
-    })
-
     function LoadSubjectsByClass(roomId) {
         $slSubjects.empty();
         $.ajax({
@@ -269,5 +267,31 @@
             }
         })
     }
+    $slOwnClasses.on('change', function () {
+        LoadSubjectsByClass($(this).val());
+    })
+    // Xử lý khi chọn môn học
+    $slSubjects.change(function () {
+        if ($slOwnClasses.val() && $slSubjects.val()) {
+            Loadlessions(parseInt($slSubjects.val()));
+            LoadSubjectStatistic(parseInt($slSubjects.val()));
+            LoadExamsBaseonClassAndSubject(parseInt($slOwnClasses.val()), parseInt($slSubjects.val()));
+        }
+
+    });
+
+    $slLessions.on('change', function () {
+        if ($(this).val()) {
+            StatisticByLession(parseInt($(this).val()));
+        } else {
+
+        }
+    })
+    $slExams.on('change', function () {
+        if ($(this).val()) {
+            StatisticByExam(parseInt($(this).val()));
+        }
+    })
+
 
 </script>
