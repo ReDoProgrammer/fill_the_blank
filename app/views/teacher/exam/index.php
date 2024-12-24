@@ -646,6 +646,7 @@
                         currentPage,
                         totalPages
                     } = response;
+console.log(exams);
 
                     let idx = (page - 1) * pageSize;
                     for (i = 1; i <= totalPages; i++) {

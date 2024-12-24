@@ -511,101 +511,103 @@ class ExamModel extends Model
     {
         $offset = ($page - 1) * $pageSize;
         $keyword = "%$keyword%";
-
-        // Base query
+    
+        // Truy vấn chính
         $sql = "SELECT
-                    e.id AS exam_id,
-                    s.name AS subject_name,
-                    e.title,
-                    e.description,
-                    e.number_of_questions,
-                    e.duration,
-                    e.mode,
-                    e.thumbnail,
-                    e.begin_date,
-                    e.end_date,
-                    e.subject_id,
-                    COALESCE(SUM(q.mark), 0) AS total_marks
-                FROM
-                    exams e
-                LEFT JOIN quizs q ON JSON_CONTAINS(e.questions, JSON_QUOTE(CAST(q.id AS CHAR)), '$')
-                JOIN subjects s ON e.subject_id = s.id 
-                WHERE 
-                    e.teaching_id = :roomId 
-                    AND e.title LIKE :keyword";
-
-        // Add date filters if provided
+            e.id AS exam_id,
+            s.name AS subject_name,
+            e.title,
+            e.description,
+            e.number_of_questions,
+            e.duration,
+            e.mode,
+            e.thumbnail,
+            e.begin_date,
+            e.end_date,
+            e.subject_id,
+            COALESCE(SUM(q.mark), 0) AS total_marks
+        FROM
+            exams e
+        LEFT JOIN quizs q ON JSON_CONTAINS(e.questions, CAST(q.id AS CHAR), '$')
+        JOIN subjects s ON e.subject_id = s.id 
+        WHERE 
+            e.teaching_id = :roomId 
+            AND e.title LIKE :keyword";
+    
+        // Thêm điều kiện lọc ngày nếu có
         if (!empty($from_date)) {
-            $sql .= " AND e.begin_date >= :from_date";
+            $sql .= " AND e.end_date >= :from_date";
         }
         if (!empty($to_date)) {
             $sql .= " AND e.end_date <= :to_date";
         }
-
-        $sql .= " GROUP BY e.id 
-                  ORDER BY e.begin_date DESC
-                  LIMIT $offset, $pageSize";
-
+    
+        $sql .= " GROUP BY e.id, s.name, e.title, e.description, e.number_of_questions, e.duration, 
+                 e.mode, e.thumbnail, e.begin_date, e.end_date, e.subject_id
+                 ORDER BY e.begin_date DESC
+                 LIMIT $offset, $pageSize";
+    
         $stmt = $this->pdo->prepare($sql);
         $stmt->bindParam(':roomId', $roomId, PDO::PARAM_INT);
         $stmt->bindParam(':keyword', $keyword, PDO::PARAM_STR);
-
+    
+        // Gán các tham số ngày nếu có
         if (!empty($from_date)) {
             $stmt->bindParam(':from_date', $from_date);
         }
         if (!empty($to_date)) {
             $stmt->bindParam(':to_date', $to_date);
         }
-
+    
         $stmt->execute();
         $exams = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-        // Format and check availability
+    
+        // Định dạng và kiểm tra tính khả dụng
         foreach ($exams as &$exam) {
-            // Format date
+            // Định dạng ngày
             $exam['begin_date'] = !empty($exam['begin_date']) ? DateTime::createFromFormat('Y-m-d H:i:s', $exam['begin_date'])->format('d/m/Y H:i') : null;
             $exam['end_date'] = !empty($exam['end_date']) ? DateTime::createFromFormat('Y-m-d H:i:s', $exam['end_date'])->format('d/m/Y H:i') : null;
-
-            // Check availability
+    
+            // Kiểm tra tính khả dụng
             $sqlCheck = "SELECT COUNT(*) as count FROM quiz_results WHERE exam_id = :exam_id";
             $stmtCheck = $this->pdo->prepare($sqlCheck);
             $stmtCheck->bindParam(':exam_id', $exam['exam_id'], PDO::PARAM_INT);
             $stmtCheck->execute();
             $resultCheck = $stmtCheck->fetch(PDO::FETCH_ASSOC);
-
+    
             $exam['available'] = $resultCheck['count'] == 0;
         }
-
-        // Total count query
+    
+        // Truy vấn tổng số bản ghi
         $sqlTotal = "SELECT COUNT(*) as total FROM exams 
                      WHERE teaching_id = :roomId 
-                     AND title LIKE :keyword 
-                     AND created_by = :created_by";
-
+                     AND title LIKE :keyword";
+    
+        // Thêm điều kiện lọc ngày nếu có
         if (!empty($from_date)) {
             $sqlTotal .= " AND begin_date >= :from_date";
         }
         if (!empty($to_date)) {
             $sqlTotal .= " AND end_date <= :to_date";
         }
-
+    
         $stmtTotal = $this->pdo->prepare($sqlTotal);
         $stmtTotal->bindParam(':roomId', $roomId, PDO::PARAM_INT);
         $stmtTotal->bindParam(':keyword', $keyword, PDO::PARAM_STR);
-        $stmtTotal->bindParam(':created_by', $created_by, PDO::PARAM_INT);
-
+    
+        // Gán các tham số ngày nếu có
         if (!empty($from_date)) {
             $stmtTotal->bindParam(':from_date', $from_date);
         }
         if (!empty($to_date)) {
             $stmtTotal->bindParam(':to_date', $to_date);
         }
-
+    
         $stmtTotal->execute();
         $total = $stmtTotal->fetch(PDO::FETCH_ASSOC);
-
+    
         $totalPages = ceil($total['total'] / $pageSize);
-
+    
         return [
             'exams' => $exams,
             'totalPages' => $totalPages,
@@ -614,7 +616,7 @@ class ExamModel extends Model
             'totalRecords' => $total['total']
         ];
     }
-
+    
 
 
 
