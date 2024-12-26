@@ -35,9 +35,18 @@
             <div class="card-body">
 
                 <!-- statistic Table -->
-                <table class="table table-bordered table-striped table-hover mt-3" id="table">
+                <table class="table table-bordered table-striped table-hover mt-3" id="tableFTB">
 
                 </table>
+            </div>
+            <div class="card-footer">
+                <!-- Pagination -->
+                <nav aria-label="Page navigation example">
+                    <ul class="pagination pagination-sm" id="paginationFTB">
+                        <li class="page-item"><a class="page-link" href="#">Previous</a></li>
+                        <li class="page-item"><a class="page-link" href="#">Next</a></li>
+                    </ul>
+                </nav>
             </div>
         </div>
 
@@ -75,7 +84,7 @@
             <div class="card-footer">
                 <!-- Pagination -->
                 <nav aria-label="Page navigation example">
-                    <ul class="pagination pagination-sm">
+                    <ul class="pagination pagination-sm" id="pagination">
                         <li class="page-item"><a class="page-link" href="#">Previous</a></li>
                         <li class="page-item"><a class="page-link" href="#">Next</a></li>
                     </ul>
@@ -115,11 +124,12 @@
         $search = $('#btnSearch'),
         $modal = $('#modal'),
         $content = $('#modalContent'),
-        $table = $('#table'),
+        $table = $('#tableFTB'),
         $export = $('#btnExport'),
         pageSize = 10,
         $tblExamStatistic = $('#tblExamStatistic'),
-        $pagination = $('.pagination');
+        $pagination = $('#pagination'),
+        $paginationFTB = $('#paginationFTB');
 
     let page = 1;
 
@@ -149,9 +159,6 @@
                 keyword: $txtKeyword.val().trim()
             },
             success: function (response) {
-
-                console.log(response);
-                
                 const {
                     currentPage,
                     totalPages,
@@ -197,7 +204,89 @@
             }
         })
     }
+    function LoadSubjectStatistic(subjectId) {
+        $table.empty();
+        $paginationFTB.empty();
+        if (subjectId !== undefined) { // kiểm tra biến lessionId đã có giá trị chưa
+            $.ajax({
+                url: `<?php echo BASE_URL; ?>/teacher/statistic/StatisticBySubject`,
+                method: 'get',
+                dataType: 'json',
+                data: {
+                    classId: parseInt($slOwnClasses.val()),
+                    subjectId: parseInt($slSubjects.val()),
+                    keyword: $txtKeyword.val().trim(),
+                    page,
+                    pageSize
+                },
+                success: function (response) {
+                    const {
+                        code,
+                        msg,
+                        result
+                    } = response;
 
+
+                    if (code == 200) {
+                        $table.append(`<thead>
+                                <tr>
+                                    <th rowspan="2" class="align-middle">STT</th>
+                                    <th rowspan="2" class="align-middle">Mã thành viên</th>
+                                    <th rowspan="2" class="align-middle">Tài khoản</th>
+                                    <th rowspan="2" class="align-middle">Họ tên</th>
+                                    <th rowspan="2" class="align-middle">Số lần làm bài</th>
+                                    <th rowspan="2" class="align-middle">Tỉ lệ làm đúng</th>
+                                    <th colspan="3" class="text-center">Bài làm nhiều nhất</th>
+                                </tr>
+                                <tr>
+                                    <th>Tên bài</th>
+                                    <th>Số lần</th>
+                                    <th>Tỉ lệ (%)</th>               
+                                </tr>
+                            </thead><tbody></tbody>`);
+
+                        let idx = (page - 1) * pageSize;
+                        result.data.forEach(l => {
+                            let row = `
+                                        <tr>
+                                            <td>${++idx < 10 ? '0' + idx : idx}</td>
+                                            <td class = "fw-bold text-warning">${l.user_code}</td>
+                                            <td class = "text-info">${l.username}</td>
+                                            <td class = "fw-bold">${l.fullname}</td>
+                                            <td class = "text-center fw-bold text-danger">${l.total_attempts}</td>
+                                            <td class = "text-center">${l.avg_correct_percentage} %</td>
+                                            <td class = "text-warning fw-bold">${l.most_attempted_lession_name}</td>
+                                            <td class = "text-center">${l.most_attempted_lession_attempts}</td>
+                                            <td class = "text-end">${l.most_attempted_lession_correct_percentage} %</td>                                                              
+                                        </tr>
+                                    `;
+                            $table.find('tbody').append(row);
+                        })
+
+
+                        $paginationFTB.append(
+                            `<li class="page-item ${page === 1 ? 'disabled' : ''}"><a class="page-link" href="#">Previous</a></li>`
+                        );
+                        for (i = 1; i <= result.totalPage; i++) {
+                            $paginationFTB.append(
+                                ` <li class="page-item ${i == page ? 'active' : ''}"><a class="page-link " href="#">${i}</a></li>`
+                            )
+                        }
+                        $paginationFTB.append(
+                            `<li class="page-item  ${page === result.totalPage ? 'disabled' : ''}"><a class="page-link" href="#">Next</a></li>`
+                        );
+
+
+                    }
+                },
+                error: function (err) {
+                    console.log(err);
+                }
+            });
+        } else {
+            console.log("Lession ID is not defined.");
+        }
+    }
     function StatisticByLession(lessionId) {
         console.log({ lessionId });
 
@@ -212,8 +301,6 @@
             data: { classId, subjectId },
             success: function (response) {
                 const { code, msg, exams } = response;
-                console.log(exams);
-
                 if (code === 200) {
                     exams.forEach(e => {
                         $slExams.append(`<option value = "${e.exam_id}">${e.exam_title} - Diễn ra từ: ${e.begin_date} tới ${e.end_date}</option>`);
@@ -250,59 +337,7 @@
         });
     }
 
-    function LoadSubjectStatistic(subjectId) {
-        $table.empty();
-        if (subjectId !== undefined) { // kiểm tra biến lessionId đã có giá trị chưa
-            $.ajax({
-                url: `<?php echo BASE_URL; ?>/teacher/statistic/StatisticByClassAndSubject`,
-                method: 'get',
-                dataType: 'json',
-                data: {
-                    classId: parseInt($slOwnClasses.val()),
-                    subjectId: parseInt($slSubjects.val()),
-                    keyword: $txtKeyword.val().trim(),
-                    page,
-                    pageSize
-                },
-                success: function (response) {
-                    // const {
-                    //     code,
-                    //     msg,
-                    //     result
-                    // } = response;
-                    console.log(response);
 
-                    // if (code == 200) {
-                    //     console.log(result);
-
-                    //     let idx = (page - 1) * pageSize;
-                    //     result.forEach(l => {
-                    //         let row = `
-                    //                     <tr>
-                    //                         <td>${++idx < 10 ? '0' + idx : idx}</td>
-                    //                         <td class = "fw-bold text-warning">${l.user_code}</td>
-                    //                         <td class = "text-info">${l.username}</td>
-                    //                         <td class = "fw-bold">${l.fullname}</td>
-                    //                         <td class = "text-center fw-bold text-danger">${l.total_attempts}</td>
-                    //                         <td class = "text-center">${l.avg_correct_percentage} %</td>
-                    //                         <td class = "text-warning fw-bold">${l.most_attempted_lession_name}</td>
-                    //                         <td class = "text-center">${l.most_attempted_lession_attempts}</td>
-                    //                         <td class = "text-end">${l.most_attempted_lession_correct_percentage} %</td>                                                              
-                    //                     </tr>
-                    //                 `;
-                    //         $table.find('tbody').append(row);
-                    //     })
-
-                    // }
-                },
-                error: function (err) {
-                    console.log(err);
-                }
-            });
-        } else {
-            console.log("Lession ID is not defined.");
-        }
-    }
     function LoadSubjectsByClass(roomId) {
         $slSubjects.empty();
         $.ajax({
@@ -353,7 +388,7 @@
         }
     })
 
-    const convertSecondsToHMS = function(seconds) {
+    const convertSecondsToHMS = function (seconds) {
         // Tính toán giờ, phút và giây
         var hours = Math.floor(seconds / 3600);
         var minutes = Math.floor((seconds % 3600) / 60);
@@ -382,23 +417,23 @@
 
         // Lấy thông tin tổng quan từ phần tử đầu tiên (giả sử tất cả đều giống nhau)
         const overview = [{
-                "Bài thi": data[0].exam_title
-            },
-            {
-                "Thời gian": `${data[0].duration} phút`
-            },
-            {
-                "Ngày bắt đầu": data[0].begin_date
-            },
-            {
-                "Ngày kết thúc": data[0].end_date
-            },
-            {
-                "Số câu hỏi": data[0].number_of_questions
-            },
-            {
-                "Điểm": data[0].marks
-            },
+            "Bài thi": data[0].exam_title
+        },
+        {
+            "Thời gian": `${data[0].duration} phút`
+        },
+        {
+            "Ngày bắt đầu": data[0].begin_date
+        },
+        {
+            "Ngày kết thúc": data[0].end_date
+        },
+        {
+            "Số câu hỏi": data[0].number_of_questions
+        },
+        {
+            "Điểm": data[0].marks
+        },
         ];
 
         // Chuyển đổi dữ liệu chi tiết thành mảng và thêm cột "STT"

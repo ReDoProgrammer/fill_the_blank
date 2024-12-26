@@ -351,4 +351,107 @@ class TeachingModel extends Model
             ]
         ];
     }
+
+    public function getSubjectStatistic($teachingId, $subjectId, $keyword = '', $page = 1, $pageSize = 10)
+    {
+        // Tính toán offset từ trang hiện tại và số bản ghi mỗi trang
+        $offset = ($page - 1) * $pageSize;
+
+        // SQL chính với LIMIT và OFFSET
+        $sql = "
+        SELECT 
+            user_id,
+            username,
+            user_code,
+            fullname,
+            COUNT(DISTINCT result_id) AS total_attempts,
+            ROUND(AVG((correct_questions / total_questions) * 100), 2) AS avg_correct_percentage,
+            most_attempted_lession_name,
+            MAX(lession_attempts) AS most_attempted_lession_attempts,
+            ROUND(MAX(correct_percentage), 2) AS most_attempted_lession_correct_percentage
+        FROM (
+            SELECT 
+                exam_results.id AS result_id,
+                exam_results.user_id,
+                users.username,
+                users.fullname,
+                users.user_code,
+                lessions.name AS most_attempted_lession_name,
+                (SELECT COUNT(*) 
+                 FROM exam_results er
+                 WHERE er.user_id = exam_results.user_id
+                 AND er.lession_id = exam_results.lession_id) AS lession_attempts,
+                (SELECT COUNT(*) 
+                 FROM questions 
+                 WHERE questions.lession_id = exam_results.lession_id) AS total_questions,
+                (SELECT COUNT(*) 
+                 FROM questions q
+                 WHERE q.lession_id = exam_results.lession_id
+                 AND NOT EXISTS (
+                     SELECT * 
+                     FROM question_blanks qb
+                     LEFT JOIN exam_answers ea ON qb.id = ea.question_blank_id AND ea.exam_result_id = exam_results.id
+                     WHERE qb.question_id = q.id
+                     AND (ea.answer IS NULL OR ea.answer != qb.blank_text)
+                 )) AS correct_questions,
+                (SELECT (correct_questions / total_questions) * 100) AS correct_percentage
+            FROM exam_results
+            JOIN users ON exam_results.user_id = users.id
+            JOIN lessions ON exam_results.lession_id = lessions.id
+            WHERE users.teaching_id = :teaching_id
+            AND lessions.subject_id = :subjectId
+            AND (
+                users.username LIKE :keyword OR 
+                users.fullname LIKE :keyword
+            )
+        ) AS subquery
+        GROUP BY user_id
+        ORDER BY avg_correct_percentage DESC
+        LIMIT :pageSize OFFSET :offset";
+
+        // Chuẩn bị truy vấn
+        $stmt = $this->pdo->prepare($sql);
+
+        // Bind các tham số
+        $stmt->bindValue(':teaching_id', $teachingId, PDO::PARAM_INT);
+        $stmt->bindValue(':subjectId', $subjectId, PDO::PARAM_INT);
+        $stmt->bindValue(':keyword', '%' . $keyword . '%', PDO::PARAM_STR);
+        $stmt->bindValue(':pageSize', (int) $pageSize, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', (int) $offset, PDO::PARAM_INT);
+
+        // Thực thi truy vấn
+        $stmt->execute();
+
+        // Trả về kết quả
+        $result = $stmt->fetchAll();
+
+        // Tính tổng số trang (totalPage)
+        $countSql = "
+        SELECT COUNT(DISTINCT exam_results.user_id) AS totalRecords
+        FROM exam_results
+        JOIN users ON exam_results.user_id = users.id
+        JOIN lessions ON exam_results.lession_id = lessions.id
+        WHERE users.teaching_id = :teaching_id
+        AND lessions.subject_id = :subjectId
+        AND (
+            users.username LIKE :keyword OR 
+            users.fullname LIKE :keyword
+        )";
+
+        $countStmt = $this->pdo->prepare($countSql);
+        $countStmt->bindValue(':teaching_id', $teachingId, PDO::PARAM_INT);
+        $countStmt->bindValue(':subjectId', $subjectId, PDO::PARAM_INT);
+        $countStmt->bindValue(':keyword', '%' . $keyword . '%', PDO::PARAM_STR);
+        $countStmt->execute();
+        $totalRecords = $countStmt->fetchColumn();
+
+        $totalPage = ceil($totalRecords / $pageSize);
+
+        return [
+            'data' => $result,
+            'totalPage' => $totalPage
+        ];
+    }
+
+
 }
