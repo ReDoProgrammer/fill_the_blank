@@ -180,7 +180,7 @@ class LessionModel extends Model
     {
         // Tính toán giá trị offset cho phân trang
         $offset = ($page - 1) * $pageSize;
-    
+
         // Câu lệnh SQL để lấy thống kê kết quả bài làm
         $sql = "
         SELECT 
@@ -244,15 +244,129 @@ class LessionModel extends Model
         GROUP BY user_id
         ORDER BY highest_score_percentage DESC
         LIMIT $offset, $pageSize";
-    
+
         // Các tham số truyền vào truy vấn SQL
         $params = [
             ':lessionId' => $lessionId,
             ':keyword' => '%' . $keyword . '%'
         ];
-    
+
         // Thực thi truy vấn và trả về kết quả
         return $this->fetchAll($sql, $params);
     }
-    
+
+
+    //hàm thống kê ôn tập theo bài học của từng lớp
+    public function StatisticByLessionBasedonClass($teachingId, $lessionId, $keyword = '', $page = 1, $pageSize = 10)
+    {
+        // Tính toán giá trị offset cho phân trang
+        $offset = ($page - 1) * $pageSize;
+
+        // Câu lệnh SQL để lấy thống kê kết quả bài làm
+        $sql = "
+        SELECT 
+            user_id,
+            username,
+            user_code,
+            fullname,
+            result_id,
+            MAX(correct_questions) AS max_correct_questions,
+            total_questions,
+            ROUND((MAX(correct_questions) / total_questions) * 100, 2) AS highest_score_percentage,
+            ROUND((MAX(correct_questions) / total_questions) * 10, 2) AS score,
+            MAX(total_blanks) AS total_blanks,
+            MAX(correct_blanks) AS correct_blanks,
+            ROUND((MAX(correct_blanks) / MAX(total_blanks)) * 100, 2) AS correct_blanks_percent,
+            COUNT(result_id) AS attempts_count,
+            SUM(total_blanks) AS total_blanks_filled,
+            SUM(correct_blanks) AS correct_blanks_filled
+        FROM (
+            SELECT 
+                exam_results.id AS result_id,
+                exam_results.user_id,
+                users.username,
+                users.fullname,
+                users.user_code,
+                (SELECT COUNT(*) 
+                 FROM questions 
+                 WHERE questions.lession_id = :lessionId) AS total_questions,
+                (SELECT COUNT(*) 
+                 FROM question_blanks 
+                 JOIN questions ON question_blanks.question_id = questions.id
+                 WHERE questions.lession_id = :lessionId) AS total_blanks,
+                (SELECT COUNT(*) 
+                 FROM questions q
+                 WHERE q.lession_id = :lessionId
+                 AND NOT EXISTS (
+                     SELECT * 
+                     FROM question_blanks qb
+                     LEFT JOIN exam_answers ea ON qb.id = ea.question_blank_id AND ea.exam_result_id = exam_results.id
+                     WHERE qb.question_id = q.id
+                     AND (ea.answer IS NULL OR ea.answer != qb.blank_text)
+                 )) AS correct_questions,
+                (SELECT COUNT(*)
+                 FROM exam_answers ea
+                 JOIN question_blanks qb ON ea.question_blank_id = qb.id
+                 WHERE ea.exam_result_id = exam_results.id 
+                 AND ea.answer = qb.blank_text) AS correct_blanks
+            FROM exam_results
+            JOIN users ON exam_results.user_id = users.id
+            JOIN lessions ON exam_results.lession_id = lessions.id
+            WHERE users.teaching_id = :teachingId 
+            AND exam_results.lession_id = :lessionId
+            AND (
+                users.username LIKE :keyword OR 
+                users.fullname LIKE :keyword
+            )
+            GROUP BY exam_results.id, exam_results.user_id
+        ) AS subquery
+        GROUP BY user_id
+        ORDER BY highest_score_percentage DESC
+        LIMIT $offset, $pageSize";
+
+        // Truy vấn tính tổng số bản ghi
+        $countSql = "
+        SELECT 
+            COUNT(DISTINCT user_id) AS totalRecords
+        FROM (
+            SELECT 
+                exam_results.user_id
+            FROM exam_results
+            JOIN users ON exam_results.user_id = users.id
+            JOIN lessions ON exam_results.lession_id = lessions.id
+            WHERE users.teaching_id = :teachingId 
+            AND exam_results.lession_id = :lessionId
+            AND (
+                users.username LIKE :keyword OR 
+                users.fullname LIKE :keyword
+            )
+        ) AS subquery";
+
+        // Lấy tổng số bản ghi
+        $countStmt = $this->pdo->prepare($countSql);
+        $countStmt->execute([
+            ':teachingId' => $teachingId,
+            ':lessionId' => $lessionId,
+            ':keyword' => '%' . $keyword . '%'
+        ]);
+        $totalRecords = $countStmt->fetchColumn();
+
+        // Tính tổng số trang
+        $totalPages = ceil($totalRecords / $pageSize);
+
+        // Thực thi truy vấn SQL chính
+        $params = [
+            ':teachingId' => $teachingId,
+            ':lessionId' => $lessionId,
+            ':keyword' => '%' . $keyword . '%'
+        ];
+        $result = $this->fetchAll($sql, $params);
+
+        return [
+            'data' => $result,
+            'totalPages' => $totalPages
+        ];
+    }
+
+
 }

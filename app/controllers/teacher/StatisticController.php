@@ -1,19 +1,40 @@
 <?php
 require_once 'app/models/HistoryModel.php';
 require_once 'app/models/TeachingModel.php';
+require_once 'app/models/LessionModel.php';
 class StatisticController extends Controller
 {
     protected $historyModel;
     protected $teachingModel;
+    protected $lessionModel;
 
     public function __construct()
     {
         $this->historyModel = new HistoryModel();
         $this->teachingModel = new TeachingModel();
+        $this->lessionModel = new LessionModel();
     }
     public function index()
     {
         $this->view('teacher/statistic/index', [], 'Thống kê ôn tập', 'lecture');
+    }
+
+    //hàm thống kê ôn tập theo bài học của từng môn tương ứng với lớp học
+    public function StatisticByLession(){
+        if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+            $classId = (int)$_GET['classId'];
+            $lessionId = (int)$_GET['lessionId'];
+            $keyword = (string)$_GET['keyword'];
+            $page = (int)$_GET['page'];
+            $pageSize = (int)$_GET['pageSize'];
+            header('Content-Type: application/json');
+            $result = $this->lessionModel->StatisticByLessionBasedonClass($classId,$lessionId,$keyword,$page,$pageSize);
+            echo json_encode([
+                'code'=>200,
+                'msg'=>'Thống kê ôn tập theo bài tương ứng với lớp học thành công!',
+                'result'=>$result
+            ]);
+        }
     }
 
     //hàm thống kê ôn tập theo môn học theo lớp

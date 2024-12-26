@@ -205,8 +205,6 @@
         })
     }
     function LoadSubjectStatistic(subjectId) {
-        $table.empty();
-        $paginationFTB.empty();
         if (subjectId !== undefined) { // kiểm tra biến lessionId đã có giá trị chưa
             $.ajax({
                 url: `<?php echo BASE_URL; ?>/teacher/statistic/StatisticBySubject`,
@@ -288,7 +286,94 @@
         }
     }
     function StatisticByLession(lessionId) {
-        console.log({ lessionId });
+        $table.empty();
+        $table.append(`
+            <thead>
+                <tr>
+                    <th rowspan="2" class="align-middle">STT</th>
+                    <th rowspan="2" class="align-middle">Mã thành viên</th>
+                    <th rowspan="2" class="align-middle">Tài khoản</th>
+                    <th rowspan="2" class="align-middle">Họ tên</th>
+                    <th rowspan="2" class="align-middle">Số lần làm bài</th>
+                    <th colspan="3" class="text-center">Chỗ trống</th>
+                    <th colspan="3" class="text-center">Câu hỏi</th>
+                    <th rowspan="2"></th>
+                </tr>
+                <tr>
+                    <th>Tổng số</th>
+                    <th>Điền đúng</th>
+                    <th>Tỉ lệ (%)</th>
+                    <th>Tổng số</th>
+                    <th>Trả lời đúng</th>
+                    <th>Tỉ lệ (%)</th>
+                </tr>
+            </thead><tbody></tbody>
+        `);
+
+        $.ajax({
+            url: `<?php echo BASE_URL; ?>/teacher/statistic/StatisticByLession`,
+            method: 'get',
+            dataType: 'json',
+            data: {
+                classId: parseInt($slOwnClasses.val()),
+                lessionId: lessionId,
+                keyword: $txtKeyword.val().trim(),
+                page,
+                pageSize
+            },
+            success: function (response) {
+                const {
+                    code,
+                    msg,
+                    result
+                } = response;
+
+                if (code == 200) {
+                    let idx = (page - 1) * pageSize;
+
+                    result.data.forEach(l => {
+                        let row = `
+                                    <tr>
+                                        <td>${++idx < 10 ? '0' + idx : idx}</td>
+                                        <td class="fw-bold text-warning">${l.user_code}</td>
+                                        <td class="text-info">${l.username}</td>
+                                        <td>${l.fullname}</td>
+                                        <td>${l.attempts_count}</td>
+                                        <td>${l.total_blanks}</td>
+                                        <td>${l.correct_blanks}</td>
+                                        <td>${l.correct_blanks_percent}</td>
+                                        <td>${l.total_questions}</td>
+                                        <td>${l.max_correct_questions}</td>
+                                        <td>${l.highest_score_percentage}</td>
+                                        <td>
+                                            <a href="#" onclick="fetchDetail(${l.result_id}); return false;">
+                                                <i class="fa fa-info-circle" aria-hidden="true"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                `;
+                        // Thêm dòng vào tbody của bảng
+                        $table.find('tbody').append(row);
+                    });
+
+                    $paginationFTB.append(
+                        `<li class="page-item ${page === 1 ? 'disabled' : ''}"><a class="page-link" href="#">Previous</a></li>`
+                    );
+                    for (i = 1; i <= result.totalPages; i++) {
+                        $paginationFTB.append(
+                            ` <li class="page-item ${i == page ? 'active' : ''}"><a class="page-link " href="#">${i}</a></li>`
+                        )
+                    }
+                    $paginationFTB.append(
+                        `<li class="page-item  ${page === result.totalPages ? 'disabled' : ''}"><a class="page-link" href="#">Next</a></li>`
+                    );
+                }
+            },
+            error: function (err) {
+                console.log(err);
+            }
+        });
+
 
     }
 
@@ -325,7 +410,7 @@
             },
             dataType: 'json',
             success: function (response) {
-                $slLessions.empty().append('<option value="">Chọn bài học</option>');
+                $slLessions.empty().append('<option value="">Tất cả bài học</option>');
                 $.each(response.lessions, function (index, lession) {
                     $slLessions.append(`<option value="${lession.id}">${lession.name}</option>`);
                 });
@@ -369,17 +454,17 @@
     $slSubjects.change(function () {
         if ($slOwnClasses.val() && $slSubjects.val()) {
             Loadlessions(parseInt($slSubjects.val()));
-            LoadSubjectStatistic(parseInt($slSubjects.val()));
             LoadExamsBaseonClassAndSubject(parseInt($slOwnClasses.val()), parseInt($slSubjects.val()));
         }
-
     });
 
     $slLessions.on('change', function () {
+        $table.empty();
+        $paginationFTB.empty();
         if ($(this).val()) {
-            StatisticByLession(parseInt($(this).val()));
+            StatisticByLession(parseInt($(this).val()))
         } else {
-
+            LoadSubjectStatistic(parseInt($slSubjects.val()));
         }
     })
     $slExams.on('change', function () {
