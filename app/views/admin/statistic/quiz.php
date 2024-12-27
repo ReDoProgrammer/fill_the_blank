@@ -135,6 +135,7 @@
 
             }
         });
+   
     })
 
     $('#btnSearch').click(function() {

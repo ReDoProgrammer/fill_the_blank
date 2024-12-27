@@ -131,7 +131,52 @@
         $pagination = $('#pagination'),
         $paginationFTB = $('#paginationFTB');
 
-    let page = 1;
+    let page = 1, pageFTB = 1, currentPage = 1, currentPageFTB = 1,
+        pageNumber = 1, pageNumberFTB = 1;
+
+    $(document).ready(function () {
+        $pagination.on('click', '.page-link', function (e) {
+            e.preventDefault(); // Ngăn chặn hành động mặc định của thẻ <a>
+            currentPage = $(this).text(); // Lấy giá trị data-page
+
+            if (currentPage !== undefined) {
+                if (currentPage !== 0 && currentPage !== pageNumber) {
+                    page = currentPage;
+                } else {
+                    if (currentPage === 0 && page > 1) {
+                        page--;
+                    } else if (currentPage == pageNumber && page < pageNumber) {
+                        page++;
+                    }
+                }
+                StatisticByExam(parseInt($slExams.val()));
+            }
+        });
+
+        $paginationFTB.on('click', '.page-link', function (e) {
+            e.preventDefault(); // Ngăn chặn hành động mặc định của thẻ <a>
+            currentPageFTB = parseInt($(this).text()); // Lấy giá trị data-page
+
+            if (currentPageFTB !== undefined) {
+                if (currentPageFTB !== 0 && currentPageFTB !== pageNumberFTB) {
+                    pageFTB = currentPageFTB;
+                } else {
+                    if (currentPageFTB === 0 && pageFTB > 1) {
+                        pageFTB--;
+                    } else if (currentPageFTB == pageNumberFTB && pageFTB < pageNumberFTB) {
+                        pageFTB++;
+                    }
+                }
+                if ($slLessions.val()) {
+                    StatisticByLession(parseInt($slLessions.val()));
+                } else {
+                    LoadSubjectStatistic(parsetInt($slSubjects.val()));
+                }
+
+            }
+        });
+
+    })
 
     // menuRendered đảm bảo sự kiện này được chạy sau khi menu đã được render trong layout xong
     $(document).on('menuRendered', function () {
@@ -183,7 +228,7 @@
                         </tr>
                     `)
                 })
-
+                pageNumber = totalPages;
                 $pagination.append(
                     `<li class="page-item ${page === 1 ? 'disabled' : ''}"><a class="page-link" href="#">Previous</a></li>`
                 );
@@ -214,7 +259,7 @@
                     classId: parseInt($slOwnClasses.val()),
                     subjectId: parseInt($slSubjects.val()),
                     keyword: $txtKeyword.val().trim(),
-                    page,
+                    page: pageFTB,
                     pageSize
                 },
                 success: function (response) {
@@ -265,6 +310,7 @@
                         $paginationFTB.append(
                             `<li class="page-item ${page === 1 ? 'disabled' : ''}"><a class="page-link" href="#">Previous</a></li>`
                         );
+                        pageNumberFTB = result.totalPage;
                         for (i = 1; i <= result.totalPage; i++) {
                             $paginationFTB.append(
                                 ` <li class="page-item ${i == page ? 'active' : ''}"><a class="page-link " href="#">${i}</a></li>`
@@ -318,7 +364,7 @@
                 classId: parseInt($slOwnClasses.val()),
                 lessionId: lessionId,
                 keyword: $txtKeyword.val().trim(),
-                page,
+                page: pageFTB,
                 pageSize
             },
             success: function (response) {
@@ -355,7 +401,7 @@
                         // Thêm dòng vào tbody của bảng
                         $table.find('tbody').append(row);
                     });
-
+                    pageNumberFTB = result.totalPages;
                     $paginationFTB.append(
                         `<li class="page-item ${page === 1 ? 'disabled' : ''}"><a class="page-link" href="#">Previous</a></li>`
                     );
@@ -458,15 +504,19 @@
         }
     });
 
-    $search.click(function(){
-        if($slLessions.val()){
+    $search.click(function () {
+        $table.empty();
+        $tblExamStatistic.empty();
+        $pagination.empty();
+        $paginationFTB.empty();
+        if ($slLessions.val()) {
             StatisticByLession(parseInt($slLessions.val()));
-        }else{
-            if($slSubjects.val()){
+        } else {
+            if ($slSubjects.val()) {
                 LoadSubjectStatistic(parseInt($slSubjects.val()));
             }
         }
-        if($$slExams.val()){
+        if ($slExams.val()) {
             StatisticByExam(parseInt($slExams.val()));
         }
     })
