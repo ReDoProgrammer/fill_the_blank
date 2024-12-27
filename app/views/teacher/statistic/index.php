@@ -114,6 +114,7 @@
 </div>
 
 
+<script src="<?php echo BASE_URL; ?>/public/assets/plugins/xlsx/xlsx.full.min.js"></script>
 
 <script>
     const $slOwnClasses = $('#slOwnClassese'),
@@ -507,15 +508,64 @@
         }
     });
     $export.click(async function () {
-        await Promise.all([getFTBStatistic(),getAllExams()])
-        .then(data=>{
-            console.log(data);
-            
-        })
-        .catch(err=>{
-            console.log(err);
-            
-        })
+        await Promise.all([getFTBStatistic(), getAllExams()])
+            .then(data => {
+                const ftb = data[0].result.data; // Mảng JSON
+                const exams = data[1].history;  // Mảng JSON
+                const className = $slOwnClasses.text();
+                const ftbTitle = $slLessions.val() ? $slLessions.text() : $slSubjects.text();
+                const examTitle = $slExams.text();
+
+                console.log({ className, ftbTitle, examTitle });
+
+                // Tạo workbook và các worksheet
+                const workbook = XLSX.utils.book_new();
+
+                // Tab 1: Thông tin tổng quan
+                const tab1Data = [
+                    ['Thông tin tổng quan'],
+                    ['Lớp:', className],
+                    ['Môn học:', $slSubjects.text()]
+                ];
+                const ws1 = XLSX.utils.aoa_to_sheet(tab1Data);
+                XLSX.utils.book_append_sheet(workbook, ws1, "Thông tin tổng quan");
+
+                // Tab 2: Ôn tập (ftb)
+                let ftbData;
+                if (ftb && ftb.length > 0) {
+                    ftbData = [
+                        Object.keys(ftb[0]), // Tiêu đề (keys từ đối tượng JSON đầu tiên)
+                        ...ftb.map(item => Object.values(item)) // Giá trị (values từ từng đối tượng JSON)
+                    ];
+                } else {
+                    // Dữ liệu trống
+                    ftbData = [['Dữ liệu ôn tập trống']];
+                }
+                const ws2 = XLSX.utils.aoa_to_sheet(ftbData);
+                XLSX.utils.book_append_sheet(workbook, ws2, "Ôn tập");
+
+                // Tab 3: Thi (exams)
+                let examsData;
+                if (exams && exams.length > 0) {
+                    examsData = [
+                        Object.keys(exams[0]), // Tiêu đề (keys từ đối tượng JSON đầu tiên)
+                        ...exams.map(item => Object.values(item)) // Giá trị (values từ từng đối tượng JSON)
+                    ];
+                } else {
+                    // Dữ liệu trống
+                    examsData = [['Dữ liệu thi trống']];
+                }
+                const ws3 = XLSX.utils.aoa_to_sheet(examsData);
+                XLSX.utils.book_append_sheet(workbook, ws3, "Thi");
+
+                // Xuất file Excel
+                XLSX.writeFile(workbook, `${className}.xlsx`);
+
+            })
+            .catch(err => {
+                console.log(err);
+
+            })
     })
     $search.click(function () {
         if ($slLessions.val()) {
