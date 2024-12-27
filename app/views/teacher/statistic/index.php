@@ -462,7 +462,9 @@
         if($slLessions.val()){
             StatisticByLession(parseInt($slLessions.val()));
         }else{
-            LoadSubjectStatistic(parseInt($slSubjects.val()));
+            if($slSubjects.val()){
+                LoadSubjectStatistic(parseInt($slSubjects.val()));
+            }
         }
         if($$slExams.val()){
             StatisticByExam(parseInt($slExams.val()));
