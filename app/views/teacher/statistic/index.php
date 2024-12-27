@@ -458,6 +458,16 @@
         }
     });
 
+    $search.click(function(){
+        if($slLessions.val()){
+            StatisticByLession(parseInt($slLessions.val()));
+        }else{
+            LoadSubjectStatistic(parseInt($slSubjects.val()));
+        }
+        if($$slExams.val()){
+            StatisticByExam(parseInt($slExams.val()));
+        }
+    })
     $slLessions.on('change', function () {
         $table.empty();
         $paginationFTB.empty();
