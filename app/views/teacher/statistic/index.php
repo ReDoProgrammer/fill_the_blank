@@ -170,7 +170,7 @@
                 if ($slLessions.val()) {
                     StatisticByLession(parseInt($slLessions.val()));
                 } else {
-                    LoadSubjectStatistic(parsetInt($slSubjects.val()));
+                    LoadSubjectStatistic(parseInt($slSubjects.val()));
                 }
 
             }
@@ -250,6 +250,8 @@
         })
     }
     function LoadSubjectStatistic(subjectId) {
+        $table.empty();
+        $paginationFTB.empty();
         if (subjectId !== undefined) { // kiểm tra biến lessionId đã có giá trị chưa
             $.ajax({
                 url: `<?php echo BASE_URL; ?>/teacher/statistic/StatisticBySubject`,
@@ -333,6 +335,7 @@
     }
     function StatisticByLession(lessionId) {
         $table.empty();
+        $paginationFTB.empty();
         $table.append(`
             <thead>
                 <tr>
@@ -505,10 +508,6 @@
     });
 
     $search.click(function () {
-        $table.empty();
-        $tblExamStatistic.empty();
-        $pagination.empty();
-        $paginationFTB.empty();
         if ($slLessions.val()) {
             StatisticByLession(parseInt($slLessions.val()));
         } else {
