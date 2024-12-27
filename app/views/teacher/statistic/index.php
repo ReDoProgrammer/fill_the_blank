@@ -506,7 +506,17 @@
             LoadExamsBaseonClassAndSubject(parseInt($slOwnClasses.val()), parseInt($slSubjects.val()));
         }
     });
-
+    $export.click(async function () {
+        await Promise.all([getFTBStatistic(),getAllExams()])
+        .then(data=>{
+            console.log(data);
+            
+        })
+        .catch(err=>{
+            console.log(err);
+            
+        })
+    })
     $search.click(function () {
         if ($slLessions.val()) {
             StatisticByLession(parseInt($slLessions.val()));
@@ -637,4 +647,87 @@
         XLSX.writeFile(workbook, `${data[0].exam_title}.xlsx`);
     }
 
+
+    const getAllExams = () => {
+        return new Promise((resolve, reject) => {
+            const examId = parseInt($slExams.val());
+            const keyword = $txtKeyword.val().trim();
+
+            if (!examId) {
+                return reject('Không có cuộc thi nào được chọn.');
+            }
+
+            $.ajax({
+                url: '<?php echo BASE_URL; ?>/teacher/statistic/get_quiz_statistic',
+                type: 'GET',
+                dataType: 'json',
+                data: {
+                    page: 1,
+                    pageSize: pageSize * pageNumberFTB,
+                    exam_id: examId,
+                    keyword: keyword
+                },
+                success: (response) => {
+                    resolve(response);
+                },
+                error: (err) => {
+                    const errorMessage = err.responseJSON?.message || err.responseText || 'Đã xảy ra lỗi trong quá trình xử lý.';
+                    reject(errorMessage);
+                }
+            });
+        });
+    };
+
+    const getFTBStatistic = () => {
+        return new Promise((resolve, reject) => {
+            if ($slLessions.val()) {
+                $.ajax({
+                    url: `<?php echo BASE_URL; ?>/teacher/statistic/StatisticByLession`,
+                    method: 'get',
+                    dataType: 'json',
+                    data: {
+                        classId: parseInt($slOwnClasses.val()),
+                        lessionId: parseInt($slLessions.val()),
+                        keyword: $txtKeyword.val().trim(),
+                        page: 1,
+                        pageSize: pageSize * pageNumberFTB
+                    },
+                    success: function (response) {
+                        return resolve(response);
+                    },
+                    error: function (err) {
+                        return reject(err.responseText);
+                    }
+                })
+            } else {
+                if ($slSubjects.val()) {
+                    $.ajax({
+                        url: `<?php echo BASE_URL; ?>/teacher/statistic/StatisticBySubject`,
+                        method: 'get',
+                        dataType: 'json',
+                        data: {
+                            classId: parseInt($slOwnClasses.val()),
+                            subjectId: parseInt($slSubjects.val()),
+                            keyword: $txtKeyword.val().trim(),
+                            page: 1,
+                            pageSize: pageSize * pageNumberFTB
+                        },
+                        success: function (response) {
+                            const {
+                                code,
+                                msg,
+                                result
+                            } = response;
+                            return resolve(response);
+                        },
+                        error: function (err) {
+                            return reject(err.responseText);
+
+                        }
+                    })
+
+                }
+            }
+        })
+    }
 </script>
